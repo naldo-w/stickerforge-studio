@@ -165,6 +165,8 @@ label.gb-ctl { cursor: pointer; }
 	border: 1px solid var(--line-strong); border-radius: 0;
 	height: 26px; padding: 0 6px; width: 56px;
 }
+/* BatchFrame: disabled controls go dashed at 40%, never a filled grey */
+.bf-field:disabled { opacity: .4; cursor: default; background: transparent; border-style: dashed; }
 input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cursor: pointer; margin: 0; }
 
 /* switch — the one pill in the system */
@@ -436,6 +438,22 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 .stats-value { color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
 .stats-value.warn { color: #ff9800; font-weight: 700; }
 .stats-over-list { white-space: normal; line-height: 1.45; text-align: right; }
+.stats-over-link {
+	font: inherit; letter-spacing: inherit; color: inherit;
+	background: none; border: 0; border-radius: 0; padding: 0; cursor: pointer; text-align: inherit;
+	text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 2px;
+	transition: color var(--dur-fast) ease;
+}
+.stats-over-link:hover { color: var(--accent); }
+/* flash the offending cell after jumping to it from OUTPUT STATS */
+@keyframes cellFlash {
+	0%, 100% { outline-color: transparent; }
+	12%, 62% { outline-color: var(--accent); }
+}
+.cell-flash { outline: 2px solid transparent; outline-offset: -2px; animation: cellFlash 1.2s ease both; }
+@media (prefers-reduced-motion: reduce) {
+	.cell-flash { animation: none; outline-color: var(--accent); }
+}
 .stats-progress-value { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .stats-progress-meta { color: var(--ink); font-size: var(--text-note); letter-spacing: var(--label-track-sm); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stats-progress-meta.warn { color: #ff9800; font-weight: 700; }
@@ -851,7 +869,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 				<ol class="steps">
 					<li>ADD — DROP TGS ANYWHERE OR CLICK ADD TGS. LOTTIE-WEB LOADS FROM CDN ON FIRST USE (NETWORK REQUIRED ONCE).</li>
 					<li>REVIEW — ANIMATED SOURCE PREVIEW + AUTO-BUILT OUTPUTS: 512APNG (SIGNAL), 320APNG (DISCORD), WEBP (WHATSAPP), PNG 512, PNG CROPPED.</li>
-					<li>TUNE — SETTINGS → TGS CONVERTER SETTINGS. PER-FORMAT OPTIONS: LOOP COUNT, OUTPUT SIZE (320APNG), QUALITY (WEBP), FRAME SELECTION (PNG), AUTO-OPTIMIZE (512APNG).</li>
+					<li>TUNE — SETTINGS → TGS CONVERTER SETTINGS SETS THE DEFAULTS: LOOP COUNT, OUTPUT SIZE (320APNG), QUALITY (WEBP), FRAME SELECTION (PNG). EACH PANEL THEN OVERRIDES PER FILE — AUTO-FIT, FPS AND MAX COLORS ON 512APNG, 320APNG AND WEBP.</li>
 					<li>EXPORT — PER FORMAT IN EACH CELL, PER PANEL ZIP, OR EXPORT ALL TGS · ZIP.</li>
 				</ol>
 			</div>
@@ -876,7 +894,8 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 			<div class="sec">
 				<span class="sec-h">UNDER THE HOOD</span>
 				<p class="intro-lead">APNG — FULL-FRAME RECONSTRUCTION (GIF DISPOSAL METHODS RESOLVED, NO GHOSTING), TIMING PRESERVED, TRANSPARENT CENTERED CANVAS, PALETTE · DELTA · ADAPTIVE-FILTER COMPRESSION. DISCORD — SAME PIPELINE ON A 320 CANVAS; EACH STICKER NEEDS AN EMOJI TAG ON UPLOAD. PNG — PALETTE + ADAPTIVE FILTER, TRANSPARENT BACKGROUND. TGS — PIXELS AS VECTOR RECTS, ONE PRECOMP REUSED × 2 LAYERS. WEBP — LOSSLESS VP8L DELTA FRAMES + DUPLICATE-FRAME DEDUP (LOSSY VP8 OPTIONAL).</p>
-				<p class="intro-lead">TGS CONVERTER — LOTTIE-WEB RENDERS EACH FRAME TO AN OFF-SCREEN CANVAS AT TARGET SIZE. FRAMES ARE ASSEMBLED INTO: APNG (DELTA + PALETTE, AUTO-OPTIMIZE REDUCES COLORS IF OVER LIMIT), 320APNG (CONFIGURABLE SIZE), WEBP (VP8/VP8L, LOSSY OR LOSSLESS), PNG (SINGLE FRAME — FIRST / LAST / MID / CUSTOM — WITH OR WITHOUT PADDING). SIGNAL 512APNG WARNS IF ANIMATION EXCEEDS 3 SECONDS.</p>
+				<p class="intro-lead">TGS CONVERTER — LOTTIE-WEB RENDERS EACH FRAME TO AN OFF-SCREEN CANVAS AT TARGET SIZE. EVERY ENABLED OUTPUT IS BUILT AS SOON AS THE FILE LANDS, SO EXPORT IS A CACHE READ, AND EACH CELL SHOWS THE ENCODED SIZE — NOT THE SOURCE SIZE. FRAMES ARE ASSEMBLED INTO: APNG (DELTA + PALETTE), 320APNG (CONFIGURABLE SIZE), WEBP (VP8/VP8L, LOSSY OR LOSSLESS), PNG (SINGLE FRAME — FIRST / LAST / MID / CUSTOM — WITH OR WITHOUT PADDING). SIGNAL 512APNG WARNS IF ANIMATION EXCEEDS 3 SECONDS.</p>
+				<p class="intro-lead">AUTO-FIT — WHEN AN OUTPUT EXCEEDS ITS PLATFORM BYTE LIMIT, THE FRAME RATE IS STEPPED DOWN FIRST (60 → 30 → 20 → 10 FPS), WHICH COSTS SMOOTHNESS BUT NOT A SINGLE PIXEL. ONLY IF THAT STILL DOES NOT FIT DOES THE PALETTE DROP (256 → 128 → 64 COLORS; FOR LOSSY WEBP, QUALITY DROPS INSTEAD). THE FIRST CANDIDATE AT OR UNDER THE LIMIT WINS. IF NOTHING FITS, THE SMALLEST IS KEPT AND THE CELL WARNS. TURN AUTO-FIT OFF TO SET FPS AND MAX COLORS BY HAND, PER FILE.</p>
 				<p class="intro-lead">WHY OFFSET? ADJACENT VECTOR RECTANGLES CAN SHOW HAIRLINE SEAMS WHEN ANTI-ALIASED BY LOTTIE RENDERERS. THE TGS IS DRAWN AS TWO STACKED COPIES OF THE SAME PRECOMP — THE SECOND NUDGED BY 0.4 PX — SO THE OVERLAP FILLS THE GAPS.</p>
 			</div>
 			<div class="sec">
@@ -1715,10 +1734,12 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		frameTag: false, frameTagPos: "suffix",
 		cells: { apng: true, discord: true, frame: false, pad: false, tgs: true, lottie: false, webp: true },
 		tgsCells: { apng: true, discord: true, webp: true, frame: true, pad: true },
+		/* autoFit: shrink until under the format's byte budget (fps ladder, then colours).
+		   fps: null = the lottie's native rate. Both are per-file overridable in the panel. */
 		tgsSettings: {
-			apng512: { loops: 0, folder: '512APNG' },
-			discord: { size: 320, loops: 0, folder: '320APNG' },
-			webp: { lossless: true, quality: 90, loops: 0, folder: 'WEBP' },
+			apng512: { loops: 0, folder: '512APNG', autoFit: true, fps: null, maxColors: 256 },
+			discord: { size: 320, loops: 0, folder: '320APNG', autoFit: true, fps: null, maxColors: 256 },
+			webp: { lossless: true, quality: 90, loops: 0, folder: 'WEBP', autoFit: true, fps: null, maxColors: 256 },
 			frame: { mode: 'first', num: 1, folder: '512PNG' },
 			pad: { mode: 'first', folder: '512PNGNOPADDING' },
 		},
@@ -1943,7 +1964,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	function panelHtml(it) {
 		return `
 <div class="item-head">
-	<span class="item-no" data-r="no">${pad2(it.no)}</span>
+	<span class="item-no" data-r="no">G${pad2(it.no)}</span>
 	<span class="item-name">${esc(it.name)}</span>
 	<span class="item-meta">${it.gif.width} × ${it.gif.height} · ${it.gif.frames.length} FRAMES</span>
 	<span class="actions">
@@ -2297,6 +2318,22 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		if (total <= 3000) return frames;
 		const k = 3000 / total;
 		return frames.map(f => ({ rgba: f.rgba, delayMs: Math.max(10, Math.round(f.delayMs * k)) }));
+	}
+	/** Time-based frame-rate downsample. Never upsamples: a target above the source
+	 *  rate returns the input array by reference (same contract as fit3sDelays).
+	 *  rgba buffers are shared, not copied — callers must not mutate them. */
+	function resampleFramesToFps(frames, srcFps, targetFps) {
+		if (!Array.isArray(frames) || frames.length <= 1) return frames;
+		if (!(srcFps > 0) || !(targetFps > 0) || targetFps >= srcFps) return frames;
+		const outCount = Math.max(1, Math.round(frames.length * targetFps / srcFps));
+		if (outCount >= frames.length) return frames;
+		const delayMs = Math.max(10, Math.round(1000 / targetFps));
+		const out = new Array(outCount);
+		for (let k = 0; k < outCount; k++) {
+			const src = Math.min(frames.length - 1, Math.round(k * srcFps / targetFps));
+			out[k] = { rgba: frames[src].rgba, delayMs };
+		}
+		return out;
 	}
 	async function buildApng512(it) {
 		const s = it.settings, sc = effScale(it);
@@ -2753,7 +2790,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 				stats: {},
 			};
 			const root = document.createElement("section");
-			root.className = "item"; root.id = "panel" + it.id;
+			root.className = "item"; root.id = "gifp" + it.no; // GIF items key on `no`, not `id`
 			root.innerHTML = panelHtml(it);
 			it.root = root;
 			it.refs = {};
@@ -3408,9 +3445,9 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 					tgsItems.forEach(it => { if (typeof _refreshTgsPanel === 'function') _refreshTgsPanel(it); });
 				}
 				if (typeof G.tgsSettings !== 'undefined') {
-					Object.assign(G.tgsSettings.apng512, { loops: 0 });
-					Object.assign(G.tgsSettings.discord, { size: 320, loops: 0 });
-					Object.assign(G.tgsSettings.webp, { lossless: true, quality: 90, loops: 0 });
+					Object.assign(G.tgsSettings.apng512, { loops: 0, autoFit: true, fps: null, maxColors: 256 });
+					Object.assign(G.tgsSettings.discord, { size: 320, loops: 0, autoFit: true, fps: null, maxColors: 256 });
+					Object.assign(G.tgsSettings.webp, { lossless: true, quality: 90, loops: 0, autoFit: true, fps: null, maxColors: 256 });
 					Object.assign(G.tgsSettings.frame, { mode: 'first', num: 1 });
 					Object.assign(G.tgsSettings.pad, { mode: 'first' });
 					applyTgsFolderPreset(G.folderMode);
@@ -3671,327 +3708,667 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		ctx.clearRect(0, 0, size, size); ctx.putImageData(id, 0, 0);
 	}
 
-	function _refreshTgsPanel(it) {
-		const cells = it.el.querySelectorAll('.cell[data-cell]');
-		cells.forEach(c => c.classList.toggle('off', !G.tgsCells[c.dataset.cell]));
-		const vis = 1 + Array.from(cells).filter(c => !c.classList.contains('off')).length + 1;
-		it.el.style.setProperty('--cells', vis);
-		FOLDER_KEYS.forEach(k => {
-			const inp = it.refs['fd' + k[0].toUpperCase() + k.slice(1)];
-			if (inp) inp.value = it.settings.folders[k] || G.folderNames[k] || '';
+
+	/* ── stable TGS controller: final override for main converter ── */
+	const STABLE_TGS_DIRS = { apng: '512APNG', discord: '320APNG', webp: 'WEBP', frame: '512PNG', pad: '512PNGNOPADDING' };
+
+	function _tgsFolder(key) {
+		const map = {
+			apng: G.tgsSettings.apng512.folder,
+			discord: G.tgsSettings.discord.folder,
+			webp: G.tgsSettings.webp.folder,
+			frame: G.tgsSettings.frame.folder,
+			pad: G.tgsSettings.pad.folder,
+		};
+		const v = (map[key] || STABLE_TGS_DIRS[key] || '').trim();
+		return v ? v.replace(/^[/\\]+|[/\\]+$/g, '') + '/' : '';
+	}
+
+	function _drawTgsPreview(cv, rgba, size, centered) {
+		if (!cv || !rgba) return;
+		const ctx = cv.getContext('2d');
+		ctx.clearRect(0, 0, cv.width, cv.height);
+		const tmp = document.createElement('canvas');
+		tmp.width = size; tmp.height = size;
+		tmp.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(rgba), size, size), 0, 0);
+		ctx.imageSmoothingEnabled = false;
+		const scale = Math.min(cv.width / size, cv.height / size);
+		const dw = Math.round(size * scale);
+		const dh = Math.round(size * scale);
+		const dx = Math.floor((cv.width - dw) / 2);
+		const dy = Math.floor((cv.height - dh) / 2);
+		ctx.drawImage(tmp, dx, dy, dw, dh);
+	}
+
+	function _drawTgsPreviewBox(cv, rgba, size, box) {
+		_drawTgsPreview(cv, rgba, size, false);
+		if (!cv || !box) return;
+		const ctx = cv.getContext('2d');
+		ctx.strokeStyle = "#C3E5F2";
+		ctx.lineWidth = 3;
+		ctx.strokeRect(box.x + .5, box.y + .5, box.w - 1, box.h - 1);
+	}
+
+	function _resizeTgsFrames(frames, outSize) {
+		const src = document.createElement('canvas');
+		src.width = CS; src.height = CS;
+		const dst = document.createElement('canvas');
+		dst.width = outSize; dst.height = outSize;
+		const sctx = src.getContext('2d');
+		const dctx = dst.getContext('2d', { willReadFrequently: true });
+		dctx.imageSmoothingEnabled = true;
+		dctx.imageSmoothingQuality = 'high';
+		return frames.map(f => {
+			sctx.clearRect(0, 0, CS, CS);
+			sctx.putImageData(new ImageData(new Uint8ClampedArray(f.rgba), CS, CS), 0, 0);
+			dctx.clearRect(0, 0, outSize, outSize);
+			dctx.drawImage(src, 0, 0, CS, CS, 0, 0, outSize, outSize);
+			return { rgba: new Uint8ClampedArray(dctx.getImageData(0, 0, outSize, outSize).data), delayMs: f.delayMs };
 		});
+	}
+
+	function _tgs320Size() {
+		return clamp(Math.round(+G.tgsSettings.discord.size) || 320, 64, 512);
+	}
+
+	/** Frame index from the global FRAME MODE, used until the panel slider overrides it. */
+	function _tgsFrameIndexFromMode(total, mode, num) {
+		if (mode === 'last') return total - 1;
+		if (mode === 'mid') return Math.floor((total - 1) / 2);
+		if (mode === 'no') return clamp((num || 1) - 1, 0, total - 1);
+		return 0; // 'first'
+	}
+
+	function _tgsFrameIndex(it) {
+		const total = Math.max(1, it.totalFrames || (it.frames512 ? it.frames512.frames.length : 1));
+		if (it.settings.frameIndex == null) {
+			const F = G.tgsSettings.frame;
+			return clamp(_tgsFrameIndexFromMode(total, F.mode, F.num), 0, total - 1);
+		}
+		return clamp(Math.round(+it.settings.frameIndex) || 0, 0, total - 1);
+	}
+
+	/** Global FRAME MODE / FRAME NO. changed: drop the slider override and rebuild the PNG cells. */
+	function _onTgsFrameModeChanged(it) {
+		it.settings.frameIndex = null;
+		if (it.refs && it.refs.frameSlider) it.refs.frameSlider.value = _tgsFrameIndex(it);
+		if (it.refs && it.refs.selectedFrameLbl) it.refs.selectedFrameLbl.textContent = `${_tgsFrameIndex(it) + 1} / ${it.totalFrames}`;
+		_refreshTgsFramePreviews(it);
+		scheduleTgsBuild(it, 'frame');
+		scheduleTgsBuild(it, 'pad');
+	}
+
+	function _tgsSelectedFrame(it) {
+		return it.frames512.frames[_tgsFrameIndex(it)] || it.frames512.frames[0];
+	}
+
+	/** Effective source fps for an output: the per-file override, else the lottie's native rate. */
+	function _tgsFps(it, key) {
+		const v = it.settings[TGS_FPS_KEY[key]];
+		const native = it.fps || 30;
+		if (v == null) return native;
+		return clamp(Math.round(+v) || native, 1, native);
+	}
+
+
+	function _refreshTgsPngPreviews(it) {
+		const t0 = performance.now();
+		if (!it.frames512 || !it.refs) return;
+		const f = _tgsSelectedFrame(it);
+		const idx = _tgsFrameIndex(it);
+		if (it.refs.frameLbl) it.refs.frameLbl.textContent = `${idx + 1} / ${it.totalFrames}`;
+		if (it.refs.padFrameLbl) it.refs.padFrameLbl.textContent = `${idx + 1} / ${it.totalFrames}`;
+		_drawTgsPreview(it.refs.frameCv, f.rgba, CS, false);
+		const box = C.boundingBox(f.rgba, CS, CS);
+		if (box) {
+			_drawTgsPreviewBox(it.refs.padCv, f.rgba, CS, box);
+			if (it.refs.padAfter) it.refs.padAfter.textContent = `${box.w} × ${box.h} PX`;
+		} else {
+			_drawTgsPreview(it.refs.padCv, f.rgba, CS, false);
+			if (it.refs.padAfter) it.refs.padAfter.textContent = 'EMPTY FRAME';
+		}
+	}
+
+	function _refreshTgsFramePreviews(it) {
+		const t0 = performance.now();
+		if (!it.frames512?.frames?.length || !it.refs) return;
+		const idx = _tgsFrameIndex(it);
+		const f = it.frames512.frames[idx] || it.frames512.frames[0];
+		if (it.refs.frameSlider) it.refs.frameSlider.value = String(idx);
+		if (it.refs.selectedFrameLbl) it.refs.selectedFrameLbl.textContent = `${idx + 1} / ${it.totalFrames}`;
+		_drawTgsPreview(it.refs.srcCv, f.rgba, CS, false);
+		_drawTgsPreview(it.refs.apngCv, f.rgba, CS, false);
+		_drawTgsPreview(it.refs.webpCv, f.rgba, CS, false);
+		const size = _tgs320Size();
+		const tiny = _resizeTgsFrames([f], size)[0];
+		if (tiny) _drawTgsPreview(it.refs.dcCv, tiny.rgba, size, true);
+		_refreshTgsPngPreviews(it);
+	}
+
+	/** AUTO-FIT switch + the two manual knobs it overrides. Shared by the apng / discord / webp cells. */
+	function _tgsAutoRows(it, key) {
+		const s = it.settings;
+		const on = !!s[TGS_AUTOFIT_KEY[key]];
+		const native = it.fps || 30;
+		const fps = s[TGS_FPS_KEY[key]] == null ? native : s[TGS_FPS_KEY[key]];
+		const colors = s[TGS_COLORS_KEY[key]] || 256;
+		const lossyWebp = key === 'webp' && !s.webpLossless;
+		return `
+				<label class="row"><span>AUTO-FIT · ≤ ${_fmtSz(_tgsBudget(key))}</span><span class="bf-switch"><input type="checkbox" data-r="${key}AutoFit"${on ? ' checked' : ''} aria-label="auto-fit ${key} under size limit" /><span class="track"></span></span></label>
+				<div class="row"><span>FPS</span><input class="bf-field" type="number" min="1" max="${native}" step="1" data-r="${key}FpsNum" value="${fps}"${on ? ' disabled' : ''} aria-label="${key} frame rate" /></div>
+				<div class="row"><span>MAX COLORS</span><input class="bf-field" type="number" min="2" max="256" step="1" data-r="${key}ColorsNum" value="${colors}"${on || lossyWebp ? ' disabled' : ''} aria-label="${key} max colors" /></div>`;
 	}
 
 	function _tgsPanelHtml(it) {
-		return `<div class="panel tgs-panel" id="tgsp${it.id}">
-<div class="panel-h">
-  <span class="panel-name">${it.name}</span>
-  <span>${_fmtSz(it.fileSize)} · ${it.totalFrames}f · ${it.fps}fps · ${(it.totalFrames/it.fps).toFixed(1)}s</span>
-  <button type="button" class="bf-btn bf-btn--sm" data-r="closeBtn">×</button>
-</div>
-<div class="cells">
-  <div class="cell"><div class="cell-h"><span>SOURCE · TGS</span><span class="no">01</span></div>
-    <div class="cell-b">
-      <canvas class="pv" width="${CS}" height="${CS}" data-r="srcCv"></canvas>
-      <div class="kv"><span>FILENAME</span><span class="v">${it.name}</span></div>
-      <div class="kv"><span>TGS SIZE</span><span class="v">${_fmtSz(it.fileSize)}</span></div>
-      <div class="kv"><span>FRAMES</span><span class="v">${it.totalFrames}</span></div>
-      <div class="kv"><span>FPS</span><span class="v">${it.fps}</span></div>
-      <div class="kv"><span>DURATION</span><span class="v">${(it.totalFrames/it.fps).toFixed(2)}s</span></div>
-      <div class="kv"><span>CANVAS</span><span class="v">512 × 512 PX</span></div>
-      <div class="kv"><span>RAW → COMPRESSED</span><span class="v" data-r="rawSz">${_fmtSz(CS*CS*4*it.totalFrames)} raw</span></div>
-    </div>
-  </div>
-  <div class="cell" data-cell="discord"><div class="cell-h"><span>DISCORD · APNG 320</span><span class="no">02</span></div>
-    <div class="cell-b">
-      <canvas class="pv" width="${CS}" height="${CS}" data-r="dcCv"></canvas>
-      <div class="kv"><span>APNG SIZE</span><span class="v" data-r="dcSize">…</span></div>
-      <div class="kv"><span>TARGET</span><span class="v">DISCORD · ≤ 512 KB</span></div>
-      <div class="warn" data-r="dcWarn">OVER 512 KB — DISCORD MAY REJECT</div>
-      <div class="spacer"></div>
-      <div class="row"><span>FOLDER · ZIP</span><input class="bf-field fd" type="text" data-r="fdDiscord" /></div>
-      <button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expDc">Export APNG 320</button>
-    </div>
-  </div>
-  <div class="cell" data-cell="apng"><div class="cell-h"><span>SIGNAL · APNG 512</span><span class="no">03</span></div>
-    <div class="cell-b">
-      <canvas class="pv" width="${CS}" height="${CS}" data-r="apngCv"></canvas>
-      <div class="kv"><span>APNG SIZE</span><span class="v" data-r="apngSize">…</span></div>
-      <div class="kv"><span>TARGET</span><span class="v">SIGNAL · ≤ 300 KB</span></div>
-      <div class="warn" data-r="apngWarn">OVER 300 KB — SIGNAL MAY REJECT</div>
-      <div class="warn" data-r="durationWarn">DURATION EXCEEDS 3s — SIGNAL STICKERS MUST BE ≤3s</div>
-      <div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="apngLoopsNum" value="${G.tgsSettings ? G.tgsSettings.apng512.loops : 0}" /></div>
-      <div class="spacer"></div>
-      <div class="row"><span>FOLDER · ZIP</span><input class="bf-field fd" type="text" data-r="fdApng" /></div>
-      <button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expApng">Export APNG 512</button>
-    </div>
-  </div>
-  <div class="cell" data-cell="webp"><div class="cell-h"><span>WHATSAPP · WEBP</span><span class="no">04</span></div>
-    <div class="cell-b">
-      <canvas class="pv" width="${CS}" height="${CS}" data-r="webpCv"></canvas>
-      <img class="pv" data-r="webpImg" alt="animated webp preview" style="display:none;max-width:100%" />
-      <div class="kv"><span>WEBP SIZE</span><span class="v" data-r="webpSize">…</span></div>
-      <div class="kv"><span>TARGET</span><span class="v">WHATSAPP · ≈ ≤ 100 KB</span></div>
-      <div class="warn" data-r="webpWarn">OVER ~100 KB — WHATSAPP MAY REJECT</div>
-      <div class="row"><span>QUALITY</span><div class="row-b"><span class="bf-seg" data-r="webpSeg"><button type="button" class="bf-seg-btn bf-on" data-v="lossless">Lossless</button><button type="button" class="bf-seg-btn" data-v="lossy">Lossy</button></span><input class="bf-field" type="number" min="1" max="100" step="1" data-r="webpQNum" value="90" /></div></div>
-      <div class="spacer"></div>
-      <div class="row"><span>FOLDER · ZIP</span><input class="bf-field fd" type="text" data-r="fdWebp" /></div>
-      <button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expWebp">Export WEBP</button>
-    </div>
-  </div>
-  <div class="cell" data-cell="frame"><div class="cell-h"><span>STATIC · PNG 512</span><span class="no">05</span></div>
-    <div class="cell-b">
-      <canvas class="pv" width="${CS}" height="${CS}" data-r="frameCv"></canvas>
-      <div class="kv"><span>FRAME</span><span class="v" data-r="frameLbl">1 / ${it.totalFrames}</span></div>
-      <div class="kv"><span>PNG SIZE</span><span class="v" data-r="frameSize">…</span></div>
-      <input type="range" min="0" max="${Math.max(0,it.totalFrames-1)}" value="0" step="1" data-r="frameSlider" />
-      <div class="spacer"></div>
-      <div class="row"><span>FOLDER · ZIP</span><input class="bf-field fd" type="text" data-r="fdFrame" /></div>
-      <button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expFrame">Export PNG</button>
-    </div>
-  </div>
-  <div class="cell" data-cell="pad"><div class="cell-h"><span>STATIC · PNG CROPPED</span><span class="no">06</span></div>
-    <div class="cell-b">
-      <canvas class="pv" width="${CS}" height="${CS}" data-r="padCv"></canvas>
-      <div class="kv"><span>AFTER CROP</span><span class="v" data-r="padAfter">…</span></div>
-      <div class="kv"><span>PNG SIZE</span><span class="v" data-r="padSize">…</span></div>
-      <div class="spacer"></div>
-      <div class="row"><span>FOLDER · ZIP</span><input class="bf-field fd" type="text" data-r="fdPad" /></div>
-      <button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expPad">Export PNG</button>
-    </div>
-  </div>
-  <div class="cell"><div class="cell-h"><span>SETTING</span><span class="no">07</span></div>
-    <div class="cell-b">
-      <div class="grp">SOURCE</div>
-      <div class="kv"><span>FRAMES</span><span class="v">${it.totalFrames}f · ${it.fps} FPS</span></div>
-      <div class="kv"><span>CANVAS</span><span class="v">512 × 512 PX (TGS SPEC)</span></div>
-      <div class="grp">EXPORT</div>
-      <button type="button" class="bf-btn bf-btn--sm bf-btn--block" data-r="expAll">Export All · ZIP</button>
-      <div class="spacer"></div>
-    </div>
-  </div>
-</div>
-</div>`;
+		return `
+<section class="item" id="tgsp${it.id}">
+	<div class="item-head">
+		<span class="item-no" data-r="no">T${pad2(it.id)}</span>
+		<span class="item-name">${esc(it.name)}</span>
+		<span class="item-meta">TGS · ${_fmtSz(it.fileSize)} · ${it.totalFrames} FRAMES · ${it.fps} FPS · ${(it.totalFrames / it.fps).toFixed(2)} S</span>
+		<span class="actions">
+			<button type="button" class="bf-btn bf-btn--sm bf-btn--accent" data-r="expAll">Export All · ZIP</button>
+			<button type="button" class="bf-btn bf-btn--sm" data-r="remove">Remove</button>
+		</span>
+	</div>
+	<div class="panel-scroll"><div class="panel" data-r="panel">
+		<div class="cell"><div class="cell-h"><span>SOURCE · TGS</span><span class="no">01</span></div>
+			<div class="cell-b">
+				<canvas class="pv" width="${CS}" height="${CS}" data-r="srcCv"></canvas>
+				<div class="kv"><span>FILE</span><span class="v">${esc(it.name)}</span></div>
+				<div class="kv"><span>SIZE</span><span class="v">${_fmtSz(it.fileSize)}</span></div>
+				<div class="kv"><span>FRAMES</span><span class="v">${it.totalFrames}</span></div>
+				<div class="kv"><span>FPS</span><span class="v">${it.fps}</span></div>
+				<div class="kv"><span>DURATION</span><span class="v">${(it.totalFrames / it.fps).toFixed(2)} S</span></div>
+				<div class="kv"><span>CANVAS</span><span class="v">512 × 512 PX</span></div>
+				<div class="spacer"></div>
+			</div>
+		</div>
+		<div class="cell" data-cell="apng"><div class="cell-h"><span>512APNG</span><span class="no">02</span></div>
+			<div class="cell-b">
+				<canvas class="pv" width="${CS}" height="${CS}" data-r="apngCv"></canvas>
+				<div class="kv"><span>CANVAS</span><span class="v">512 × 512 PX</span></div>
+				<div class="kv"><span>COMPRESSED APNG</span><span class="v" data-r="apngSize">BUILDING…</span></div>
+				<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="apngLoopsNum" value="${G.tgsSettings.apng512.loops}" /></div>${_tgsAutoRows(it, 'apng')}
+				<div class="warn" data-r="apngWarn">OVER 300 KB — SIGNAL MAY REJECT</div>
+				<div class="warn${(it.totalFrames / (it.fps || 30)) > 3 ? ' on' : ''}" data-r="durationWarn">DURATION EXCEEDS 3 S — SIGNAL STICKERS MUST BE ≤ 3 S</div>
+				<div class="spacer"></div>
+				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expApng">Export 512APNG</button>
+			</div>
+		</div>
+		<div class="cell" data-cell="discord"><div class="cell-h"><span>320APNG</span><span class="no">03</span></div>
+			<div class="cell-b">
+				<canvas class="pv" width="${CS}" height="${CS}" data-r="dcCv"></canvas>
+				<div class="kv"><span>METHOD</span><span class="v">DOWNSCALE 512 → ${_tgs320Size()} PX</span></div>
+				<div class="kv"><span>COMPRESSED APNG</span><span class="v" data-r="dcSize">BUILDING…</span></div>
+				<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="dcLoopsNum" value="${G.tgsSettings.discord.loops}" /></div>${_tgsAutoRows(it, 'discord')}
+				<div class="warn" data-r="dcWarn">OVER 512 KB — DISCORD MAY REJECT</div>
+				<div class="spacer"></div>
+				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expDc">Export 320APNG</button>
+			</div>
+		</div>
+		<div class="cell" data-cell="webp"><div class="cell-h"><span>WEBP</span><span class="no">04</span></div>
+			<div class="cell-b">
+				<canvas class="pv" width="${CS}" height="${CS}" data-r="webpCv"></canvas>
+				<div class="kv"><span>COMPRESSED WEBP</span><span class="v" data-r="webpSize">BUILDING…</span></div>
+				<div class="row"><span>QUALITY</span><div class="row-b">
+					<span class="bf-seg" data-r="webpSeg"><button type="button" class="bf-seg-btn" data-v="lossless">Lossless</button><button type="button" class="bf-seg-btn" data-v="lossy">Lossy</button></span>
+					<input class="bf-field" type="number" min="1" max="100" step="1" data-r="webpQNum" value="${G.tgsSettings.webp.quality}" />
+				</div></div>
+				<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="webpLoopsNum" value="${G.tgsSettings.webp.loops}" /></div>${_tgsAutoRows(it, 'webp')}
+				<div class="warn" data-r="webpWarn">OVER ~100 KB — WHATSAPP MAY REJECT</div>
+				<div class="spacer"></div>
+				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expWebp">Export WEBP</button>
+			</div>
+		</div>
+		<div class="cell" data-cell="frame"><div class="cell-h"><span>512PNG</span><span class="no">05</span></div>
+			<div class="cell-b">
+				<canvas class="pv" width="${CS}" height="${CS}" data-r="frameCv"></canvas>
+				<div class="kv"><span>FRAME</span><span class="v" data-r="frameLbl">1 / ${it.totalFrames}</span></div>
+				<div class="kv"><span>COMPRESSED PNG</span><span class="v" data-r="frameSize">BUILDING…</span></div>
+				<div class="spacer"></div>
+				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expFrame">Export 512PNG</button>
+			</div>
+		</div>
+		<div class="cell" data-cell="pad"><div class="cell-h"><span>512PNGNOPADDING</span><span class="no">06</span></div>
+			<div class="cell-b">
+				<canvas class="pv" width="${CS}" height="${CS}" data-r="padCv"></canvas>
+				<div class="kv"><span>FRAME</span><span class="v" data-r="padFrameLbl">1 / ${it.totalFrames}</span></div>
+				<div class="kv"><span>AFTER CROP</span><span class="v" data-r="padAfter">—</span></div>
+				<div class="kv"><span>COMPRESSED PNG</span><span class="v" data-r="padSize">BUILDING…</span></div>
+				<div class="spacer"></div>
+				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expPad">Export 512PNGNOPADDING</button>
+			</div>
+		</div>
+		<div class="cell"><div class="cell-h"><span>SETTING</span><span class="no">07</span></div>
+			<div class="cell-b">
+				<div class="grp">PNG FRAME</div>
+				<div class="row"><span>FRAME</span><input type="range" min="0" max="${Math.max(0, it.totalFrames - 1)}" value="0" step="1" data-r="frameSlider" /></div>
+				<div class="kv"><span>SELECTED</span><span class="v" data-r="selectedFrameLbl">1 / ${it.totalFrames}</span></div>
+				<div class="grp">OUTPUT FOLDERS</div>
+				<div class="kv"><span>512APNG</span><span class="v">512APNG/</span></div>
+				<div class="kv"><span>320APNG</span><span class="v">320APNG/</span></div>
+				<div class="kv"><span>WEBP</span><span class="v">WEBP/</span></div>
+				<div class="kv"><span>512PNG</span><span class="v">512PNG/</span></div>
+				<div class="kv"><span>NO PADDING</span><span class="v">512PNGNOPADDING/</span></div>
+				<div class="spacer"></div>
+			</div>
+		</div>
+	</div></div>
+</section>`;
+	}
+
+	function _refreshTgsPanel(it) {
+		if (!it.el) return;
+		it.el.querySelectorAll('.cell[data-cell]').forEach(c => c.classList.toggle('off', !G.tgsCells[c.dataset.cell]));
+		const visible = 2 + Object.entries(G.tgsCells).filter(([, on]) => on).length;
+		const panel = it.refs.panel || it.el.querySelector('.panel');
+		if (panel) panel.style.setProperty('--cells', visible);
 	}
 
 	function _initTgsPanel(it) {
+		const t0 = performance.now();
 		const wrap = document.createElement('div');
 		wrap.innerHTML = _tgsPanelHtml(it);
 		it.el = wrap.firstElementChild;
+		it.refs = {};
+		it.el.querySelectorAll('[data-r]').forEach(n => { it.refs[n.dataset.r] = n; });
 		_tgsItemsEl.appendChild(it.el);
-		const r = it.refs;
-		it.el.querySelectorAll('[data-r]').forEach(n => { r[n.dataset.r] = n; });
 		_refreshTgsPanel(it);
-
-		if (it.frames512) {
-			_drawToCv(r.srcCv, it.frames512.frames[0].rgba, CS);
-			if (r.rawSz) r.rawSz.textContent = _fmtSz(CS*CS*4*it.totalFrames) + ' raw → compressed on export';
-		}
-
-		r.closeBtn.addEventListener('click', () => {
+		_refreshTgsFramePreviews(it);
+		it.refs.remove.addEventListener('click', () => {
+			const idx = tgsItems.indexOf(it);
+			if (idx >= 0) tgsItems.splice(idx, 1);
+			if (it._webpBlobUrl) URL.revokeObjectURL(it._webpBlobUrl);
 			it.el.remove();
-			const i = tgsItems.indexOf(it); if (i > -1) tgsItems.splice(i, 1);
 			_refreshTgsUI();
 		});
-
-		let tgsWebpLossless = true;
-		r.webpSeg.addEventListener('click', e => {
-			const b = e.target.closest('[data-v]'); if (!b) return;
-			tgsWebpLossless = b.dataset.v === 'lossless';
-			r.webpSeg.querySelectorAll('.bf-seg-btn').forEach(btn => btn.classList.toggle('bf-on', btn.dataset.v === b.dataset.v));
+		it.refs.frameSlider.addEventListener('input', () => {
+			it.settings.frameIndex = +it.refs.frameSlider.value; // explicit override of the global FRAME MODE
+			it.refs.selectedFrameLbl.textContent = `${_tgsFrameIndex(it) + 1} / ${it.totalFrames}`;
+			_refreshTgsFramePreviews(it);
+			scheduleTgsBuild(it, 'frame');
+			scheduleTgsBuild(it, 'pad');
 		});
-
-		r.frameSlider.addEventListener('input', () => {
-			const fi = parseInt(r.frameSlider.value) || 0;
-			r.frameLbl.textContent = (fi + 1) + ' / ' + it.totalFrames;
-			if (it.frames512) _drawToCv(r.frameCv, it.frames512.frames[fi].rgba, CS);
+		it.refs.apngLoopsNum.addEventListener('change', () => { it.settings.apngLoops = clamp(Math.round(+it.refs.apngLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'apng'); });
+		it.refs.dcLoopsNum.addEventListener('change', () => { it.settings.dcLoops = clamp(Math.round(+it.refs.dcLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'discord'); });
+		it.refs.webpLoopsNum.addEventListener('change', () => { it.settings.webpLoops = clamp(Math.round(+it.refs.webpLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'webp'); });
+		it.refs.webpQNum.addEventListener('change', () => { it.settings.webpQuality = clamp(Math.round(+it.refs.webpQNum.value) || 90, 1, 100); scheduleTgsBuild(it, 'webp'); });
+		it.refs.webpSeg.querySelectorAll('[data-v]').forEach(btn => {
+			btn.classList.toggle('bf-on', btn.dataset.v === (it.settings.webpLossless ? 'lossless' : 'lossy'));
 		});
-
-		r.expApng.addEventListener('click', () => busy(r.expApng, async () => {
-			if (!it.frames512) it.frames512 = await _renderLottieFrames(it.lottieData, CS);
-			const loops = parseInt(r.apngLoopsNum.value) || 0;
-			const data = await C.encodeApng(it.frames512.frames, CS, CS, loops);
-			it.lastApng = data;
-			r.apngSize.textContent = _fmtSz(data.length) + ' (raw ' + _fmtSz(CS*CS*4*it.totalFrames) + ')';
-			r.apngWarn.classList.toggle('on', data.length > 307200);
-			_drawToCv(r.apngCv, it.frames512.frames[0].rgba, CS);
-			download(data, it.base + '.apng', 'image/apng');
-			updateStats();
+		it.refs.webpSeg.addEventListener('click', e => {
+			const b = e.target.closest('[data-v]');
+			if (!b) return;
+			it.settings.webpLossless = b.dataset.v === 'lossless';
+			it.refs.webpSeg.querySelectorAll('[data-v]').forEach(btn => btn.classList.toggle('bf-on', btn === b));
+			_syncTgsAutoFitReadout(it, 'webp', null);
+			scheduleTgsBuild(it, 'webp');
+		});
+		/* AUTO-FIT switch + the two knobs it overrides, per output */
+		['apng', 'discord', 'webp'].forEach(key => {
+			const auto = it.refs[key + 'AutoFit'], fpsEl = it.refs[key + 'FpsNum'], colEl = it.refs[key + 'ColorsNum'];
+			if (auto) auto.addEventListener('change', () => {
+				it.settings[TGS_AUTOFIT_KEY[key]] = auto.checked;
+				_syncTgsAutoFitReadout(it, key, null);
+				scheduleTgsBuild(it, key);
+			});
+			if (fpsEl) fpsEl.addEventListener('change', () => {
+				const native = it.fps || 30;
+				it.settings[TGS_FPS_KEY[key]] = clamp(Math.round(+fpsEl.value) || native, 1, native);
+				fpsEl.value = it.settings[TGS_FPS_KEY[key]];
+				scheduleTgsBuild(it, key);
+			});
+			if (colEl) colEl.addEventListener('change', () => {
+				it.settings[TGS_COLORS_KEY[key]] = clamp(Math.round(+colEl.value) || 256, 2, 256);
+				colEl.value = it.settings[TGS_COLORS_KEY[key]];
+				scheduleTgsBuild(it, key);
+			});
+			_syncTgsAutoFitReadout(it, key, null);
+		});
+		it.refs.expApng.addEventListener('click', () => busy(it.refs.expApng, async () => {
+			const entries = await _collectTgsEntries(it, ['apng']);
+			if (entries[0]) download(entries[0].data, `${it.base}.apng`, 'image/apng');
 		}));
-
-		r.expDc.addEventListener('click', () => busy(r.expDc, async () => {
-			if (!it.frames320) it.frames320 = await _renderLottieFrames(it.lottieData, 320);
-			const loops = parseInt(r.apngLoopsNum?.value) || 0;
-			const data = await C.encodeApng(it.frames320.frames, 320, 320, loops);
-			it.lastDc = data;
-			r.dcSize.textContent = _fmtSz(data.length) + ' (raw ' + _fmtSz(320*320*4*it.totalFrames) + ')';
-			r.dcWarn.classList.toggle('on', data.length > 524288);
-			const _dcSz = (G.tgsSettings && G.tgsSettings.discord.size) || 320;
-			if (it.frames320.frames[0]) { r.dcCv.width = _dcSz; r.dcCv.height = _dcSz; _drawToCv(r.dcCv, it.frames320.frames[0].rgba, _dcSz); }
-			download(data, it.base + '_320.apng', 'image/apng');
-			updateStats();
+		it.refs.expDc.addEventListener('click', () => busy(it.refs.expDc, async () => {
+			const entries = await _collectTgsEntries(it, ['discord']);
+			if (entries[0]) download(entries[0].data, `${it.base}_320.apng`, 'image/apng');
 		}));
+		it.refs.expWebp.addEventListener('click', () => busy(it.refs.expWebp, async () => {
+			const entries = await _collectTgsEntries(it, ['webp']);
+			if (entries[0]) download(entries[0].data, `${it.base}.webp`, 'image/webp');
+		}));
+		it.refs.expFrame.addEventListener('click', () => busy(it.refs.expFrame, async () => {
+			const entries = await _collectTgsEntries(it, ['frame']);
+			if (entries[0]) download(entries[0].data, `${it.base}_frame${_tgsFrameIndex(it) + 1}.png`, 'image/png');
+		}));
+		it.refs.expPad.addEventListener('click', () => busy(it.refs.expPad, async () => {
+			const entries = await _collectTgsEntries(it, ['pad']);
+			if (entries[0]) download(entries[0].data, `${it.base}_frame${_tgsFrameIndex(it) + 1}_nopadding.png`, 'image/png');
+		}));
+		it.refs.expAll.addEventListener('click', () => busy(it.refs.expAll, async () => {
+			const entries = await _collectTgsEntries(it);
+			if (entries.length) download(makeZip(entries), `${it.base}_tgs_pack.zip`, 'application/zip');
+		}));
+		setTimeout(() => _primeTgsStats(it), 80);
+	}
 
-		r.expWebp.addEventListener('click', () => busy(r.expWebp, async () => {
-			if (!it.frames512) it.frames512 = await _renderLottieFrames(it.lottieData, CS);
-			const quality = parseInt(r.webpQNum.value) || 90;
-			const data = await _buildTgsWebp(it.frames512.frames, tgsWebpLossless, quality, 0);
-			it.lastWebp = data;
-			r.webpSize.textContent = _fmtSz(data.length) + ' (raw ' + _fmtSz(CS*CS*4*it.totalFrames) + ')';
-			r.webpWarn.classList.toggle('on', data.length > 102400);
-			_drawToCv(r.webpCv, it.frames512.frames[0].rgba, CS);
-			/* animated WEBP preview */
-			if (r.webpImg) {
-				if (it._webpBlobUrl) URL.revokeObjectURL(it._webpBlobUrl);
-				it._webpBlobUrl = URL.createObjectURL(new Blob([data], { type: 'image/webp' }));
-				r.webpImg.src = it._webpBlobUrl;
-				r.webpImg.style.display = '';
-				r.webpCv.style.display = 'none';
+	/* ── TGS output build: budget ladder, cache, debounced rebuild ────────── */
+
+	const TGS_AUTOFIT_KEY = { apng: 'apngAutoFit', discord: 'dcAutoFit', webp: 'webpAutoFit' };
+	const TGS_FPS_KEY = { apng: 'apngFps', discord: 'dcFps', webp: 'webpFps' };
+	const TGS_COLORS_KEY = { apng: 'apngMaxColors', discord: 'dcMaxColors', webp: 'webpMaxColors' };
+	const TGS_CACHE_KEY = { apng: 'lastApng', discord: 'lastDc', webp: 'lastWebp', frame: 'lastFramePng', pad: 'lastPadPng' };
+	const TGS_SIZE_REF = { apng: 'apngSize', discord: 'dcSize', webp: 'webpSize', frame: 'frameSize', pad: 'padSize' };
+	const TGS_WARN_REF = { apng: 'apngWarn', discord: 'dcWarn', webp: 'webpWarn' };
+	const TGS_ALL_KEYS = ['apng', 'discord', 'webp', 'frame', 'pad'];
+	const TGS_FPS_LADDER = [60, 30, 20, 10];
+	const TGS_COLOR_LADDER = [128, 64];
+	const TGS_QUALITY_LADDER = [75, 60];
+
+	function _tgsBudget(key) {
+		return (STATS_FORMAT_META[key] || {}).limit || 0;
+	}
+
+	/** Shrink until under `budget`: fps ladder first (lossless in the pixel domain),
+	 *  then `stage2` (palette reduction, or webp quality) at whichever fps encoded
+	 *  smallest. `encode(frames, {fps, colors, quality})` owns quantization so each
+	 *  output can quantize at the right point in its own pipeline.
+	 *  Returns the first candidate at-or-under budget; otherwise the smallest seen. */
+	async function _encodeUnderBudget({ frames, srcFps, budget, encode, baseColors, baseQuality, stage2, onRung }) {
+		let best = null;
+		const consider = (data, fps, colors, quality) => {
+			const cand = { data, fps, colors, quality, underBudget: !budget || data.length <= budget };
+			if (!best || data.length < best.data.length) best = cand;
+			return cand;
+		};
+		/* A rung can cost seconds (VP8L at 512², or quantizeFrames over ~500k unique
+		   colours, which is synchronous). Yield so the panel repaints between rungs. */
+		const yieldToUi = () => new Promise(r => setTimeout(r, 0));
+
+		const ladder = [...new Set(TGS_FPS_LADDER.filter(f => f < srcFps))];
+		ladder.unshift(srcFps); // always try native first
+		const stage1 = [];
+		for (const fps of ladder) {
+			if (onRung) onRung(`FPS ${fps}…`);
+			await yieldToUi();
+			const f = resampleFramesToFps(frames, srcFps, fps);
+			const data = await encode(f, { fps, colors: baseColors, quality: baseQuality });
+			stage1.push({ fps, len: data.length });
+			const cand = consider(data, fps, baseColors, baseQuality);
+			if (cand.underBudget) return cand;
+		}
+
+		const bestFps = stage1.reduce((a, b) => (b.len < a.len ? b : a)).fps;
+		const resampled = resampleFramesToFps(frames, srcFps, bestFps);
+		for (const step of (stage2 || [])) {
+			const colors = step.colors != null ? step.colors : baseColors;
+			const quality = step.quality != null ? step.quality : baseQuality;
+			if (onRung) onRung(step.colors != null ? `${colors} COLORS…` : `Q ${quality}…`);
+			await yieldToUi();
+			const data = await encode(resampled, { fps: bestFps, colors, quality });
+			const cand = consider(data, bestFps, colors, quality);
+			if (cand.underBudget) return cand;
+		}
+		return best; // nothing fit: hand back the smallest, panel keeps its ⚠
+	}
+
+	/** Build one output. Writes nothing but the live rung readout; caching is the caller's job. */
+	async function _buildTgsOutput(it, key) {
+		const srcFps = it.fps || 30;
+		const budget = _tgsBudget(key);
+		const autoFit = !!it.settings[TGS_AUTOFIT_KEY[key]];
+		const sizeEl = (it.refs || {})[TGS_SIZE_REF[key]];
+		const onRung = sizeEl ? (label => { sizeEl.textContent = label; }) : null;
+
+		if (key === 'frame' || key === 'pad') {
+			const f = _tgsSelectedFrame(it);
+			if (key === 'frame') {
+				return { data: await C.encodePng(f.rgba, CS, CS), fps: srcFps, colors: 256, underBudget: true };
 			}
-			download(data, it.base + '.webp', 'image/webp');
-			updateStats();
-		}));
-
-		r.expFrame.addEventListener('click', () => busy(r.expFrame, async () => {
-			if (!it.frames512) it.frames512 = await _renderLottieFrames(it.lottieData, CS);
-			const fi = parseInt(r.frameSlider.value) || 0;
-			const f = it.frames512.frames[fi];
-			const raw = CS * CS * 4;
-			const data = await C.encodePng(f.rgba, CS, CS);
-			r.frameSize.textContent = _fmtSz(data.length) + ' (raw ' + _fmtSz(raw) + ')';
-			_drawToCv(r.frameCv, f.rgba, CS);
-			download(data, it.base + '_frame' + (fi + 1) + '.png', 'image/png');
-		}));
-
-		r.expPad.addEventListener('click', () => busy(r.expPad, async () => {
-			if (!it.frames512) it.frames512 = await _renderLottieFrames(it.lottieData, CS);
-			const f = it.frames512.frames[0];
 			const box = C.boundingBox(f.rgba, CS, CS);
-			if (!box) return;
+			if (!box) return { skipped: true, message: 'Empty frame' };
 			const cropped = C.cropRgba(f.rgba, CS, CS, box);
-			r.padAfter.textContent = box.w + ' × ' + box.h + ' PX';
-			_drawToCv(r.padCv, padCanvas(cropped, box.w, box.h, CS), CS);
-			const data = await C.encodePng(cropped, box.w, box.h);
-			r.padSize.textContent = _fmtSz(data.length) + ' (raw ' + _fmtSz(box.w*box.h*4) + ')';
-			download(data, it.base + '_crop.png', 'image/png');
-		}));
+			return { data: await C.encodePng(cropped, box.w, box.h), fps: srcFps, colors: 256, underBudget: true };
+		}
 
-		r.expAll.addEventListener('click', () => busy(r.expAll, async () => {
-			if (!it.frames512) it.frames512 = await _renderLottieFrames(it.lottieData, CS);
-			const _ts = G.tgsSettings; const fd = k => { const mapping = { apng: _ts.apng512.folder, discord: _ts.discord.folder, webp: _ts.webp.folder, frame: _ts.frame.folder, pad: _ts.pad.folder }; const v = (it.settings.folders[k] || mapping[k] || G.folderNames[k] || '').trim(); return v ? v + '/' : ''; };
-			const entries = [];
-			if (G.tgsCells.apng) {
-				const loops = parseInt(r.apngLoopsNum?.value) || 0;
-				const d = await C.encodeApng(it.frames512.frames, CS, CS, loops);
-				it.lastApng = d; entries.push({ name: fd('apng') + it.base + '.apng', data: d });
+		const frames = it.frames512.frames;
+
+		if (key === 'apng' || key === 'discord') {
+			const loops = key === 'apng' ? it.settings.apngLoops : it.settings.dcLoops;
+			const size = key === 'apng' ? CS : _tgs320Size();
+			const resizedByFps = new Map();
+			const encode = async (f, { fps, colors }) => {
+				let src = f;
+				if (key === 'discord') {
+					// downscale BEFORE quantizing: smoothing reintroduces colours
+					let r = resizedByFps.get(fps);
+					if (!r) { r = _resizeTgsFrames(f, size); resizedByFps.set(fps, r); }
+					src = r;
+				}
+				return C.encodeApng(quantizeFrames(src, colors), size, size, loops);
+			};
+			let res;
+			if (autoFit) {
+				res = await _encodeUnderBudget({ frames, srcFps, budget, encode, baseColors: 256, baseQuality: null, stage2: TGS_COLOR_LADDER.map(c => ({ colors: c })), onRung });
+			} else {
+				const fps = _tgsFps(it, key);
+				const colors = clamp(Math.round(+it.settings[TGS_COLORS_KEY[key]]) || 256, 2, 256);
+				const data = await encode(resampleFramesToFps(frames, srcFps, fps), { fps, colors });
+				res = { data, fps, colors, underBudget: !budget || data.length <= budget };
 			}
-			if (G.tgsCells.discord) {
-				if (!it.frames320) it.frames320 = await _renderLottieFrames(it.lottieData, 320);
-				const d = await C.encodeApng(it.frames320.frames, 320, 320, 0);
-				it.lastDc = d; entries.push({ name: fd('discord') + it.base + '_320.apng', data: d });
+			return res;
+		}
+
+		// webp
+		const lossless = it.settings.webpLossless;
+		const loops = it.settings.webpLoops;
+		const baseQuality = clamp(Math.round(+it.settings.webpQuality) || 90, 1, 100);
+		const encode = async (f, { colors, quality }) =>
+			_buildTgsWebp(quantizeFrames(f, colors), lossless, quality, loops);
+		if (autoFit) {
+			// palette reduction shrinks VP8L (fewer literals) but does nothing for lossy VP8
+			const stage2 = lossless ? TGS_COLOR_LADDER.map(c => ({ colors: c })) : TGS_QUALITY_LADDER.map(q => ({ quality: q }));
+			return _encodeUnderBudget({ frames, srcFps, budget, encode, baseColors: 256, baseQuality, stage2, onRung });
+		}
+		const fps = _tgsFps(it, 'webp');
+		const colors = clamp(Math.round(+it.settings.webpMaxColors) || 256, 2, 256);
+		const data = await encode(resampleFramesToFps(frames, srcFps, fps), { colors, quality: baseQuality });
+		return { data, fps, colors, quality: baseQuality, underBudget: !budget || data.length <= budget };
+	}
+
+	/** Reflect a finished build into the panel + stats. */
+	function _applyTgsBuild(it, key, res) {
+		const r = it.refs || {};
+		if (res.skipped) {
+			_setOutputState(it, key, 'skipped', { message: res.message || 'Empty frame' });
+			return;
+		}
+		it[TGS_CACHE_KEY[key]] = res.data;
+		_setOutputState(it, key, 'built', { size: res.data.length, fps: res.fps, colors: res.colors, underBudget: res.underBudget });
+		const sizeEl = r[TGS_SIZE_REF[key]];
+		if (sizeEl) sizeEl.textContent = _fmtSz(res.data.length) + (res.underBudget ? '' : ' ⚠');
+		const warnEl = r[TGS_WARN_REF[key]];
+		if (warnEl) warnEl.classList.toggle('on', !res.underBudget);
+		_syncTgsAutoFitReadout(it, key, res);
+	}
+
+	/** With AUTO-FIT on the ladder owns FPS / MAX COLORS (and, for lossy webp, QUALITY) —
+	 *  echo its choice into the now-disabled inputs so the cell reads what was actually used. */
+	function _syncTgsAutoFitReadout(it, key, res) {
+		const r = it.refs || {};
+		if (!TGS_AUTOFIT_KEY[key]) return;
+		const on = !!it.settings[TGS_AUTOFIT_KEY[key]];
+		const lossyWebp = key === 'webp' && !it.settings.webpLossless;
+		const fpsEl = r[key + 'FpsNum'], colEl = r[key + 'ColorsNum'];
+		if (fpsEl) { fpsEl.disabled = on; if (on && res) fpsEl.value = res.fps; }
+		if (colEl) {
+			colEl.disabled = on || lossyWebp; // a palette is meaningless for lossy VP8
+			if (on && res && !lossyWebp) colEl.value = res.colors;
+		}
+		if (key === 'webp' && r.webpQNum) {
+			r.webpQNum.disabled = on || it.settings.webpLossless;
+			if (on && res && lossyWebp && res.quality != null) r.webpQNum.value = res.quality;
+		}
+	}
+
+	/** Cache-first. Never re-encodes a warm cache — this is what makes Export instant. */
+	async function _collectTgsEntries(it, onlyKeys) {
+		const keys = onlyKeys || TGS_ALL_KEYS.filter(k => G.tgsCells[k]);
+		const entries = [];
+		for (const key of keys) {
+			const cached = it[TGS_CACHE_KEY[key]];
+			if (cached) {
+				_setOutputState(it, key, 'built', { size: cached.length });
+				entries.push({ name: _tgsEntryName(it, key), data: cached });
+				continue;
 			}
-			if (G.tgsCells.webp) {
-				const quality = parseInt(r.webpQNum?.value) || 90;
-				const d = await _buildTgsWebp(it.frames512.frames, tgsWebpLossless, quality, 0);
-				it.lastWebp = d; entries.push({ name: fd('webp') + it.base + '.webp', data: d });
+			_setOutputState(it, key, 'processing');
+			try {
+				const res = await _buildTgsOutput(it, key);
+				_applyTgsBuild(it, key, res);
+				if (!res.skipped) entries.push({ name: _tgsEntryName(it, key), data: res.data });
+			} catch (e) {
+				_setOutputState(it, key, 'error', { message: String(e.message || e) });
+				throw e;
 			}
-			if (G.tgsCells.frame) {
-				const d = await C.encodePng(it.frames512.frames[0].rgba, CS, CS);
-				entries.push({ name: fd('frame') + it.base + '.png', data: d });
+		}
+		updateStats();
+		return entries;
+	}
+
+	function _tgsEntryName(it, key) {
+		const n = _tgsFrameIndex(it) + 1;
+		if (key === 'apng') return `${_tgsFolder('apng')}${it.base}.apng`;
+		if (key === 'discord') return `${_tgsFolder('discord')}${it.base}_320.apng`;
+		if (key === 'webp') return `${_tgsFolder('webp')}${it.base}.webp`;
+		if (key === 'frame') return `${_tgsFolder('frame')}${it.base}_frame${n}.png`;
+		return `${_tgsFolder('pad')}${it.base}_frame${n}_nopadding.png`;
+	}
+
+	/** Debounce + monotonic token, mirroring the GIF side's scheduleApng. The cache is
+	 *  nulled synchronously so a concurrent Export can never ship stale bytes. */
+	function scheduleTgsBuild(it, key, delay) {
+		if (!it.frames512 || !G.tgsCells[key]) return;
+		clearTimeout(it.timers[key]);
+		it[TGS_CACHE_KEY[key]] = null;
+		_clearOutputSize(it, key);
+		_setOutputState(it, key, 'queued');
+		const sizeEl = (it.refs || {})[TGS_SIZE_REF[key]];
+		if (sizeEl) sizeEl.textContent = '…';
+		it.timers[key] = setTimeout(async () => {
+			const token = ++it.tokens[key];
+			_setOutputState(it, key, 'processing');
+			try {
+				const res = await _buildTgsOutput(it, key);
+				if (token !== it.tokens[key]) return;
+				_applyTgsBuild(it, key, res);
+			} catch (e) {
+				if (token !== it.tokens[key]) return;
+				if (sizeEl) sizeEl.textContent = String(e.message || e).toUpperCase().slice(0, 40);
+				_setOutputState(it, key, 'error', { message: String(e.message || e) });
+				reportError("TGS_BUILD_ERROR", e, { file: it.name, format: key });
 			}
-			if (G.tgsCells.pad) {
-				const f = it.frames512.frames[0]; const box = C.boundingBox(f.rgba, CS, CS);
-				if (box) { const cr = C.cropRgba(f.rgba, CS, CS, box); const d = await C.encodePng(cr, box.w, box.h); entries.push({ name: fd('pad') + it.base + '_crop.png', data: d }); }
+		}, delay == null ? 400 : delay);
+	}
+
+	/** Build every enabled output as soon as the file lands, so Export is a cache read.
+	 *  Yields between keys so the panel can paint BUILDING… instead of freezing. */
+	async function _primeTgsStats(it) {
+		for (const key of TGS_ALL_KEYS.filter(k => G.tgsCells[k])) {
+			_setOutputState(it, key, 'processing');
+			try {
+				const res = await _buildTgsOutput(it, key);
+				_applyTgsBuild(it, key, res);
+			} catch (e) {
+				_setOutputState(it, key, 'error', { message: String(e.message || e) });
+				reportError("TGS_BUILD_ERROR", e, { file: it.name, format: key });
 			}
-			if (entries.length) download(makeZip(entries), it.base + '_tgs_pack.zip', 'application/zip');
-			updateStats();
-		}));
+			await new Promise(r => setTimeout(r, 0));
+		}
+		updateStats();
 	}
 
 	function _refreshTgsUI() {
+		const has = tgsItems.length > 0 || items.length > 0;
+		el.empty.style.display = has ? 'none' : '';
+		if (_tgsActionsEl) _tgsActionsEl.hidden = !tgsItems.length;
+		updateStatus();
 		updateToc();
-		const has = tgsItems.length > 0;
-		const tgsDivDesc = document.getElementById('tgsDividerDesc');
-		if (tgsDivDesc) tgsDivDesc.style.display = has ? 'none' : '';
-		/* #tgsEmpty removed; unified #empty is controlled by updateStatus() */
-		if (_tgsActionsEl) _tgsActionsEl.hidden = !has;
-		updateStatus(); // sync unified empty + statusbar
+		updateStats();
 	}
 
 	async function _addTgsFiles(files) {
-		const statusEl = document.getElementById('statusLeft');
-		for (const file of files) {
-			if (!file.name.match(/\.tgs$/i)) continue;
-			if (statusEl) statusEl.textContent = 'LOADING ' + file.name + ' …';
+		const list = Array.from(files || []).filter(f => /\.tgs$/i.test(f.name));
+		if (!list.length) return;
+		el.empty.style.display = 'none';
+		if (_tgsActionsEl) _tgsActionsEl.hidden = false;
+		for (const file of list) {
+			const fileT0 = performance.now();
+			el.statusLeft.textContent = `LOADING ${file.name}`;
 			try {
 				const bytes = new Uint8Array(await file.arrayBuffer());
-				const lottieData = await _decompressTgs(bytes);
-				const rendered = await _renderLottieFrames(lottieData, CS);
+				const lottieData = await _decompressTgs(bytes, file.name);
+				const rendered = await _renderLottieFrames(lottieData, CS, file.name);
 				const it = {
-					id: ++tgsCounter, name: file.name,
+					id: ++tgsCounter,
+					name: file.name,
 					base: file.name.replace(/\.tgs$/i, ''),
-					fileSize: file.size, lottieData,
-					fps: rendered.fps, totalFrames: rendered.totalFrames, delayMs: rendered.delayMs,
-					frames512: rendered, frames320: null,
-					lastApng: null, lastDc: null, lastWebp: null,
-					tgsAnimStart: performance.now(), tgsLastAnimIdx: -1,
-					settings: { folders: Object.assign({}, G.folderNames) }, refs: {}, el: null,
+					fileSize: file.size,
+					lottieData,
+					fps: rendered.fps,
+					totalFrames: rendered.totalFrames,
+					frames512: rendered,
+					settings: {
+						frameIndex: null, // null → follow the global FRAME MODE until the slider moves
+						apngLoops: G.tgsSettings.apng512.loops,
+						apngAutoFit: G.tgsSettings.apng512.autoFit,
+						apngFps: G.tgsSettings.apng512.fps,
+						apngMaxColors: G.tgsSettings.apng512.maxColors,
+						dcLoops: G.tgsSettings.discord.loops,
+						dcAutoFit: G.tgsSettings.discord.autoFit,
+						dcFps: G.tgsSettings.discord.fps,
+						dcMaxColors: G.tgsSettings.discord.maxColors,
+						webpLossless: G.tgsSettings.webp.lossless,
+						webpQuality: G.tgsSettings.webp.quality,
+						webpLoops: G.tgsSettings.webp.loops,
+						webpAutoFit: G.tgsSettings.webp.autoFit,
+						webpFps: G.tgsSettings.webp.fps,
+						webpMaxColors: G.tgsSettings.webp.maxColors,
+					},
+					refs: {},
+					animStart: performance.now(),
+					lastAnimIdx: -1,
+					lastApng: null,
+					lastDc: null,
+					lastWebp: null,
+					lastFramePng: null,
+					lastPadPng: null,
+					timers: {},
+					tokens: { apng: 0, discord: 0, webp: 0, frame: 0, pad: 0 },
+					stats: {},
 				};
 				tgsItems.push(it);
 				_initTgsPanel(it);
-				_refreshTgsUI();
-				updateToc();
-				setTimeout(() => _scheduleTgsBuilds(it), 80);
-				if (statusEl) statusEl.textContent = 'LOADED ' + file.name;
 			} catch (e) {
-				if (statusEl) statusEl.textContent = 'ERROR: ' + (e.message || String(e)).toUpperCase();
-				console.error('TGS load error', file.name, e);
-				/* Show error in TGS empty area */
-				const isNetErr = e.message && (e.message.includes('LOTTIE') || e.message.includes('NETWORK') || e.message.includes('Failed'));
-				if (isNetErr && _tgsEmptyEl) {
-					_tgsEmptyEl.style.display = '';
-					const errDiv = _tgsEmptyEl.querySelector('.tgs-cdn-err') || document.createElement('div');
-					errDiv.className = 'tgs-cdn-err warn on'; errDiv.style.cssText = 'margin:8px 0;font-size:0.85em;';
-					errDiv.textContent = 'LOTTIE-WEB CDN UNAVAILABLE — NETWORK REQUIRED FOR FIRST USE. RETRY WHEN ONLINE.';
-					_tgsEmptyEl.appendChild(errDiv);
-				}
+				reportError("TGS_LOAD_ERROR", e, { file: file.name, size: file.size });
+				alert(`CANNOT LOAD TGS: ${file.name}. COPY ERROR REPORT AND SEND IT TO CODEX.`);
 			}
 		}
+		_refreshTgsUI();
 	}
+
+	/* Restored: live statements that sat inside the shadowed-function region I removed.
+	   NOT restored, deliberately:
+	     • the #tgsItems drop listener — the window-level drop handler already accepts
+	       .tgs anywhere, and both firing double-added every dropped file;
+	     • the exportEveryTgs / clearAllTgs blocks — they read it.settings.folders,
+	       which live TGS items do not have, and installStableTgsController clones and
+	       rebinds both nodes anyway, discarding these listeners. */
 
 	if (_addTgsBtn && _tgsFileInput) {
 		_addTgsBtn.addEventListener('click', () => _tgsFileInput.click());
 		_tgsFileInput.addEventListener('change', () => { if (_tgsFileInput.files.length) _addTgsFiles(Array.from(_tgsFileInput.files)); _tgsFileInput.value = ''; });
-	}
-	/* _tgsEmptyEl removed; emptyAddTgsBtn in unified #empty handles this */
-	['tgsItems','tgsDivider'].forEach(id => {
-		const el = document.getElementById(id);
-		if (!el) return;
-		el.addEventListener('dragover', e => e.preventDefault());
-		el.addEventListener('drop', e => { e.preventDefault(); const fs = Array.from(e.dataTransfer.files).filter(f => f.name.match(/\.tgs$/i)); if (fs.length) _addTgsFiles(fs); });
-	});
-	if (_exportEveryTgsBtn) {
-		_exportEveryTgsBtn.addEventListener('click', () => busy(_exportEveryTgsBtn, async () => {
-			const all = [];
-			for (const it of tgsItems) {
-				if (!it.frames512) it.frames512 = await _renderLottieFrames(it.lottieData, CS);
-				const _ts2 = G.tgsSettings; const fd = k => { const mapping = { apng: _ts2.apng512.folder, discord: _ts2.discord.folder, webp: _ts2.webp.folder, frame: _ts2.frame.folder, pad: _ts2.pad.folder }; const v = (it.settings.folders[k] || mapping[k] || G.folderNames[k] || '').trim(); return v ? v + '/' : ''; };
-				if (G.tgsCells.apng) all.push({ name: fd('apng') + it.base + '.apng', data: it.lastApng || await C.encodeApng(it.frames512.frames, CS, CS, 0) });
-				if (G.tgsCells.discord) { if (!it.frames320) it.frames320 = await _renderLottieFrames(it.lottieData, 320); all.push({ name: fd('discord') + it.base + '_320.apng', data: it.lastDc || await C.encodeApng(it.frames320.frames, 320, 320, 0) }); }
-				if (G.tgsCells.webp) all.push({ name: fd('webp') + it.base + '.webp', data: it.lastWebp || await _buildTgsWebp(it.frames512.frames, true, 90, 0) });
-				if (G.tgsCells.frame) all.push({ name: fd('frame') + it.base + '.png', data: await C.encodePng(it.frames512.frames[0].rgba, CS, CS) });
-				if (G.tgsCells.pad) { const f = it.frames512.frames[0]; const box = C.boundingBox(f.rgba, CS, CS); if (box) { const cr = C.cropRgba(f.rgba, CS, CS, box); all.push({ name: fd('pad') + it.base + '_crop.png', data: await C.encodePng(cr, box.w, box.h) }); } }
-			}
-			if (all.length) download(makeZip(all), 'tgs_export.zip', 'application/zip');
-			updateStats();
-		}));
-	}
-	if (_clearAllTgsBtn) {
-		_clearAllTgsBtn.addEventListener('click', () => {
-			tgsItems.length = 0;
-			if (_tgsItemsEl) _tgsItemsEl.innerHTML = '';
-			_refreshTgsUI();
-		});
 	}
 
 	/* ── v9: Tool Box TGS cards ── */
@@ -4206,626 +4583,12 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		},
 	});
 
-	/* -- auto-build on TGS panel creation -- */
-	async function _scheduleTgsBuilds(it) {
-		try {
-			const r = it.refs;
-			const S = G.tgsSettings;
-			if (!it.frames512) return;
-			const loops = parseInt(r.apngLoopsNum?.value) || 0;
-			/* 3s duration warning for Signal */
-			const tgsDurationS = it.totalFrames / (it.fps || 30);
-			if (r.durationWarn) r.durationWarn.classList.toggle('on', tgsDurationS > 3);
-			if (G.tgsCells.apng) {
-				try {
-					/* auto-optimize: reduce palette if over 300KB */
-					let data = await C.encodeApng(it.frames512.frames, CS, CS, loops);
-					if (data.length > 307200) {
-						const q128 = quantizeFrames(it.frames512.frames, 128);
-						const d128 = await C.encodeApng(q128, CS, CS, loops);
-						if (d128.length < data.length) data = d128;
-					}
-					if (data.length > 307200) {
-						const q64 = quantizeFrames(it.frames512.frames, 64);
-						const d64 = await C.encodeApng(q64, CS, CS, loops);
-						if (d64.length < data.length) data = d64;
-					}
-					it.lastApng = data;
-					if (r.apngSize) r.apngSize.textContent = _fmtSz(data.length) + ' (raw ' + _fmtSz(CS*CS*4*it.totalFrames) + ')' + (data.length <= 307200 ? '' : ' ⚠');
-					if (r.apngWarn) r.apngWarn.classList.toggle('on', data.length > 307200);
-					if (r.apngCv) _drawToCv(r.apngCv, it.frames512.frames[0].rgba, CS);
-				} catch(e) { if (r.apngSize) r.apngSize.textContent = 'ERR: ' + e.message.slice(0,30); }
-			}
-			if (G.tgsCells.discord) {
-				try {
-					const dcTargetSize = (G.tgsSettings && G.tgsSettings.discord.size) || 320;
-					if (!it.frames320 || it._frames320Size !== dcTargetSize) {
-						it.frames320 = await _renderLottieFrames(it.lottieData, dcTargetSize);
-						it._frames320Size = dcTargetSize;
-					}
-					const data = await C.encodeApng(it.frames320.frames, dcTargetSize, dcTargetSize, loops);
-					it.lastDc = data;
-					if (r.dcSize) r.dcSize.textContent = _fmtSz(data.length) + ' (' + dcTargetSize + 'px raw ' + _fmtSz(dcTargetSize*dcTargetSize*4*it.totalFrames) + ')';
-					if (r.dcWarn) r.dcWarn.classList.toggle('on', data.length > 524288);
-					if (r.dcCv && it.frames320.frames[0]) { r.dcCv.width = dcTargetSize; r.dcCv.height = dcTargetSize; _drawToCv(r.dcCv, it.frames320.frames[0].rgba, dcTargetSize); }
-				} catch(e) { if (r.dcSize) r.dcSize.textContent = 'ERR: ' + e.message.slice(0,30); }
-			}
-			if (G.tgsCells.webp) {
-				try {
-					const data = await _buildTgsWebp(it.frames512.frames, S.webp.lossless, S.webp.quality, S.webp.loops);
-					it.lastWebp = data;
-					if (r.webpSize) r.webpSize.textContent = _fmtSz(data.length) + ' (raw ' + _fmtSz(CS*CS*4*it.totalFrames) + ')';
-					if (r.webpWarn) r.webpWarn.classList.toggle('on', data.length > 102400);
-					if (r.webpCv) _drawToCv(r.webpCv, it.frames512.frames[0].rgba, CS);
-					/* animated WEBP preview */
-					if (r.webpImg) {
-						if (it._webpBlobUrl) URL.revokeObjectURL(it._webpBlobUrl);
-						it._webpBlobUrl = URL.createObjectURL(new Blob([data], { type: 'image/webp' }));
-						r.webpImg.src = it._webpBlobUrl; r.webpImg.style.display = ''; r.webpCv.style.display = 'none';
-					}
-				} catch(e) { if (r.webpSize) r.webpSize.textContent = 'ERR: ' + e.message.slice(0,30); }
-			}
-			if (G.tgsCells.frame) {
-				try {
-					const data = await C.encodePng(it.frames512.frames[0].rgba, CS, CS);
-					if (r.frameSize) r.frameSize.textContent = _fmtSz(data.length) + ' (raw ' + _fmtSz(CS*CS*4) + ')';
-					if (r.frameCv) _drawToCv(r.frameCv, it.frames512.frames[0].rgba, CS);
-				} catch(e) {}
-			}
-			if (G.tgsCells.pad) {
-				try {
-					const f = it.frames512.frames[0]; const box = C.boundingBox(f.rgba, CS, CS);
-					if (box) {
-						const cr = C.cropRgba(f.rgba, CS, CS, box);
-						if (r.padAfter) r.padAfter.textContent = box.w + ' × ' + box.h + ' PX';
-						if (r.padCv) _drawToCv(r.padCv, padCanvas(cr, box.w, box.h, CS), CS);
-						const data = await C.encodePng(cr, box.w, box.h);
-						if (r.padSize) r.padSize.textContent = _fmtSz(data.length) + ' (raw ' + _fmtSz(box.w*box.h*4) + ')';
-					}
-				} catch(e) {}
-			}
-			updateStats();
-		} catch(e) { console.error('TGS auto-build error', e); }
-	}
-
-	/* -- TGS cell toggles from Settings -- */
-	const _tgsOutToggles = document.getElementById('tgsOutToggles');
-	if (_tgsOutToggles) {
-		_tgsOutToggles.querySelectorAll('input[data-tgscell]').forEach(cb => {
-			cb.checked = !!G.tgsCells[cb.dataset.tgscell];
-			cb.addEventListener('change', () => {
-				G.tgsCells[cb.dataset.tgscell] = cb.checked;
-				tgsItems.forEach(it => _refreshTgsPanel(it));
-				updateTgsSettingsSections();
-				saveSettings();
-			});
-		});
-	}
-
-	/* -- save/load: include tgsCells -- */
-
-	/* ── initial state ── */
-
-	/* -- TGS frame index helper -- */
-	function _getTgsFrameIdx(it, mode, num) {
-		const total = it.totalFrames || 1;
-		if (mode === 'last') return total - 1;
-		if (mode === 'mid') return Math.floor((total - 1) / 2);
-		if (mode === 'no') return Math.min(Math.max(0, (num || 1) - 1), total - 1);
-		return 0; // 'first'
-	}
-
-	/* -- init TGS Settings inputs from G.tgsSettings -- */
-	function syncTgsSettingsUI() {
-		const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
-		const seg = (id, v) => {
-			const s = document.getElementById(id);
-			if (!s) return;
-			s.querySelectorAll('.bf-seg-btn').forEach(b => b.classList.toggle('bf-on', b.dataset.v === v));
-		};
-		const S = G.tgsSettings;
-		set('gtApng512Loops', S.apng512.loops);
-		set('gtFdApng512', S.apng512.folder);
-		set('gtApng320Size', S.discord.size);
-		set('gtApng320Loops', S.discord.loops);
-		set('gtFdApng320', S.discord.folder);
-		seg('gtWebpSeg', S.webp.lossless ? 'lossless' : 'lossy');
-		set('gtWebpQ', S.webp.quality);
-		set('gtWebpLoops', S.webp.loops);
-		set('gtFdWebp', S.webp.folder);
-		seg('gtFrameSeg', S.frame.mode);
-		set('gtFrameNum', S.frame.num);
-		set('gtFdFrame', S.frame.folder);
-		seg('gtPadSeg', S.pad.mode);
-		set('gtFdPad', S.pad.folder);
-	}
-
-	/* -- update TGS settings sections visibility -- */
-	function updateTgsSettingsSections() {
-		document.querySelectorAll('.gb-section[data-tgssection]').forEach(sec => {
-			sec.classList.toggle('off', !G.tgsCells[sec.dataset.tgssection]);
-		});
-	}
-
-	/* -- TGS Settings input listeners -- */
-	(function initTgsSettingsListeners() {
-		const S = G.tgsSettings;
-		const on = (id, fn) => { const e = document.getElementById(id); if (e) e.addEventListener('change', fn); };
-		const onSeg = (id, fn) => { const s = document.getElementById(id); if (!s) return; s.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b) return; s.querySelectorAll('.bf-seg-btn').forEach(x => x.classList.toggle('bf-on', x === b)); fn(b.dataset.v); }); };
-		on('gtApng512Loops', e => { S.apng512.loops = parseInt(e.target.value) || 0; saveSettings(); });
-		on('gtFdApng512', e => { S.apng512.folder = e.target.value.trim() || '512APNG'; saveSettings(); });
-		on('gtApng320Size', e => {
-			const sz = Math.min(512, Math.max(64, parseInt(e.target.value) || 320));
-			e.target.value = sz;
-			if (S.discord.size !== sz) {
-				S.discord.size = sz;
-				// Invalidate cached 320 frames for all TGS items so they re-render at new size
-				tgsItems.forEach(it => { it.frames320 = null; });
-			}
-			saveSettings();
-		});
-		on('gtApng320Loops', e => { S.discord.loops = parseInt(e.target.value) || 0; saveSettings(); });
-		on('gtFdApng320', e => { S.discord.folder = e.target.value.trim() || '320APNG'; saveSettings(); });
-		onSeg('gtWebpSeg', v => { S.webp.lossless = v === 'lossless'; saveSettings(); });
-		on('gtWebpQ', e => { S.webp.quality = Math.min(100, Math.max(1, parseInt(e.target.value) || 90)); saveSettings(); });
-		on('gtWebpLoops', e => { S.webp.loops = parseInt(e.target.value) || 0; saveSettings(); });
-		on('gtFdWebp', e => { S.webp.folder = e.target.value.trim() || 'WEBP'; saveSettings(); });
-		onSeg('gtFrameSeg', v => { S.frame.mode = v; saveSettings(); });
-		on('gtFrameNum', e => { S.frame.num = Math.max(1, parseInt(e.target.value) || 1); saveSettings(); });
-		on('gtFdFrame', e => { S.frame.folder = e.target.value.trim() || '512PNG'; saveSettings(); });
-		onSeg('gtPadSeg', v => { S.pad.mode = v; saveSettings(); });
-		on('gtFdPad', e => { S.pad.folder = e.target.value.trim() || '512PNGNOPADDING'; saveSettings(); });
-	}());
-
-	/* ── stable TGS controller: final override for main converter ── */
-	const STABLE_TGS_DIRS = { apng: '512APNG', discord: '320APNG', webp: 'WEBP', frame: '512PNG', pad: '512PNGNOPADDING' };
-
-	function _tgsFolder(key) {
-		const map = {
-			apng: G.tgsSettings.apng512.folder,
-			discord: G.tgsSettings.discord.folder,
-			webp: G.tgsSettings.webp.folder,
-			frame: G.tgsSettings.frame.folder,
-			pad: G.tgsSettings.pad.folder,
-		};
-		const v = (map[key] || STABLE_TGS_DIRS[key] || '').trim();
-		return v ? v.replace(/^[/\\]+|[/\\]+$/g, '') + '/' : '';
-	}
-
-	function _drawTgsPreview(cv, rgba, size, centered) {
-		if (!cv || !rgba) return;
-		const ctx = cv.getContext('2d');
-		ctx.clearRect(0, 0, cv.width, cv.height);
-		const tmp = document.createElement('canvas');
-		tmp.width = size; tmp.height = size;
-		tmp.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(rgba), size, size), 0, 0);
-		ctx.imageSmoothingEnabled = false;
-		const scale = Math.min(cv.width / size, cv.height / size);
-		const dw = Math.round(size * scale);
-		const dh = Math.round(size * scale);
-		const dx = Math.floor((cv.width - dw) / 2);
-		const dy = Math.floor((cv.height - dh) / 2);
-		ctx.drawImage(tmp, dx, dy, dw, dh);
-	}
-
-	function _drawTgsPreviewBox(cv, rgba, size, box) {
-		_drawTgsPreview(cv, rgba, size, false);
-		if (!cv || !box) return;
-		const ctx = cv.getContext('2d');
-		ctx.strokeStyle = "#C3E5F2";
-		ctx.lineWidth = 3;
-		ctx.strokeRect(box.x + .5, box.y + .5, box.w - 1, box.h - 1);
-	}
-
-	function _resizeTgsFrames(frames, outSize) {
-		const src = document.createElement('canvas');
-		src.width = CS; src.height = CS;
-		const dst = document.createElement('canvas');
-		dst.width = outSize; dst.height = outSize;
-		const sctx = src.getContext('2d');
-		const dctx = dst.getContext('2d', { willReadFrequently: true });
-		dctx.imageSmoothingEnabled = true;
-		dctx.imageSmoothingQuality = 'high';
-		return frames.map(f => {
-			sctx.clearRect(0, 0, CS, CS);
-			sctx.putImageData(new ImageData(new Uint8ClampedArray(f.rgba), CS, CS), 0, 0);
-			dctx.clearRect(0, 0, outSize, outSize);
-			dctx.drawImage(src, 0, 0, CS, CS, 0, 0, outSize, outSize);
-			return { rgba: new Uint8ClampedArray(dctx.getImageData(0, 0, outSize, outSize).data), delayMs: f.delayMs };
-		});
-	}
-
-	function _tgs320Size() {
-		return clamp(Math.round(+G.tgsSettings.discord.size) || 320, 64, 512);
-	}
-
-	function _tgsFrameIndex(it) {
-		const total = Math.max(1, it.totalFrames || (it.frames512 ? it.frames512.frames.length : 1));
-		const n = clamp(Math.round(+it.settings.frameIndex) || 0, 0, total - 1);
-		return n;
-	}
-
-	function _tgsSelectedFrame(it) {
-		return it.frames512.frames[_tgsFrameIndex(it)] || it.frames512.frames[0];
-	}
-
-	async function _tgsFrames320(it) {
-		const size = _tgs320Size();
-		if (!it.frames320 || it.frames320.size !== size) {
-			const t0 = performance.now();
-			it.frames320 = { size, frames: _resizeTgsFrames(it.frames512.frames, size) };
-		}
-		return it.frames320;
-	}
-
-	function _refreshTgsPngPreviews(it) {
-		const t0 = performance.now();
-		if (!it.frames512 || !it.refs) return;
-		const f = _tgsSelectedFrame(it);
-		const idx = _tgsFrameIndex(it);
-		if (it.refs.frameLbl) it.refs.frameLbl.textContent = `${idx + 1} / ${it.totalFrames}`;
-		if (it.refs.padFrameLbl) it.refs.padFrameLbl.textContent = `${idx + 1} / ${it.totalFrames}`;
-		_drawTgsPreview(it.refs.frameCv, f.rgba, CS, false);
-		const box = C.boundingBox(f.rgba, CS, CS);
-		if (box) {
-			_drawTgsPreviewBox(it.refs.padCv, f.rgba, CS, box);
-			if (it.refs.padAfter) it.refs.padAfter.textContent = `${box.w} × ${box.h} PX`;
-		} else {
-			_drawTgsPreview(it.refs.padCv, f.rgba, CS, false);
-			if (it.refs.padAfter) it.refs.padAfter.textContent = 'EMPTY FRAME';
-		}
-	}
-
-	function _refreshTgsFramePreviews(it) {
-		const t0 = performance.now();
-		if (!it.frames512?.frames?.length || !it.refs) return;
-		const idx = _tgsFrameIndex(it);
-		const f = it.frames512.frames[idx] || it.frames512.frames[0];
-		if (it.refs.frameSlider) it.refs.frameSlider.value = String(idx);
-		if (it.refs.selectedFrameLbl) it.refs.selectedFrameLbl.textContent = `${idx + 1} / ${it.totalFrames}`;
-		_drawTgsPreview(it.refs.srcCv, f.rgba, CS, false);
-		_drawTgsPreview(it.refs.apngCv, f.rgba, CS, false);
-		_drawTgsPreview(it.refs.webpCv, f.rgba, CS, false);
-		const size = _tgs320Size();
-		const tiny = _resizeTgsFrames([f], size)[0];
-		if (tiny) _drawTgsPreview(it.refs.dcCv, tiny.rgba, size, true);
-		_refreshTgsPngPreviews(it);
-	}
-
-	function _tgsPanelHtml(it) {
-		return `
-<section class="item" id="tgsp${it.id}">
-	<div class="item-head">
-		<span class="item-no" data-r="no">T${it.id}</span>
-		<span class="item-name">${esc(it.name)}</span>
-		<span class="item-meta">TGS · ${_fmtSz(it.fileSize)} · ${it.totalFrames} FRAMES · ${it.fps} FPS · ${(it.totalFrames / it.fps).toFixed(2)} S</span>
-		<span class="actions">
-			<button type="button" class="bf-btn bf-btn--sm bf-btn--accent" data-r="expAll">Export All · ZIP</button>
-			<button type="button" class="bf-btn bf-btn--sm" data-r="remove">Remove</button>
-		</span>
-	</div>
-	<div class="panel-scroll"><div class="panel" data-r="panel">
-		<div class="cell"><div class="cell-h"><span>SOURCE · TGS</span><span class="no">01</span></div>
-			<div class="cell-b">
-				<canvas class="pv" width="${CS}" height="${CS}" data-r="srcCv"></canvas>
-				<div class="kv"><span>FILE</span><span class="v">${esc(it.name)}</span></div>
-				<div class="kv"><span>SIZE</span><span class="v">${_fmtSz(it.fileSize)}</span></div>
-				<div class="kv"><span>FRAMES</span><span class="v">${it.totalFrames}</span></div>
-				<div class="kv"><span>FPS</span><span class="v">${it.fps}</span></div>
-				<div class="kv"><span>DURATION</span><span class="v">${(it.totalFrames / it.fps).toFixed(2)} S</span></div>
-				<div class="kv"><span>CANVAS</span><span class="v">512 × 512 PX</span></div>
-				<div class="spacer"></div>
-			</div>
-		</div>
-		<div class="cell" data-cell="apng"><div class="cell-h"><span>512APNG</span><span class="no">02</span></div>
-			<div class="cell-b">
-				<canvas class="pv" width="${CS}" height="${CS}" data-r="apngCv"></canvas>
-				<div class="kv"><span>CANVAS</span><span class="v">512 × 512 PX</span></div>
-				<div class="kv"><span>COMPRESSED APNG</span><span class="v" data-r="apngSize">EXPORT TO BUILD</span></div>
-				<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="apngLoopsNum" value="${G.tgsSettings.apng512.loops}" /></div>
-				<div class="warn" data-r="apngWarn">OVER 300 KB — SIGNAL MAY REJECT</div>
-				<div class="spacer"></div>
-				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expApng">Export 512APNG</button>
-			</div>
-		</div>
-		<div class="cell" data-cell="discord"><div class="cell-h"><span>320APNG</span><span class="no">03</span></div>
-			<div class="cell-b">
-				<canvas class="pv" width="${CS}" height="${CS}" data-r="dcCv"></canvas>
-				<div class="kv"><span>METHOD</span><span class="v">DOWNSCALE 512 → ${_tgs320Size()} PX</span></div>
-				<div class="kv"><span>COMPRESSED APNG</span><span class="v" data-r="dcSize">EXPORT TO BUILD</span></div>
-				<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="dcLoopsNum" value="${G.tgsSettings.discord.loops}" /></div>
-				<div class="warn" data-r="dcWarn">OVER 512 KB — DISCORD MAY REJECT</div>
-				<div class="spacer"></div>
-				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expDc">Export 320APNG</button>
-			</div>
-		</div>
-		<div class="cell" data-cell="webp"><div class="cell-h"><span>WEBP</span><span class="no">04</span></div>
-			<div class="cell-b">
-				<canvas class="pv" width="${CS}" height="${CS}" data-r="webpCv"></canvas>
-				<div class="kv"><span>COMPRESSED WEBP</span><span class="v" data-r="webpSize">EXPORT TO BUILD</span></div>
-				<div class="row"><span>QUALITY</span><div class="row-b">
-					<span class="bf-seg" data-r="webpSeg"><button type="button" class="bf-seg-btn" data-v="lossless">Lossless</button><button type="button" class="bf-seg-btn" data-v="lossy">Lossy</button></span>
-					<input class="bf-field" type="number" min="1" max="100" step="1" data-r="webpQNum" value="${G.tgsSettings.webp.quality}" />
-				</div></div>
-				<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="webpLoopsNum" value="${G.tgsSettings.webp.loops}" /></div>
-				<div class="warn" data-r="webpWarn">OVER ~100 KB — WHATSAPP MAY REJECT</div>
-				<div class="spacer"></div>
-				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expWebp">Export WEBP</button>
-			</div>
-		</div>
-		<div class="cell" data-cell="frame"><div class="cell-h"><span>512PNG</span><span class="no">05</span></div>
-			<div class="cell-b">
-				<canvas class="pv" width="${CS}" height="${CS}" data-r="frameCv"></canvas>
-				<div class="kv"><span>FRAME</span><span class="v" data-r="frameLbl">1 / ${it.totalFrames}</span></div>
-				<div class="kv"><span>COMPRESSED PNG</span><span class="v" data-r="frameSize">EXPORT TO BUILD</span></div>
-				<div class="spacer"></div>
-				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expFrame">Export 512PNG</button>
-			</div>
-		</div>
-		<div class="cell" data-cell="pad"><div class="cell-h"><span>512PNGNOPADDING</span><span class="no">06</span></div>
-			<div class="cell-b">
-				<canvas class="pv" width="${CS}" height="${CS}" data-r="padCv"></canvas>
-				<div class="kv"><span>FRAME</span><span class="v" data-r="padFrameLbl">1 / ${it.totalFrames}</span></div>
-				<div class="kv"><span>AFTER CROP</span><span class="v" data-r="padAfter">—</span></div>
-				<div class="kv"><span>COMPRESSED PNG</span><span class="v" data-r="padSize">EXPORT TO BUILD</span></div>
-				<div class="spacer"></div>
-				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expPad">Export 512PNGNOPADDING</button>
-			</div>
-		</div>
-		<div class="cell"><div class="cell-h"><span>SETTING</span><span class="no">07</span></div>
-			<div class="cell-b">
-				<div class="grp">PNG FRAME</div>
-				<div class="row"><span>FRAME</span><input type="range" min="0" max="${Math.max(0, it.totalFrames - 1)}" value="0" step="1" data-r="frameSlider" /></div>
-				<div class="kv"><span>SELECTED</span><span class="v" data-r="selectedFrameLbl">1 / ${it.totalFrames}</span></div>
-				<div class="grp">OUTPUT FOLDERS</div>
-				<div class="kv"><span>512APNG</span><span class="v">512APNG/</span></div>
-				<div class="kv"><span>320APNG</span><span class="v">320APNG/</span></div>
-				<div class="kv"><span>WEBP</span><span class="v">WEBP/</span></div>
-				<div class="kv"><span>512PNG</span><span class="v">512PNG/</span></div>
-				<div class="kv"><span>NO PADDING</span><span class="v">512PNGNOPADDING/</span></div>
-				<div class="spacer"></div>
-			</div>
-		</div>
-	</div></div>
-</section>`;
-	}
-
-	function _refreshTgsPanel(it) {
-		if (!it.el) return;
-		it.el.querySelectorAll('.cell[data-cell]').forEach(c => c.classList.toggle('off', !G.tgsCells[c.dataset.cell]));
-		const visible = 2 + Object.entries(G.tgsCells).filter(([, on]) => on).length;
-		const panel = it.refs.panel || it.el.querySelector('.panel');
-		if (panel) panel.style.setProperty('--cells', visible);
-	}
-
-	function _initTgsPanel(it) {
-		const t0 = performance.now();
-		const wrap = document.createElement('div');
-		wrap.innerHTML = _tgsPanelHtml(it);
-		it.el = wrap.firstElementChild;
-		it.refs = {};
-		it.el.querySelectorAll('[data-r]').forEach(n => { it.refs[n.dataset.r] = n; });
-		_tgsItemsEl.appendChild(it.el);
-		_refreshTgsPanel(it);
-		_refreshTgsFramePreviews(it);
-		it.refs.remove.addEventListener('click', () => {
-			const idx = tgsItems.indexOf(it);
-			if (idx >= 0) tgsItems.splice(idx, 1);
-			if (it._webpBlobUrl) URL.revokeObjectURL(it._webpBlobUrl);
-			it.el.remove();
-			_refreshTgsUI();
-		});
-		it.refs.frameSlider.addEventListener('input', () => {
-			const sliderT0 = performance.now();
-			it.settings.frameIndex = +it.refs.frameSlider.value;
-			it.lastFramePng = null;
-			it.lastPadPng = null;
-			_clearOutputSize(it, 'frame');
-			_clearOutputSize(it, 'pad');
-			_setOutputState(it, 'frame', 'ready');
-			_setOutputState(it, 'pad', 'ready');
-			it.refs.selectedFrameLbl.textContent = `${_tgsFrameIndex(it) + 1} / ${it.totalFrames}`;
-			_refreshTgsFramePreviews(it);
-		});
-		it.refs.apngLoopsNum.addEventListener('change', () => { it.settings.apngLoops = clamp(Math.round(+it.refs.apngLoopsNum.value) || 0, 0, 99); });
-		it.refs.dcLoopsNum.addEventListener('change', () => { it.settings.dcLoops = clamp(Math.round(+it.refs.dcLoopsNum.value) || 0, 0, 99); });
-		it.refs.webpLoopsNum.addEventListener('change', () => { it.settings.webpLoops = clamp(Math.round(+it.refs.webpLoopsNum.value) || 0, 0, 99); });
-		it.refs.webpQNum.addEventListener('change', () => { it.settings.webpQuality = clamp(Math.round(+it.refs.webpQNum.value) || 90, 1, 100); });
-		it.refs.webpSeg.querySelectorAll('[data-v]').forEach(btn => {
-			btn.classList.toggle('bf-on', btn.dataset.v === (it.settings.webpLossless ? 'lossless' : 'lossy'));
-		});
-		it.refs.webpQNum.disabled = it.settings.webpLossless;
-		it.refs.webpSeg.addEventListener('click', e => {
-			const b = e.target.closest('[data-v]');
-			if (!b) return;
-			it.settings.webpLossless = b.dataset.v === 'lossless';
-			it.refs.webpSeg.querySelectorAll('[data-v]').forEach(btn => btn.classList.toggle('bf-on', btn === b));
-			it.refs.webpQNum.disabled = it.settings.webpLossless;
-		});
-		it.refs.expApng.addEventListener('click', () => busy(it.refs.expApng, async () => {
-			const entries = await _collectTgsEntries(it, ['apng']);
-			if (entries[0]) download(entries[0].data, `${it.base}.apng`, 'image/apng');
-		}));
-		it.refs.expDc.addEventListener('click', () => busy(it.refs.expDc, async () => {
-			const entries = await _collectTgsEntries(it, ['discord']);
-			if (entries[0]) download(entries[0].data, `${it.base}_320.apng`, 'image/apng');
-		}));
-		it.refs.expWebp.addEventListener('click', () => busy(it.refs.expWebp, async () => {
-			const entries = await _collectTgsEntries(it, ['webp']);
-			if (entries[0]) download(entries[0].data, `${it.base}.webp`, 'image/webp');
-		}));
-		it.refs.expFrame.addEventListener('click', () => busy(it.refs.expFrame, async () => {
-			const entries = await _collectTgsEntries(it, ['frame']);
-			if (entries[0]) download(entries[0].data, `${it.base}_frame${_tgsFrameIndex(it) + 1}.png`, 'image/png');
-		}));
-		it.refs.expPad.addEventListener('click', () => busy(it.refs.expPad, async () => {
-			const entries = await _collectTgsEntries(it, ['pad']);
-			if (entries[0]) download(entries[0].data, `${it.base}_frame${_tgsFrameIndex(it) + 1}_nopadding.png`, 'image/png');
-		}));
-		it.refs.expAll.addEventListener('click', () => busy(it.refs.expAll, async () => {
-			const entries = await _collectTgsEntries(it);
-			if (entries.length) download(makeZip(entries), `${it.base}_tgs_pack.zip`, 'application/zip');
-		}));
-		setTimeout(() => _primeTgsStats(it), 80);
-	}
-
-	async function _primeTgsStats(it) {
-		const keys = ['apng', 'discord', 'webp', 'frame', 'pad'].filter(k => G.tgsCells[k]);
-		for (const key of keys) {
-			try {
-				await _collectTgsEntries(it, [key]);
-			} catch (e) {
-				reportError("TGS_BUILD_ERROR", e, { file: it.name, format: key });
-			}
-		}
-	}
-
-	async function _collectTgsEntries(it, onlyKeys) {
-		const keys = onlyKeys || ['apng', 'discord', 'webp', 'frame', 'pad'].filter(k => G.tgsCells[k]);
-		const collectT0 = performance.now();
-		const entries = [];
-		for (const key of keys) {
-			const keyT0 = performance.now();
-			_setOutputState(it, key, 'processing');
-			if (key === 'apng') {
-				try {
-					const loops = it.settings.apngLoops;
-					const data = await C.encodeApng(it.frames512.frames, CS, CS, loops);
-					it.lastApng = data;
-					_setOutputState(it, key, 'built', { size: data.length });
-					it.refs.apngSize.textContent = _fmtSz(data.length);
-					it.refs.apngWarn.classList.toggle('on', data.length > 300 * 1024);
-					entries.push({ name: `${_tgsFolder('apng')}${it.base}.apng`, data });
-				} catch (e) {
-					_setOutputState(it, key, 'error', { message: String(e.message || e) });
-					throw e;
-				}
-			} else if (key === 'discord') {
-				try {
-					const f320 = await _tgsFrames320(it);
-					const data = await C.encodeApng(f320.frames, f320.size, f320.size, it.settings.dcLoops);
-					it.lastDc = data;
-					_setOutputState(it, key, 'built', { size: data.length });
-					it.refs.dcSize.textContent = `${_fmtSz(data.length)} · ${f320.size} PX`;
-					it.refs.dcWarn.classList.toggle('on', data.length > 512 * 1024);
-					entries.push({ name: `${_tgsFolder('discord')}${it.base}_320.apng`, data });
-				} catch (e) {
-					_setOutputState(it, key, 'error', { message: String(e.message || e) });
-					throw e;
-				}
-			} else if (key === 'webp') {
-				try {
-					const data = await _buildTgsWebp(it.frames512.frames, it.settings.webpLossless, it.settings.webpQuality, it.settings.webpLoops);
-					it.lastWebp = data;
-					_setOutputState(it, key, 'built', { size: data.length });
-					it.refs.webpSize.textContent = _fmtSz(data.length);
-					it.refs.webpWarn.classList.toggle('on', data.length > 100 * 1024);
-					entries.push({ name: `${_tgsFolder('webp')}${it.base}.webp`, data });
-				} catch (e) {
-					_setOutputState(it, key, 'error', { message: String(e.message || e) });
-					throw e;
-				}
-			} else if (key === 'frame') {
-				try {
-					const f = _tgsSelectedFrame(it);
-					const data = await C.encodePng(f.rgba, CS, CS);
-					it.lastFramePng = data;
-					_setOutputState(it, key, 'built', { size: data.length });
-					it.refs.frameSize.textContent = _fmtSz(data.length);
-					entries.push({ name: `${_tgsFolder('frame')}${it.base}_frame${_tgsFrameIndex(it) + 1}.png`, data });
-				} catch (e) {
-					_setOutputState(it, key, 'error', { message: String(e.message || e) });
-					throw e;
-				}
-			} else if (key === 'pad') {
-				try {
-					const f = _tgsSelectedFrame(it);
-					const box = C.boundingBox(f.rgba, CS, CS);
-					if (!box) {
-						_setOutputState(it, key, 'skipped', { message: 'Empty frame' });
-						continue;
-					}
-					const cropped = C.cropRgba(f.rgba, CS, CS, box);
-					const data = await C.encodePng(cropped, box.w, box.h);
-					it.lastPadPng = data;
-					_setOutputState(it, key, 'built', { size: data.length });
-					it.refs.padSize.textContent = _fmtSz(data.length);
-					entries.push({ name: `${_tgsFolder('pad')}${it.base}_frame${_tgsFrameIndex(it) + 1}_nopadding.png`, data });
-				} catch (e) {
-					_setOutputState(it, key, 'error', { message: String(e.message || e) });
-					throw e;
-				}
-			}
-		}
-		updateStats();
-		return entries;
-	}
-
-	function _refreshTgsUI() {
-		const has = tgsItems.length > 0 || items.length > 0;
-		el.empty.style.display = has ? 'none' : '';
-		if (_tgsActionsEl) _tgsActionsEl.hidden = !tgsItems.length;
-		updateStatus();
-		updateToc();
-		updateStats();
-	}
-
-	async function _addTgsFiles(files) {
-		const list = Array.from(files || []).filter(f => /\.tgs$/i.test(f.name));
-		if (!list.length) return;
-		el.empty.style.display = 'none';
-		if (_tgsActionsEl) _tgsActionsEl.hidden = false;
-		for (const file of list) {
-			const fileT0 = performance.now();
-			el.statusLeft.textContent = `LOADING ${file.name}`;
-			try {
-				const bytes = new Uint8Array(await file.arrayBuffer());
-				const lottieData = await _decompressTgs(bytes, file.name);
-				const rendered = await _renderLottieFrames(lottieData, CS, file.name);
-				const it = {
-					id: ++tgsCounter,
-					name: file.name,
-					base: file.name.replace(/\.tgs$/i, ''),
-					fileSize: file.size,
-					lottieData,
-					fps: rendered.fps,
-					totalFrames: rendered.totalFrames,
-					frames512: rendered,
-					frames320: null,
-					settings: {
-						frameIndex: 0,
-						apngLoops: G.tgsSettings.apng512.loops,
-						dcLoops: G.tgsSettings.discord.loops,
-						webpLossless: G.tgsSettings.webp.lossless,
-						webpQuality: G.tgsSettings.webp.quality,
-						webpLoops: G.tgsSettings.webp.loops,
-					},
-					refs: {},
-					animStart: performance.now(),
-					lastAnimIdx: -1,
-					lastApng: null,
-					lastDc: null,
-					lastWebp: null,
-					lastFramePng: null,
-					lastPadPng: null,
-					stats: {},
-				};
-				tgsItems.push(it);
-				_initTgsPanel(it);
-			} catch (e) {
-				reportError("TGS_LOAD_ERROR", e, { file: file.name, size: file.size });
-				alert(`CANNOT LOAD TGS: ${file.name}. COPY ERROR REPORT AND SEND IT TO CODEX.`);
-			}
-		}
-		_refreshTgsUI();
-	}
-
 	function updateToc() {
 		const toc = document.getElementById('toc');
 		if (!toc) return;
 		const entries = [
 			...items.map(it => ({ label: `G${pad2(it.no || 1)}`, name: it.name, node: it.root })),
-			...tgsItems.map(it => ({ label: `T${it.id}`, name: it.name, node: it.el })),
+			...tgsItems.map(it => ({ label: `T${pad2(it.id)}`, name: it.name, node: it.el })),
 		].map((entry, idx) => {
 			if (entry.node && !entry.node.id) entry.node.id = `toc-target-${idx}`;
 			return entry;
@@ -4947,10 +4710,20 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		return { counts, total, handled, percent, visualPercent, text, fillClass };
 	}
 
+	/** Panel anchor + display label for a stats row. GIF items key on `no`, TGS on `id`. */
+	function _statsItemRef(scope, it) {
+		return scope === 'gif'
+			? { label: `G${pad2(it.no || 1)}`, nodeId: `gifp${it.no}` }
+			: { label: `T${pad2(it.id)}`, nodeId: `tgsp${it.id}` };
+	}
+
+	function _statsGotoLink(scope, key, it, text) {
+		const { nodeId } = _statsItemRef(scope, it);
+		return `<button type="button" class="stats-over-link" data-stats-goto="${esc(nodeId)}" data-stats-cell="${esc(key)}">${text}</button>`;
+	}
+
 	function _failedItems(source, key) {
-		return source
-			.filter(it => it.stats?.[key]?.state === 'error')
-			.map(it => `${esc(it.base || it.name)} (${esc((it.stats[key].message || 'Error').slice(0, 40))})`);
+		return source.filter(it => it.stats?.[key]?.state === 'error');
 	}
 
 	function _uniqueEntries(entries) {
@@ -5043,7 +4816,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	function _statsFormatCard(scope, key, source) {
 		const count = source.length;
 		const meta = STATS_FORMAT_META[key] || { label: key.toUpperCase(), limit: 0 };
-		const sizes = source.map(it => ({ name: it.base || it.name, size: _cachedOutputSize(scope, key, it) })).filter(v => v.size != null);
+		const sizes = source.map(it => ({ it, name: it.base || it.name, size: _cachedOutputSize(scope, key, it) })).filter(v => v.size != null);
 		const sourceBytes = source.reduce((a, it) => a + (it.fileSize || 0), 0);
 		const builtBytes = sizes.reduce((a, v) => a + v.size, 0);
 		const overItems = meta.limit ? sizes.filter(v => v.size > meta.limit) : [];
@@ -5051,9 +4824,11 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		const builtText = sizes.length ? `${sizes.length}/${count} · ${_fmtSz(builtBytes)}` : 'Pending';
 		const limitText = meta.limit ? _fmtSz(meta.limit) : 'None';
 		const overText = overItems.length
-			? overItems.map(v => `${esc(v.name)} (${_fmtSz(v.size)})`).join('<br>')
+			? overItems.map(v => _statsGotoLink(scope, key, v.it, `${esc(_statsItemRef(scope, v.it).label)} ${esc(v.name)} (${_fmtSz(v.size)})`)).join('<br>')
 			: (sizes.length && meta.limit ? 'None' : 'Not checked');
-		const failedText = failedItems.length ? failedItems.join('<br>') : 'None';
+		const failedText = failedItems.length
+			? failedItems.map(it => _statsGotoLink(scope, key, it, `${esc(_statsItemRef(scope, it).label)} ${esc(it.base || it.name)} (${esc((it.stats[key].message || 'Error').slice(0, 40))})`)).join('<br>')
+			: 'None';
 		const progress = _progressSummary(source, scope, key);
 		const progressWarn = progress.counts.failed || progress.counts.processing || progress.counts.queued;
 		return `<section class="stats-card" data-stats-card="${scope}-${key}">` +
@@ -5111,20 +4886,49 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		_statsContent.querySelectorAll('[data-stats-action][data-stats-scope]').forEach(btn => {
 			btn.addEventListener('click', () => _runStatsBatchAction(btn.dataset.statsScope, btn.dataset.statsAction));
 		});
+		_statsContent.querySelectorAll('[data-stats-goto]').forEach(btn => {
+			btn.addEventListener('click', () => _gotoStatsTarget(btn.dataset.statsGoto, btn.dataset.statsCell));
+		});
+	}
+
+	/** Jump from an OVER SIZE / FAILED entry to the offending cell in that file's panel. */
+	function _gotoStatsTarget(nodeId, cellKey) {
+		const node = document.getElementById(nodeId);
+		if (!node) return;
+		node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		const cell = cellKey && node.querySelector(`.cell[data-cell="${cellKey}"]`);
+		if (!cell) return;
+		clearTimeout(cell._flashTimer);
+		cell.classList.remove('cell-flash');
+		void cell.offsetWidth; // restart the animation if the same cell is clicked twice
+		cell.classList.add('cell-flash');
+		const clear = () => { clearTimeout(cell._flashTimer); cell.classList.remove('cell-flash'); };
+		cell.addEventListener('animationend', clear, { once: true });
+		// prefers-reduced-motion sets animation:none, so animationend never fires — clear it ourselves
+		cell._flashTimer = setTimeout(clear, 1400);
 	}
 
 	function syncTgsSettingsUI() {
 		const S = G.tgsSettings;
 		const set = (id, v) => { const n = document.getElementById(id); if (n) n.value = v; };
+		const seg = (id, v) => {
+			const s = document.getElementById(id);
+			if (!s) return;
+			s.querySelectorAll('.bf-seg-btn').forEach(b => b.classList.toggle('bf-on', b.dataset.v === v));
+		};
 		set('gtApng512Loops', S.apng512.loops);
 		set('gtFdApng512', S.apng512.folder);
 		set('gtApng320Size', S.discord.size);
 		set('gtApng320Loops', S.discord.loops);
 		set('gtFdApng320', S.discord.folder);
+		seg('gtWebpSeg', S.webp.lossless ? 'lossless' : 'lossy');
 		set('gtWebpQ', S.webp.quality);
 		set('gtWebpLoops', S.webp.loops);
 		set('gtFdWebp', S.webp.folder);
+		seg('gtFrameSeg', S.frame.mode);
+		set('gtFrameNum', S.frame.num);
 		set('gtFdFrame', S.frame.folder);
+		seg('gtPadSeg', S.pad.mode);
 		set('gtFdPad', S.pad.folder);
 	}
 
@@ -5135,32 +4939,59 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	}
 
 	(function installStableTgsController() {
+		/* Sole #tgsOutToggles binding. Enabling a cell after load must prime it,
+		   otherwise it sits on BUILDING… forever with no cached bytes. */
 		document.querySelectorAll('#tgsOutToggles input[data-tgscell]').forEach(cb => {
 			cb.checked = !!G.tgsCells[cb.dataset.tgscell];
 			cb.addEventListener('change', () => {
-				G.tgsCells[cb.dataset.tgscell] = cb.checked;
+				const key = cb.dataset.tgscell;
+				G.tgsCells[key] = cb.checked;
 				tgsItems.forEach(_refreshTgsPanel);
 				updateTgsSettingsSections();
+				if (cb.checked) tgsItems.forEach(it => { if (it.frames512) scheduleTgsBuild(it, key, 0); });
 				updateStats();
+				saveSettings();
 			});
 		});
 		[
 			['gtApng512Loops', v => { G.tgsSettings.apng512.loops = clamp(Math.round(+v) || 0, 0, 99); }],
-			['gtApng320Size', v => { G.tgsSettings.discord.size = clamp(Math.round(+v) || 320, 64, 512); tgsItems.forEach(it => { it.frames320 = null; }); }],
+			['gtApng320Size', v => {
+				const sz = clamp(Math.round(+v) || 320, 64, 512);
+				if (G.tgsSettings.discord.size !== sz) {
+					G.tgsSettings.discord.size = sz;
+					tgsItems.forEach(it => scheduleTgsBuild(it, 'discord'));
+				}
+			}],
 			['gtApng320Loops', v => { G.tgsSettings.discord.loops = clamp(Math.round(+v) || 0, 0, 99); }],
 			['gtWebpQ', v => { G.tgsSettings.webp.quality = clamp(Math.round(+v) || 90, 1, 100); }],
 			['gtWebpLoops', v => { G.tgsSettings.webp.loops = clamp(Math.round(+v) || 0, 0, 99); }],
+			['gtFdApng512', v => { G.tgsSettings.apng512.folder = v.trim() || '512APNG'; }],
+			['gtFdApng320', v => { G.tgsSettings.discord.folder = v.trim() || '320APNG'; }],
+			['gtFdWebp', v => { G.tgsSettings.webp.folder = v.trim() || 'WEBP'; }],
+			['gtFdFrame', v => { G.tgsSettings.frame.folder = v.trim() || '512PNG'; }],
+			['gtFdPad', v => { G.tgsSettings.pad.folder = v.trim() || '512PNGNOPADDING'; }],
+			['gtFrameNum', v => {
+				G.tgsSettings.frame.num = Math.max(1, Math.round(+v) || 1);
+				tgsItems.forEach(it => _onTgsFrameModeChanged(it));
+			}],
 		].forEach(([id, fn]) => {
 			const n = document.getElementById(id);
-			if (n) n.addEventListener('change', () => fn(n.value));
+			if (n) n.addEventListener('change', () => { fn(n.value); saveSettings(); });
 		});
-		const webpSeg = document.getElementById('gtWebpSeg');
-		if (webpSeg) webpSeg.addEventListener('click', e => {
-			const b = e.target.closest('[data-v]');
-			if (!b) return;
-			G.tgsSettings.webp.lossless = b.dataset.v === 'lossless';
-			webpSeg.querySelectorAll('[data-v]').forEach(x => x.classList.toggle('bf-on', x === b));
-		});
+		const onSeg = (id, fn) => {
+			const s = document.getElementById(id);
+			if (!s) return;
+			s.addEventListener('click', e => {
+				const b = e.target.closest('[data-v]');
+				if (!b) return;
+				s.querySelectorAll('[data-v]').forEach(x => x.classList.toggle('bf-on', x === b));
+				fn(b.dataset.v);
+				saveSettings();
+			});
+		};
+		onSeg('gtWebpSeg', v => { G.tgsSettings.webp.lossless = v === 'lossless'; });
+		onSeg('gtFrameSeg', v => { G.tgsSettings.frame.mode = v; tgsItems.forEach(it => _onTgsFrameModeChanged(it)); });
+		onSeg('gtPadSeg', v => { G.tgsSettings.pad.mode = v; tgsItems.forEach(it => _onTgsFrameModeChanged(it)); });
 		const clearOld = document.getElementById('clearAllTgs');
 		if (clearOld) {
 			const clearBtn = clearOld.cloneNode(true);
