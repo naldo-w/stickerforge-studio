@@ -47,8 +47,8 @@ full panel.
 | [Signal](https://support.signal.org/hc/en-us/articles/360031836512-Stickers) | APNG | 512 × 512 | ≤ 300 KB (max 3 s) |
 | [Discord](https://support.discord.com/hc/en-us/articles/4402687377815-Tips-for-Sticker-Creators-FAQ) | APNG | 320 × 320 | ≤ 512 KB |
 | [WhatsApp](https://github.com/WhatsApp/stickers/wiki/Animation) | Animated WebP | 512 × 512 | ≈ ≤ 100 KB |
-| [LINE](https://creator.line.me/en/guideline/animationsticker/) | APNG | ≤ 320 × 270 | see official guideline |
-| [iMessage](https://developer.apple.com/documentation/messages) | APNG | 300–618 px | Xcode sticker pack |
+| [LINE](https://creator.line.me/en/guideline/animationsticker/) | APNG | ≤ 320 × 270 | ≤ 1 MB — 5–20 frames, 1–4 loops, ≤ 4 s total |
+| [iMessage](https://developer.apple.com/design/human-interface-guidelines/imessage-apps-and-stickers) | APNG | 300–618 px (@3×) | ≤ 500 KB — shipped as an Xcode sticker pack |
 
 ## Usage
 
@@ -112,8 +112,7 @@ possible.
 
 ## Author
 
-**Naldo Wong**
-[naldo.design](https://naldo.design) · [@n_do.w](https://www.instagram.com/n_do.w) · [@naldo.design](https://www.instagram.com/naldo.design)
+**Naldo Wong** — [@n_do.w](https://www.instagram.com/n_do.w) · [@naldo.design](https://www.instagram.com/naldo.design)
 
 ## License
 
