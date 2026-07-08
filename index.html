@@ -567,7 +567,10 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 /* ── Settings redesign (s-*) ── */
 .settings-switch { display: inline-flex; align-self: flex-start; margin-bottom: 4px; }
 .s-blk { padding: 12px 0; display: flex; flex-direction: column; gap: 0; }
-.s-blk + .s-blk { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 2px; }
+/* `+` matches on DOM order, not visibility: the TGS pane is always the GIF pane's
+   next sibling, so without :not() it draws a rule even while GIF is the active tab.
+   The GIF/TGS panes are mutually exclusive, so no rule belongs between them. */
+.s-blk + .s-blk:not([data-settings-pane]) { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 2px; }
 .s-blk[data-settings-pane] { display: none; }
 .s-blk[data-settings-pane].on { display: flex; }
 .s-blk-h {
