@@ -1730,6 +1730,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		fpsMode: "auto", fps: 30,
 		offsetEnabled: true, offsetPx: 0.4,
 		apngLoops: 0, apngMaxColors: 256, fit3s: false,
+		dcLoops: 0, dcMaxColors: 256,
 		webpLossless: true, webpQuality: 90, webpLoops: 0,
 		frameTag: false, frameTagPos: "suffix",
 		cells: { apng: true, discord: true, frame: false, pad: false, tgs: true, lottie: false, webp: true },
@@ -2344,9 +2345,9 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	}
 	async function buildApng320(it) {
 		const s = it.settings, sc = dcScale(it);
-		const src = quantizeFrames(activeFrames(it), s.apngMaxColors);
+		const src = quantizeFrames(activeFrames(it), s.dcMaxColors);
 		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 320), delayMs: f.delayMs }));
-		return C.encodeApng(frames, 320, 320, s.apngLoops);
+		return C.encodeApng(frames, 320, 320, s.dcLoops);
 	}
 	function scheduleApng(it) {
 		const r = it.refs;
@@ -2597,59 +2598,10 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	/* one gif's zip entries — only outputs toggled on in Settings, folder-prefixed */
 	async function collectEntries(it) {
 			const entries = [];
-			const fd = k => folderOf(it, k);
-			if (G.cells.apng) {
-				_setOutputState(it, 'apng', it.lastApng ? 'built' : 'processing', it.lastApng ? { size: it.lastApng.length } : null);
-				const data = it.lastApng || await buildApng512(it);
-				it.lastApng = data;
-				_setOutputState(it, 'apng', 'built', { size: data.length });
-				entries.push({ name: `${fd("apng")}${it.base}.apng`, data });
-			}
-			if (G.cells.discord) {
-				_setOutputState(it, 'discord', it.lastDc ? 'built' : 'processing', it.lastDc ? { size: it.lastDc.length } : null);
-				const data = it.lastDc || await buildApng320(it);
-				it.lastDc = data;
-				_setOutputState(it, 'discord', 'built', { size: data.length });
-				entries.push({ name: `${fd("discord")}${it.base}.apng`, data });
-			}
-			if (G.cells.frame || G.cells.pad) {
-				const f = currentFrame(it);
-				const frameRgba = C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, effScale(it));
-				if (G.cells.frame) {
-					_setOutputState(it, 'frame', 'processing');
-					const data = await C.encodePng(frameRgba, CS, CS);
-					it.lastFramePng = data;
-					_setOutputState(it, 'frame', 'built', { size: data.length });
-					entries.push({ name: `${fd("frame")}${tagged(it, "png")}`, data });
-				}
-				if (G.cells.pad) {
-					_setOutputState(it, 'pad', 'processing');
-					const box = C.boundingBox(frameRgba, CS, CS);
-					if (box) {
-						const data = await C.encodePng(C.cropRgba(frameRgba, CS, CS, box), box.w, box.h);
-						it.lastPadPng = data;
-						_setOutputState(it, 'pad', 'built', { size: data.length });
-						entries.push({ name: `${fd("pad")}${tagged(it, "png")}`, data });
-					} else {
-						_setOutputState(it, 'pad', 'skipped', { message: 'Empty frame' });
-					}
-				}
-			}
-			if (G.cells.tgs || G.cells.lottie) {
-				const enc = it.lastTgs || await buildGifTgs(it);
-				if (G.cells.tgs) entries.push({ name: `${fd("tgs")}${it.base}.tgs`, data: enc.tgs });
-				if (G.cells.lottie) entries.push({ name: `${fd("lottie")}${it.base}.json`, data: new TextEncoder().encode(enc.json) });
-			}
-			if (G.cells.webp) {
-				try {
-					_setOutputState(it, 'webp', it.lastWebp ? 'built' : 'processing', it.lastWebp ? { size: it.lastWebp.length } : null);
-					const data = it.lastWebp || await buildWebp(it);
-					it.lastWebp = data;
-					_setOutputState(it, 'webp', 'built', { size: data.length });
-					entries.push({ name: `${fd("webp")}${it.base}.webp`, data });
-				} catch (e) {
-					_setOutputState(it, 'webp', 'error', { message: String(e.message || e) });
-				}
+			const keys = ['apng', 'discord', 'frame', 'pad', 'tgs', 'lottie', 'webp'];
+			for (const key of keys) {
+				if (!G.cells[key]) continue;
+				entries.push(...await _collectGifFormatEntries(it, key));
 			}
 			return entries;
 	}
@@ -2772,6 +2724,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 					offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
 					folders: { ...G.folderNames },
 					apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, fit3s: G.fit3s,
+					dcLoops: G.dcLoops, dcMaxColors: G.dcMaxColors,
 					dcScaleMode: "fit", dcManual: 6,
 					webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops,
 					opt: {
@@ -3447,6 +3400,42 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 					applyTgsFolderPreset(G.folderMode);
 					if (typeof syncTgsSettingsUI === 'function') syncTgsSettingsUI();
 					if (typeof updateTgsSettingsSections === 'function') updateTgsSettingsSections();
+					tgsItems.forEach(it => {
+						const T = G.tgsSettings;
+						Object.assign(it.settings, {
+							frameIndex: null,
+							apngLoops: T.apng512.loops,
+							apngAutoFit: T.apng512.autoFit,
+							apngFps: T.apng512.fps,
+							apngMaxColors: T.apng512.maxColors,
+							dcLoops: T.discord.loops,
+							dcAutoFit: T.discord.autoFit,
+							dcFps: T.discord.fps,
+							dcMaxColors: T.discord.maxColors,
+							webpLossless: T.webp.lossless,
+							webpQuality: T.webp.quality,
+							webpLoops: T.webp.loops,
+							webpAutoFit: T.webp.autoFit,
+							webpFps: T.webp.fps,
+							webpMaxColors: T.webp.maxColors,
+						});
+						// A2: refresh the panel inputs so they show the reset values, not the user's old typed ones
+						if (it.refs) {
+							const r = it.refs, s = it.settings, native = it.fps || 30;
+							if (r.apngLoopsNum) r.apngLoopsNum.value = s.apngLoops;
+							if (r.dcLoopsNum) r.dcLoopsNum.value = s.dcLoops;
+							if (r.webpLoopsNum) r.webpLoopsNum.value = s.webpLoops;
+							if (r.webpQNum) r.webpQNum.value = s.webpQuality;
+							if (r.webpSeg) r.webpSeg.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('bf-on', b.dataset.v === (s.webpLossless ? 'lossless' : 'lossy')));
+							['apng', 'discord', 'webp'].forEach(key => {
+								if (r[key + 'AutoFit']) r[key + 'AutoFit'].checked = !!s[TGS_AUTOFIT_KEY[key]];
+								if (r[key + 'FpsNum']) r[key + 'FpsNum'].value = s[TGS_FPS_KEY[key]] == null ? native : s[TGS_FPS_KEY[key]];
+								if (r[key + 'ColorsNum']) r[key + 'ColorsNum'].value = s[TGS_COLORS_KEY[key]];
+								_syncTgsAutoFitReadout(it, key, null);
+							});
+						}
+						['apng', 'discord', 'webp', 'frame', 'pad'].forEach(k => { if (G.tgsCells[k] && typeof scheduleTgsBuild === 'function') scheduleTgsBuild(it, k, 0); });
+					});
 				}
 				saveSettings();
 			} else {
@@ -3477,6 +3466,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 				folderMode: G.folderMode, folderNames: Object.assign({}, G.folderNames),
 				filePrefix: G.filePrefix || '', fileSuffix: G.fileSuffix || '',
 				cells: Object.assign({}, G.cells),
+				tgsSettings: JSON.parse(JSON.stringify(G.tgsSettings)), tgsCells: Object.assign({}, G.tgsCells),
 			}, null, 2);
 			const a = document.createElement('a');
 			a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
@@ -3495,8 +3485,10 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 					if (s.folderNames) Object.assign(G.folderNames, s.folderNames);
 					if (s.cells) Object.assign(G.cells, s.cells);
 			if (s.tgsCells) Object.assign(G.tgsCells, s.tgsCells);
+					if (s.tgsSettings) { Object.keys(G.tgsSettings).forEach(k => { if (s.tgsSettings[k]) Object.assign(G.tgsSettings[k], s.tgsSettings[k]); }); }
 					if (g.toggles) g.toggles.querySelectorAll('input[data-cell]').forEach(cb => { cb.checked = !!G.cells[cb.dataset.cell]; });
 					refreshGlobalUI(); syncFrameTagUI(); syncFolderInputs(); applyCellToggles(); updateSettingsSections(); saveSettings();
+					if (typeof syncTgsSettingsUI === 'function') syncTgsSettingsUI();
 				} catch (e) { alert('IMPORT FAILED: ' + e.message); }
 				importFile.value = '';
 			});
@@ -4176,6 +4168,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		const r = it.refs || {};
 		if (res.skipped) {
 			_setOutputState(it, key, 'skipped', { message: res.message || 'Empty frame' });
+			it[TGS_CACHE_KEY[key]] = null; _clearOutputSize(it, key);
 			return;
 		}
 		it[TGS_CACHE_KEY[key]] = res.data;
@@ -4199,6 +4192,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		if (colEl) {
 			colEl.disabled = on || lossyWebp; // a palette is meaningless for lossy VP8
 			if (on && res && !lossyWebp) colEl.value = res.colors;
+			colEl.title = lossyWebp ? 'Palette has no effect on lossy WebP' : '';
 		}
 		if (key === 'webp' && r.webpQNum) {
 			r.webpQNum.disabled = on || it.settings.webpLossless;
@@ -4735,52 +4729,61 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 
 	async function _collectGifFormatEntries(it, key) {
 		const fd = k => folderOf(it, k);
-		if (key === 'apng') {
-			_setOutputState(it, key, it.lastApng ? 'built' : 'processing', it.lastApng ? { size: it.lastApng.length } : null);
-			const data = it.lastApng || await buildApng512(it);
-			it.lastApng = data;
-			_setOutputState(it, key, 'built', { size: data.length });
-			return [{ name: `${fd('apng')}${it.base}.apng`, data }];
-		}
-		if (key === 'discord') {
-			_setOutputState(it, key, it.lastDc ? 'built' : 'processing', it.lastDc ? { size: it.lastDc.length } : null);
-			const data = it.lastDc || await buildApng320(it);
-			it.lastDc = data;
-			_setOutputState(it, key, 'built', { size: data.length });
-			return [{ name: `${fd('discord')}${it.base}.apng`, data }];
-		}
-		if (key === 'webp') {
-			_setOutputState(it, key, it.lastWebp ? 'built' : 'processing', it.lastWebp ? { size: it.lastWebp.length } : null);
-			const data = it.lastWebp || await buildWebp(it);
-			it.lastWebp = data;
-			_setOutputState(it, key, 'built', { size: data.length });
-			return [{ name: `${fd('webp')}${it.base}.webp`, data }];
-		}
-		if (key === 'tgs') {
-			const enc = it.lastTgs || await buildGifTgs(it);
-			return [{ name: `${fd('tgs')}${it.base}.tgs`, data: enc.tgs }];
-		}
-		if (key === 'frame' || key === 'pad') {
-			_setOutputState(it, key, 'processing');
-			const f = currentFrame(it);
-			const frameRgba = C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, effScale(it));
-			if (key === 'frame') {
-				const data = await C.encodePng(frameRgba, CS, CS);
-				it.lastFramePng = data;
+		try {
+			if (key === 'apng') {
+				_setOutputState(it, key, it.lastApng ? 'built' : 'processing', it.lastApng ? { size: it.lastApng.length } : null);
+				const data = it.lastApng || await buildApng512(it);
+				it.lastApng = data;
 				_setOutputState(it, key, 'built', { size: data.length });
-				return [{ name: `${fd('frame')}${tagged(it, 'png')}`, data }];
+				return [{ name: `${fd('apng')}${it.base}.apng`, data }];
 			}
-			const box = C.boundingBox(frameRgba, CS, CS);
-			if (!box) {
-				_setOutputState(it, key, 'skipped', { message: 'Empty frame' });
-				return [];
+			if (key === 'discord') {
+				_setOutputState(it, key, it.lastDc ? 'built' : 'processing', it.lastDc ? { size: it.lastDc.length } : null);
+				const data = it.lastDc || await buildApng320(it);
+				it.lastDc = data;
+				_setOutputState(it, key, 'built', { size: data.length });
+				return [{ name: `${fd('discord')}${it.base}.apng`, data }];
 			}
-			const data = await C.encodePng(C.cropRgba(frameRgba, CS, CS, box), box.w, box.h);
-			it.lastPadPng = data;
-			_setOutputState(it, key, 'built', { size: data.length });
-			return [{ name: `${fd('pad')}${tagged(it, 'png')}`, data }];
+			if (key === 'webp') {
+				_setOutputState(it, key, it.lastWebp ? 'built' : 'processing', it.lastWebp ? { size: it.lastWebp.length } : null);
+				const data = it.lastWebp || await buildWebp(it);
+				it.lastWebp = data;
+				_setOutputState(it, key, 'built', { size: data.length });
+				return [{ name: `${fd('webp')}${it.base}.webp`, data }];
+			}
+			if (key === 'tgs') {
+				const enc = it.lastTgs || await buildGifTgs(it);
+				return [{ name: `${fd('tgs')}${it.base}.tgs`, data: enc.tgs }];
+			}
+			if (key === 'lottie') {
+				const enc = it.lastTgs || await buildGifTgs(it);
+				return [{ name: `${fd('lottie')}${it.base}.json`, data: new TextEncoder().encode(enc.json) }];
+			}
+			if (key === 'frame' || key === 'pad') {
+				_setOutputState(it, key, 'processing');
+				const f = currentFrame(it);
+				const frameRgba = C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, effScale(it));
+				if (key === 'frame') {
+					const data = await C.encodePng(frameRgba, CS, CS);
+					it.lastFramePng = data;
+					_setOutputState(it, key, 'built', { size: data.length });
+					return [{ name: `${fd('frame')}${tagged(it, 'png')}`, data }];
+				}
+				const box = C.boundingBox(frameRgba, CS, CS);
+				if (!box) {
+					_setOutputState(it, key, 'skipped', { message: 'Empty frame' });
+					return [];
+				}
+				const data = await C.encodePng(C.cropRgba(frameRgba, CS, CS, box), box.w, box.h);
+				it.lastPadPng = data;
+				_setOutputState(it, key, 'built', { size: data.length });
+				return [{ name: `${fd('pad')}${tagged(it, 'png')}`, data }];
+			}
+			return [];
+		} catch (e) {
+			_setOutputState(it, key, 'error', { message: String(e.message || e) });
+			throw e;
 		}
-		return [];
 	}
 
 	async function _exportStatsFormat(scope, key, btn) {
