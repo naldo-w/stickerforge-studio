@@ -1739,6 +1739,10 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		offsetEnabled: true, offsetPx: 0.4,
 		apngLoops: 0, apngMaxColors: 256, fit3s: false,
 		dcLoops: 0, dcMaxColors: 256,
+		/* per-output scale defaults derived from 512APNG's 12× by canvas ratio, floored:
+		   320APNG floor(12·320/512)=7, LINE floor(12·270/512)=6; each capped to maxFitScale. */
+		dcScaleMode: "manual", dcManual: 7,
+		lineScaleMode: "manual", lineManual: 6,
 		webpLossless: true, webpQuality: 90, webpLoops: 0,
 		frameTag: false, frameTagPos: "suffix",
 		cells: { apng: true, discord: true, frame: false, pad: false, tgs: true, lottie: false, webp: true },
@@ -1835,10 +1839,17 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	}
 
 	function dcScale(it) {
-		/* discord canvas is 320 — fit by default, manual override per panel */
+		/* discord canvas is 320 — default manual 7×, capped to the integer that fits */
 		const fit = C.maxFitScale(it.gif.width, it.gif.height, 320);
 		const s = it.settings;
 		return Math.min(s.dcScaleMode === "manual" ? s.dcManual : effScale(it), fit);
+	}
+
+	function lineScale(it) {
+		/* LINE canvas is 270×270 — default manual 6×, capped to the integer that fits */
+		const fit = C.maxFitScale(it.gif.width, it.gif.height, 270);
+		const s = it.settings;
+		return Math.min(s.lineScaleMode === "manual" ? s.lineManual : effScale(it), fit);
 	}
 
 	/* zip folder presets — unified in Settings, editable per cell */
@@ -2742,7 +2753,8 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 					folders: { ...G.folderNames },
 					apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, fit3s: G.fit3s,
 					dcLoops: G.dcLoops, dcMaxColors: G.dcMaxColors,
-					dcScaleMode: "fit", dcManual: 6,
+					dcScaleMode: G.dcScaleMode, dcManual: G.dcManual,
+					lineScaleMode: G.lineScaleMode, lineManual: G.lineManual,
 					webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops,
 					opt: {
 						rectMerge: true, sameColorMerge: true, removeEmpty: true,
@@ -2962,7 +2974,9 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 				scaleMode: G.scaleMode, manualScale: G.manualScale, fpsMode: G.fpsMode, fps: G.fps,
 				offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
 				apngLoops: 0, apngMaxColors: 256, fit3s: false,
-				dcScaleMode: "fit", dcManual: 6,
+				dcLoops: 0, dcMaxColors: 256,
+				dcScaleMode: "manual", dcManual: 7,
+				lineScaleMode: "manual", lineManual: 6,
 				webpLossless: true, webpQuality: 90, webpLoops: 0,
 				folders: { ...G.folderNames },
 			});
@@ -3384,7 +3398,9 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 						fpsMode: G.fpsMode, fps: G.fps,
 						offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
 						apngLoops: 0, apngMaxColors: 256, fit3s: false,
-						dcScaleMode: 'fit', dcManual: 6,
+						dcLoops: 0, dcMaxColors: 256,
+						dcScaleMode: 'manual', dcManual: 7,
+						lineScaleMode: 'manual', lineManual: 6,
 						webpLossless: true, webpQuality: 90, webpLoops: 0,
 						folders: Object.assign({}, FOLDER_PRESETS.platform),
 					});
