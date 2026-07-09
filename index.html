@@ -3094,14 +3094,8 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	const readBuf = f => f.arrayBuffer().then(b => new Uint8Array(b));
 	const intVal = (node, lo, hi, dflt) => { const n = Math.round(+node.value); return Number.isFinite(n) ? clamp(n, lo, hi) : dflt; };
 	const gifBase = n => n.replace(/\.gif$/i, "");
-	async function decodePngFile(file) {
-		const bmp = await createImageBitmap(file);
-		const cv = document.createElement("canvas");
-		cv.width = bmp.width; cv.height = bmp.height;
-		const cx = cv.getContext("2d", { willReadFrequently: true });
-		cx.drawImage(bmp, 0, 0);
-		return { rgba: new Uint8Array(cx.getImageData(0, 0, bmp.width, bmp.height).data), w: bmp.width, h: bmp.height };
-	}
+	/* decodePngFile lives with the v12 tool cards below — a second declaration here was
+	   shadowed by it (same-scope function declarations: the later one wins) and never ran. */
 	function nnResize(rgba, w, h, ow, oh) {
 		const out = new Uint8Array(ow * oh * 4);
 		for (let y = 0; y < oh; y++) {
