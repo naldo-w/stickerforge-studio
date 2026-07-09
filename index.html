@@ -2261,8 +2261,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 			const token = ++it.tgsToken;
 			_setOutputState(it, 'tgs', 'processing');
 			try {
-				const lottie = C.buildLottie(activeFrames(it), tgsOpts(it));
-				const enc = await C.encodeTgs(lottie);
+				const enc = await _encGate(() => { const lottie = C.buildLottie(activeFrames(it), tgsOpts(it)); return C.encodeTgs(lottie); });
 				if (token !== it.tgsToken) return;
 				it.lastTgs = enc;
 				_setOutputState(it, 'tgs', 'built', { size: enc.tgsSize });
@@ -2357,6 +2356,16 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 320), delayMs: f.delayMs }));
 		return C.encodeApng(frames, 320, 320, s.dcLoops);
 	}
+	/* Global encode gate — serialize every heavy encode to one-at-a-time. Dropping N
+	   files used to fan out N×(4~5) concurrent encodes (schedulers are fire-and-forget
+	   setTimeouts) and spike memory to a crash. Chaining them through one promise keeps
+	   exactly one encode in flight; the debounce+token logic still coalesces edits. */
+	let _encChain = Promise.resolve();
+	function _encGate(fn) {
+		const run = _encChain.then(fn, fn); // run after the previous settles, success or not
+		_encChain = run.then(() => {}, () => {}); // never let a rejection break the chain
+		return run;
+	}
 	function scheduleApng(it) {
 		const r = it.refs;
 		clearTimeout(it.apngTimer);
@@ -2367,7 +2376,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 			const token = ++it.apngToken;
 			_setOutputState(it, 'apng', 'processing');
 			try {
-				const apng = await buildApng512(it);
+				const apng = await _encGate(() => buildApng512(it));
 				if (token !== it.apngToken) return;
 				it.lastApng = apng;
 				_setOutputState(it, 'apng', 'built', { size: apng.length });
@@ -2391,7 +2400,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 			const token = ++it.dcToken;
 			_setOutputState(it, 'discord', 'processing');
 			try {
-				const apng = await buildApng320(it);
+				const apng = await _encGate(() => buildApng320(it));
 				if (token !== it.dcToken) return;
 				it.lastDc = apng;
 				_setOutputState(it, 'discord', 'built', { size: apng.length });
@@ -2452,7 +2461,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 			const token = ++it.webpToken;
 			_setOutputState(it, 'webp', 'processing');
 			try {
-				const webp = await buildWebp(it);
+				const webp = await _encGate(() => buildWebp(it));
 				if (token !== it.webpToken) return;
 				it.lastWebp = webp;
 				_setOutputState(it, 'webp', 'built', { size: webp.length });
@@ -4221,7 +4230,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 			}
 			_setOutputState(it, key, 'processing');
 			try {
-				const res = await _buildTgsOutput(it, key);
+				const res = await _encGate(() => _buildTgsOutput(it, key));
 				_applyTgsBuild(it, key, res);
 				if (!res.skipped) entries.push({ name: _tgsEntryName(it, key), data: res.data });
 			} catch (e) {
@@ -4256,7 +4265,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 			const token = ++it.tokens[key];
 			_setOutputState(it, key, 'processing');
 			try {
-				const res = await _buildTgsOutput(it, key);
+				const res = await _encGate(() => _buildTgsOutput(it, key));
 				if (token !== it.tokens[key]) return;
 				_applyTgsBuild(it, key, res);
 			} catch (e) {
@@ -4274,7 +4283,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		for (const key of TGS_ALL_KEYS.filter(k => G.tgsCells[k])) {
 			_setOutputState(it, key, 'processing');
 			try {
-				const res = await _buildTgsOutput(it, key);
+				const res = await _encGate(() => _buildTgsOutput(it, key));
 				_applyTgsBuild(it, key, res);
 			} catch (e) {
 				_setOutputState(it, key, 'error', { message: String(e.message || e) });
