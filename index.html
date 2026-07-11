@@ -564,6 +564,16 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 .sec { display: flex; flex-direction: column; gap: 8px; }
 .sec-h { font-size: var(--text-note); letter-spacing: var(--label-track-lg); opacity: .65; }
 .sec .intro-lead a { color: inherit; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+/* About / License content cards: same hairline + field-header language as .s-card in Settings */
+.info-card { border: 1px solid var(--line); background: var(--paper); display: flex; flex-direction: column; }
+.info-card-h { min-height: 38px; padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--field); display: flex; align-items: center; }
+.info-card-h .sec-h { opacity: .95; }
+.info-card-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.info-card-body .steps { padding-left: 18px; }
+.info-card-body .spec-scroll { margin: 0 -16px; padding: 0 16px; }
+.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.info-grid .info-card { height: 100%; }
+@media (max-width: 720px) { .info-grid { grid-template-columns: 1fr; } }
 /* License tab byline: app icon (the one deliberately rounded mark in the system) + author links */
 .license-byline { flex-direction: row; align-items: center; gap: 16px; }
 .license-icon-link { flex-shrink: 0; display: block; line-height: 0; transition: opacity var(--dur-fast) ease; }
@@ -1765,60 +1775,95 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		</div>
 
 		<div class="tab-page" data-page="about">
-			<div class="sec">
-				<span class="sec-h">WHY THIS TOOL</span>
-				<p class="intro-lead">PIXEL-ART ANIMATIONS ARE USUALLY DRAWN AS GIFS, BUT NO MAJOR MESSAGING PLATFORM ACCEPTS GIF STICKERS DIRECTLY — EACH DEMANDS ITS OWN FORMAT, CANVAS AND SIZE LIMIT. CONVERTING BY HAND MEANS JUGGLING SEVERAL COMMAND-LINE TOOLS AND LOSING CRISP PIXELS ALONG THE WAY.</p>
+			<div class="info-grid">
+				<div class="info-card">
+					<div class="info-card-h"><span class="sec-h">WHY THIS TOOL</span></div>
+					<div class="info-card-body">
+						<p class="intro-lead">PIXEL-ART ANIMATIONS ARE USUALLY DRAWN AS GIFS, BUT NO MAJOR MESSAGING PLATFORM ACCEPTS GIF STICKERS DIRECTLY — EACH DEMANDS ITS OWN FORMAT, CANVAS AND SIZE LIMIT. CONVERTING BY HAND MEANS JUGGLING SEVERAL COMMAND-LINE TOOLS AND LOSING CRISP PIXELS ALONG THE WAY.</p>
+					</div>
+				</div>
+				<div class="info-card">
+					<div class="info-card-h"><span class="sec-h">PURPOSE</span></div>
+					<div class="info-card-body">
+						<p class="intro-lead">A ONE-STOP TOOL THAT CONVERTS PIXEL-ART GIFS INTO STICKER FORMATS AND TGS (TELEGRAM ANIMATED STICKERS) INTO RASTER FORMATS FOR CROSS-PLATFORM USE. PIXEL-PERFECT NEAREST-NEIGHBOR SCALING, NO GHOSTING, ORIGINAL TIMING PRESERVED. EACH FILE GETS ITS OWN INDEPENDENT PROCESSING PANEL. ALL CONVERSION RUNS LOCALLY IN THE BROWSER — YOUR FILES ARE NEVER UPLOADED. THE ONLY NETWORK REQUESTS ARE FONTS AND, FOR TGS INPUT, A ONE-TIME LOTTIE-WEB FETCH FROM A CDN.</p>
+					</div>
+				</div>
 			</div>
-			<div class="sec">
-				<span class="sec-h">PURPOSE</span>
-				<p class="intro-lead">A ONE-STOP TOOL THAT CONVERTS PIXEL-ART GIFS INTO STICKER FORMATS AND TGS (TELEGRAM ANIMATED STICKERS) INTO RASTER FORMATS FOR CROSS-PLATFORM USE. PIXEL-PERFECT NEAREST-NEIGHBOR SCALING, NO GHOSTING, ORIGINAL TIMING PRESERVED. EACH FILE GETS ITS OWN INDEPENDENT PROCESSING PANEL. ALL CONVERSION RUNS LOCALLY IN THE BROWSER — YOUR FILES ARE NEVER UPLOADED. THE ONLY NETWORK REQUESTS ARE FONTS AND, FOR TGS INPUT, A ONE-TIME LOTTIE-WEB FETCH FROM A CDN.</p>
+			<div class="info-grid">
+				<div class="info-card">
+					<div class="info-card-h"><span class="sec-h">HOW TO USE — GIF CONVERTER</span></div>
+					<div class="info-card-body">
+						<ol class="steps">
+							<li>ADD — DROP GIFS ANYWHERE OR CLICK ADD GIF. ONE PANEL PER GIF.</li>
+							<li>REVIEW — EACH FILE GETS A HEADER (NUMBER · NAME · SOURCE INFO · PER-FORMAT STATUS), COLLAPSED BY DEFAULT. CLICK TO EXPAND FOR LIVE ANIMATED PREVIEWS OF EVERY OUTPUT FORMAT — OR SET THE DEFAULT IN SETTINGS → GLOBAL → JOB PANELS.</li>
+							<li>TUNE — SET DEFAULTS IN SETTINGS; OVERRIDE SCALE, FPS, FRAME RANGE, LOOPS OR QUALITY INSIDE ANY PANEL.</li>
+							<li>EXPORT — PER FORMAT, PER GIF, OR ALL AT ONCE (EXPORT ALL GIFS · ZIP).</li>
+						</ol>
+					</div>
+				</div>
+				<div class="info-card">
+					<div class="info-card-h"><span class="sec-h">HOW TO USE — TGS CONVERTER</span></div>
+					<div class="info-card-body">
+						<ol class="steps">
+							<li>ADD — DROP TGS ANYWHERE OR CLICK ADD TGS. LOTTIE-WEB LOADS FROM CDN ON FIRST USE (NETWORK REQUIRED ONCE).</li>
+							<li>REVIEW — EACH FILE GETS A COLLAPSIBLE HEADER, THEN ANIMATED SOURCE PREVIEW + AUTO-BUILT OUTPUTS: SIGNAL・512APNG, DISCORD・320APNG, LINE・APNG 270, WEBP (WHATSAPP), PNG 512, PNG CROPPED.</li>
+							<li>TUNE — SETTINGS → TGS CONVERTER SETTINGS SETS THE DEFAULTS: LOOP COUNT, OUTPUT SIZE (DISCORD・320APNG), QUALITY (WEBP), FRAME SELECTION (PNG). EACH PANEL THEN OVERRIDES PER FILE — AUTO-FIT, FPS AND MAX COLORS ON SIGNAL・512APNG, DISCORD・320APNG AND WEBP.</li>
+							<li>EXPORT — PER FORMAT IN EACH CELL, PER PANEL ZIP, OR EXPORT ALL TGS · ZIP.</li>
+						</ol>
+					</div>
+				</div>
 			</div>
-			<div class="sec">
-				<span class="sec-h">HOW TO USE — GIF CONVERTER</span>
-				<ol class="steps">
-					<li>ADD — DROP GIFS ANYWHERE OR CLICK ADD GIF. ONE PANEL PER GIF.</li>
-					<li>REVIEW — EACH FILE GETS A HEADER (NUMBER · NAME · SOURCE INFO · PER-FORMAT STATUS), COLLAPSED BY DEFAULT. CLICK TO EXPAND FOR LIVE ANIMATED PREVIEWS OF EVERY OUTPUT FORMAT — OR SET THE DEFAULT IN SETTINGS → GLOBAL → JOB PANELS.</li>
-					<li>TUNE — SET DEFAULTS IN SETTINGS; OVERRIDE SCALE, FPS, FRAME RANGE, LOOPS OR QUALITY INSIDE ANY PANEL.</li>
-					<li>EXPORT — PER FORMAT, PER GIF, OR ALL AT ONCE (EXPORT ALL GIFS · ZIP).</li>
-				</ol>
+			<div class="info-card">
+				<div class="info-card-h"><span class="sec-h">PLATFORM SPECS</span></div>
+				<div class="info-card-body">
+					<div class="spec-scroll">
+						<table class="spec-table">
+							<thead>
+								<tr><th>PLATFORM</th><th>ANIMATED FORMAT</th><th>CANVAS</th><th>SIZE LIMIT</th><th>NOTES</th></tr>
+							</thead>
+							<tbody>
+								<tr><td><a href="https://core.telegram.org/animated_stickers" target="_blank" rel="noopener">TELEGRAM</a></td><td><span class="fmt">TGS (LOTTIE)</span></td><td>512 × 512</td><td>≤ 64 KB</td><td>VECTOR ANIMATION, BEST QUALITY. ALSO ACCEPTS WEBM VIDEO STICKERS. — USES “GIF → TGS” (PIXELART2TGS METHOD).</td></tr>
+								<tr><td><a href="https://support.signal.org/hc/en-us/articles/360031836512-Stickers" target="_blank" rel="noopener">SIGNAL</a></td><td><span class="fmt">APNG</span></td><td>512 × 512</td><td>≤ 300 KB</td><td>MAX 3 S. GIF NOT ACCEPTED. — USES “GIF → APNG” (APNGASM-STYLE DELTA).</td></tr>
+								<tr><td><a href="https://support.discord.com/hc/en-us/articles/4402687377815-Tips-for-Sticker-Creators-FAQ" target="_blank" rel="noopener">DISCORD</a></td><td><span class="fmt">APNG</span></td><td>320 × 320</td><td>≤ 512 KB</td><td>EACH STICKER NEEDS AN EMOJI TAG. — USES “APNG 320 · DISCORD”.</td></tr>
+								<tr><td><a href="https://github.com/WhatsApp/stickers/wiki/Animation" target="_blank" rel="noopener">WHATSAPP</a></td><td><span class="fmt">ANIMATED WEBP</span></td><td>512 × 512</td><td>≈ ≤ 100 KB</td><td>TRANSPARENT BACKGROUND. — USES “GIF → WEBP” (LOSSLESS VP8L).</td></tr>
+								<tr><td><a href="https://creator.line.me/en/guideline/animationsticker/" target="_blank" rel="noopener">LINE</a></td><td><span class="fmt">APNG</span></td><td>≤ 320 × 270</td><td>≤ 1 MB</td><td>5–20 FRAMES, 1–4 LOOPS, ≤ 4 S TOTAL. — USES DEDICATED “LINE・APNG 270” OUTPUT (270 × 270 CANVAS, APNG).</td></tr>
+								<tr><td><a href="https://developer.apple.com/design/human-interface-guidelines/imessage-apps-and-stickers" target="_blank" rel="noopener">IMESSAGE</a></td><td><span class="fmt">APNG</span></td><td>300–618 PX (@3×)</td><td>≤ 500 KB</td><td>SHIPPED AS AN XCODE STICKER PACK. ALSO ACCEPTS PNG, GIF. — USES “GIF → APNG”.</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
 			</div>
-			<div class="sec">
-				<span class="sec-h">HOW TO USE — TGS CONVERTER</span>
-				<ol class="steps">
-					<li>ADD — DROP TGS ANYWHERE OR CLICK ADD TGS. LOTTIE-WEB LOADS FROM CDN ON FIRST USE (NETWORK REQUIRED ONCE).</li>
-					<li>REVIEW — EACH FILE GETS A COLLAPSIBLE HEADER, THEN ANIMATED SOURCE PREVIEW + AUTO-BUILT OUTPUTS: SIGNAL・512APNG, DISCORD・320APNG, LINE・APNG 270, WEBP (WHATSAPP), PNG 512, PNG CROPPED.</li>
-					<li>TUNE — SETTINGS → TGS CONVERTER SETTINGS SETS THE DEFAULTS: LOOP COUNT, OUTPUT SIZE (DISCORD・320APNG), QUALITY (WEBP), FRAME SELECTION (PNG). EACH PANEL THEN OVERRIDES PER FILE — AUTO-FIT, FPS AND MAX COLORS ON SIGNAL・512APNG, DISCORD・320APNG AND WEBP.</li>
-					<li>EXPORT — PER FORMAT IN EACH CELL, PER PANEL ZIP, OR EXPORT ALL TGS · ZIP.</li>
-				</ol>
+			<div class="info-grid">
+				<div class="info-card">
+					<div class="info-card-h"><span class="sec-h">RASTER PIPELINE</span></div>
+					<div class="info-card-body">
+						<p class="intro-lead">APNG — FULL-FRAME RECONSTRUCTION (GIF DISPOSAL METHODS RESOLVED, NO GHOSTING), TIMING PRESERVED, TRANSPARENT CENTERED CANVAS, PALETTE · DELTA · ADAPTIVE-FILTER COMPRESSION. DISCORD — SAME PIPELINE ON A 320 CANVAS; EACH STICKER NEEDS AN EMOJI TAG ON UPLOAD. PNG — PALETTE + ADAPTIVE FILTER, TRANSPARENT BACKGROUND. TGS — PIXELS AS VECTOR RECTS, ONE PRECOMP REUSED × 2 LAYERS. WEBP — LOSSLESS VP8L DELTA FRAMES + DUPLICATE-FRAME DEDUP (LOSSY VP8 OPTIONAL).</p>
+					</div>
+				</div>
+				<div class="info-card">
+					<div class="info-card-h"><span class="sec-h">TGS CONVERTER PIPELINE</span></div>
+					<div class="info-card-body">
+						<p class="intro-lead">LOTTIE-WEB RENDERS EACH FRAME TO AN OFF-SCREEN CANVAS AT TARGET SIZE. EVERY ENABLED OUTPUT IS BUILT AS SOON AS THE FILE LANDS, SO EXPORT IS A CACHE READ, AND EACH CELL SHOWS THE ENCODED SIZE — NOT THE SOURCE SIZE. FRAMES ARE ASSEMBLED INTO: APNG (DELTA + PALETTE), DISCORD・320APNG (CONFIGURABLE SIZE), WEBP (VP8/VP8L, LOSSY OR LOSSLESS), PNG (SINGLE FRAME — FIRST / LAST / MID / CUSTOM — WITH OR WITHOUT PADDING). SIGNAL・512APNG WARNS IF ANIMATION EXCEEDS 3 SECONDS.</p>
+					</div>
+				</div>
+				<div class="info-card">
+					<div class="info-card-h"><span class="sec-h">AUTO-FIT LADDER</span></div>
+					<div class="info-card-body">
+						<p class="intro-lead">WHEN AN OUTPUT EXCEEDS ITS PLATFORM BYTE LIMIT, THE FRAME RATE IS STEPPED DOWN FIRST (60 → 30 → 20 → 10 FPS), WHICH COSTS SMOOTHNESS BUT NOT A SINGLE PIXEL. ONLY IF THAT STILL DOES NOT FIT DOES THE PALETTE DROP (256 → 128 → 64 COLORS; FOR LOSSY WEBP, QUALITY DROPS INSTEAD). THE FIRST CANDIDATE AT OR UNDER THE LIMIT WINS. IF NOTHING FITS, THE SMALLEST IS KEPT AND THE CELL WARNS. TURN AUTO-FIT OFF TO SET FPS AND MAX COLORS BY HAND, PER FILE.</p>
+					</div>
+				</div>
+				<div class="info-card">
+					<div class="info-card-h"><span class="sec-h">VECTOR OFFSET</span></div>
+					<div class="info-card-body">
+						<p class="intro-lead">ADJACENT VECTOR RECTANGLES CAN SHOW HAIRLINE SEAMS WHEN ANTI-ALIASED BY LOTTIE RENDERERS. THE TGS IS DRAWN AS TWO STACKED COPIES OF THE SAME PRECOMP — THE SECOND NUDGED BY 0.4 PX — SO THE OVERLAP FILLS THE GAPS.</p>
+					</div>
+				</div>
 			</div>
-			<div class="sec">
-				<span class="sec-h">PLATFORM SPECS</span>
-		<div class="spec-scroll">
-			<table class="spec-table">
-				<thead>
-					<tr><th>PLATFORM</th><th>ANIMATED FORMAT</th><th>CANVAS</th><th>SIZE LIMIT</th><th>NOTES</th></tr>
-				</thead>
-				<tbody>
-					<tr><td><a href="https://core.telegram.org/animated_stickers" target="_blank" rel="noopener">TELEGRAM</a></td><td><span class="fmt">TGS (LOTTIE)</span></td><td>512 × 512</td><td>≤ 64 KB</td><td>VECTOR ANIMATION, BEST QUALITY. ALSO ACCEPTS WEBM VIDEO STICKERS. — USES “GIF → TGS” (PIXELART2TGS METHOD).</td></tr>
-					<tr><td><a href="https://support.signal.org/hc/en-us/articles/360031836512-Stickers" target="_blank" rel="noopener">SIGNAL</a></td><td><span class="fmt">APNG</span></td><td>512 × 512</td><td>≤ 300 KB</td><td>MAX 3 S. GIF NOT ACCEPTED. — USES “GIF → APNG” (APNGASM-STYLE DELTA).</td></tr>
-					<tr><td><a href="https://support.discord.com/hc/en-us/articles/4402687377815-Tips-for-Sticker-Creators-FAQ" target="_blank" rel="noopener">DISCORD</a></td><td><span class="fmt">APNG</span></td><td>320 × 320</td><td>≤ 512 KB</td><td>EACH STICKER NEEDS AN EMOJI TAG. — USES “APNG 320 · DISCORD”.</td></tr>
-					<tr><td><a href="https://github.com/WhatsApp/stickers/wiki/Animation" target="_blank" rel="noopener">WHATSAPP</a></td><td><span class="fmt">ANIMATED WEBP</span></td><td>512 × 512</td><td>≈ ≤ 100 KB</td><td>TRANSPARENT BACKGROUND. — USES “GIF → WEBP” (LOSSLESS VP8L).</td></tr>
-					<tr><td><a href="https://creator.line.me/en/guideline/animationsticker/" target="_blank" rel="noopener">LINE</a></td><td><span class="fmt">APNG</span></td><td>≤ 320 × 270</td><td>≤ 1 MB</td><td>5–20 FRAMES, 1–4 LOOPS, ≤ 4 S TOTAL. — USES DEDICATED “LINE・APNG 270” OUTPUT (270 × 270 CANVAS, APNG).</td></tr>
-					<tr><td><a href="https://developer.apple.com/design/human-interface-guidelines/imessage-apps-and-stickers" target="_blank" rel="noopener">IMESSAGE</a></td><td><span class="fmt">APNG</span></td><td>300–618 PX (@3×)</td><td>≤ 500 KB</td><td>SHIPPED AS AN XCODE STICKER PACK. ALSO ACCEPTS PNG, GIF. — USES “GIF → APNG”.</td></tr>
-				</tbody>
-			</table>
-		</div>
-			</div>
-			<div class="sec">
-				<span class="sec-h">UNDER THE HOOD</span>
-				<p class="intro-lead">APNG — FULL-FRAME RECONSTRUCTION (GIF DISPOSAL METHODS RESOLVED, NO GHOSTING), TIMING PRESERVED, TRANSPARENT CENTERED CANVAS, PALETTE · DELTA · ADAPTIVE-FILTER COMPRESSION. DISCORD — SAME PIPELINE ON A 320 CANVAS; EACH STICKER NEEDS AN EMOJI TAG ON UPLOAD. PNG — PALETTE + ADAPTIVE FILTER, TRANSPARENT BACKGROUND. TGS — PIXELS AS VECTOR RECTS, ONE PRECOMP REUSED × 2 LAYERS. WEBP — LOSSLESS VP8L DELTA FRAMES + DUPLICATE-FRAME DEDUP (LOSSY VP8 OPTIONAL).</p>
-				<p class="intro-lead">TGS CONVERTER — LOTTIE-WEB RENDERS EACH FRAME TO AN OFF-SCREEN CANVAS AT TARGET SIZE. EVERY ENABLED OUTPUT IS BUILT AS SOON AS THE FILE LANDS, SO EXPORT IS A CACHE READ, AND EACH CELL SHOWS THE ENCODED SIZE — NOT THE SOURCE SIZE. FRAMES ARE ASSEMBLED INTO: APNG (DELTA + PALETTE), DISCORD・320APNG (CONFIGURABLE SIZE), WEBP (VP8/VP8L, LOSSY OR LOSSLESS), PNG (SINGLE FRAME — FIRST / LAST / MID / CUSTOM — WITH OR WITHOUT PADDING). SIGNAL・512APNG WARNS IF ANIMATION EXCEEDS 3 SECONDS.</p>
-				<p class="intro-lead">AUTO-FIT — WHEN AN OUTPUT EXCEEDS ITS PLATFORM BYTE LIMIT, THE FRAME RATE IS STEPPED DOWN FIRST (60 → 30 → 20 → 10 FPS), WHICH COSTS SMOOTHNESS BUT NOT A SINGLE PIXEL. ONLY IF THAT STILL DOES NOT FIT DOES THE PALETTE DROP (256 → 128 → 64 COLORS; FOR LOSSY WEBP, QUALITY DROPS INSTEAD). THE FIRST CANDIDATE AT OR UNDER THE LIMIT WINS. IF NOTHING FITS, THE SMALLEST IS KEPT AND THE CELL WARNS. TURN AUTO-FIT OFF TO SET FPS AND MAX COLORS BY HAND, PER FILE.</p>
-				<p class="intro-lead">WHY OFFSET? ADJACENT VECTOR RECTANGLES CAN SHOW HAIRLINE SEAMS WHEN ANTI-ALIASED BY LOTTIE RENDERERS. THE TGS IS DRAWN AS TWO STACKED COPIES OF THE SAME PRECOMP — THE SECOND NUDGED BY 0.4 PX — SO THE OVERLAP FILLS THE GAPS.</p>
-			</div>
-			<div class="sec">
-				<span class="sec-h">TOOLS &amp; ACKNOWLEDGEMENTS</span>
-				<p class="intro-lead">BUILT ON THE METHODS OF <a href="https://github.com/sliva0/pixelart2tgs" target="_blank" rel="noopener">PIXELART2TGS</a> BY SLIVA0 (TGS) · <a href="https://github.com/apngasm/apngasm" target="_blank" rel="noopener">APNGASM</a> DELTA FRAMES (APNG) · <a href="https://github.com/shssoichiro/oxipng" target="_blank" rel="noopener">OXIPNG</a> ADAPTIVE FILTERING (PNG) · <a href="https://github.com/webmproject/libwebp" target="_blank" rel="noopener">LIBWEBP</a> LOSSLESS VP8L VIA THE BROWSER (WEBP) · <a href="https://airbnb.io/lottie/" target="_blank" rel="noopener">LOTTIE</a> FORMAT. TYPE — GOOGLE FONTS: FACULTY GLYPHIC / SOMETYPE MONO. UI — BATCHFRAME DESIGN SYSTEM. THANKS TO THE OPEN-SOURCE COMMUNITY FOR MAKING LOCAL, SERVERLESS TOOLS LIKE THIS POSSIBLE.</p>
+			<div class="info-card">
+				<div class="info-card-h"><span class="sec-h">TOOLS &amp; ACKNOWLEDGEMENTS</span></div>
+				<div class="info-card-body">
+					<p class="intro-lead">BUILT ON THE METHODS OF <a href="https://github.com/sliva0/pixelart2tgs" target="_blank" rel="noopener">PIXELART2TGS</a> BY SLIVA0 (TGS) · <a href="https://github.com/apngasm/apngasm" target="_blank" rel="noopener">APNGASM</a> DELTA FRAMES (APNG) · <a href="https://github.com/shssoichiro/oxipng" target="_blank" rel="noopener">OXIPNG</a> ADAPTIVE FILTERING (PNG) · <a href="https://github.com/webmproject/libwebp" target="_blank" rel="noopener">LIBWEBP</a> LOSSLESS VP8L VIA THE BROWSER (WEBP) · <a href="https://airbnb.io/lottie/" target="_blank" rel="noopener">LOTTIE</a> FORMAT. TYPE — GOOGLE FONTS: FACULTY GLYPHIC / SOMETYPE MONO. UI — BATCHFRAME DESIGN SYSTEM. THANKS TO THE OPEN-SOURCE COMMUNITY FOR MAKING LOCAL, SERVERLESS TOOLS LIKE THIS POSSIBLE.</p>
+				</div>
 			</div>
 		</div>
 
@@ -1834,17 +1879,23 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					</span>
 				</div>
 			</div>
-			<div class="sec">
-				<span class="sec-h">COPYRIGHT</span>
-				<p class="intro-lead">STICKERFORGE STUDIO — © 2026 NALDO WONG. ALL RIGHTS RESERVED UNDER THE TERMS BELOW.</p>
+			<div class="info-card">
+				<div class="info-card-h"><span class="sec-h">COPYRIGHT</span></div>
+				<div class="info-card-body">
+					<p class="intro-lead">STICKERFORGE STUDIO — © 2026 NALDO WONG. ALL RIGHTS RESERVED UNDER THE TERMS BELOW.</p>
+				</div>
 			</div>
-			<div class="sec">
-				<span class="sec-h">OPEN SOURCE · GPL V3</span>
-				<p class="intro-lead">THIS PROGRAM IS FREE SOFTWARE: YOU CAN REDISTRIBUTE IT AND/OR MODIFY IT UNDER THE TERMS OF THE GNU GENERAL PUBLIC LICENSE AS PUBLISHED BY THE FREE SOFTWARE FOUNDATION, EITHER VERSION 3 OF THE LICENSE, OR (AT YOUR OPTION) ANY LATER VERSION. YOU MAY STUDY, SHARE AND ADAPT THIS TOOL — DERIVATIVE WORKS MUST REMAIN UNDER THE SAME LICENSE.</p>
+			<div class="info-card">
+				<div class="info-card-h"><span class="sec-h">OPEN SOURCE · GPL V3</span></div>
+				<div class="info-card-body">
+					<p class="intro-lead">THIS PROGRAM IS FREE SOFTWARE: YOU CAN REDISTRIBUTE IT AND/OR MODIFY IT UNDER THE TERMS OF THE GNU GENERAL PUBLIC LICENSE AS PUBLISHED BY THE FREE SOFTWARE FOUNDATION, EITHER VERSION 3 OF THE LICENSE, OR (AT YOUR OPTION) ANY LATER VERSION. YOU MAY STUDY, SHARE AND ADAPT THIS TOOL — DERIVATIVE WORKS MUST REMAIN UNDER THE SAME LICENSE.</p>
+				</div>
 			</div>
-			<div class="sec">
-				<span class="sec-h">NO WARRANTY</span>
-				<p class="intro-lead">THIS PROGRAM IS DISTRIBUTED IN THE HOPE THAT IT WILL BE USEFUL, BUT WITHOUT ANY WARRANTY — WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. FULL LICENSE TEXT: <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GNU.ORG/LICENSES/GPL-3.0</a>.</p>
+			<div class="info-card">
+				<div class="info-card-h"><span class="sec-h">NO WARRANTY</span></div>
+				<div class="info-card-body">
+					<p class="intro-lead">THIS PROGRAM IS DISTRIBUTED IN THE HOPE THAT IT WILL BE USEFUL, BUT WITHOUT ANY WARRANTY — WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. FULL LICENSE TEXT: <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GNU.ORG/LICENSES/GPL-3.0</a>.</p>
+				</div>
 			</div>
 		</div>
 	</div>
