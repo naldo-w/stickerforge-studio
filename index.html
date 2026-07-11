@@ -1532,7 +1532,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			<span class="modal-h-actions">
 				<span class="bf-seg" id="modalTabs" role="tablist">
 					<button type="button" class="bf-seg-btn bf-on" data-tab="settings" role="tab">Settings</button>
-					<button type="button" class="bf-seg-btn" data-tab="about" role="tab">About</button>
+					<button type="button" class="bf-seg-btn" data-tab="about" role="tab">FAQ</button>
 					<button type="button" class="bf-seg-btn" data-tab="license" role="tab">License</button>
 				</span>
 				<button type="button" class="bf-btn bf-btn--sm" id="infoClose">Close</button>
@@ -1750,13 +1750,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		<div class="tab-page" data-page="about">
 			<div class="info-grid">
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">WHY THIS TOOL</span></div>
+					<div class="info-card-h"><span class="sec-h">WHY DOESN'T MY MESSAGING APP JUST ACCEPT GIFS?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">PIXEL-ART ANIMATIONS ARE USUALLY DRAWN AS GIFS, BUT NO MAJOR MESSAGING PLATFORM ACCEPTS GIF STICKERS DIRECTLY — EACH DEMANDS ITS OWN FORMAT, CANVAS AND SIZE LIMIT. CONVERTING BY HAND MEANS JUGGLING SEVERAL COMMAND-LINE TOOLS AND LOSING CRISP PIXELS ALONG THE WAY.</p>
 					</div>
 				</div>
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">PURPOSE</span></div>
+					<div class="info-card-h"><span class="sec-h">WHAT DOES THIS TOOL DO?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">A ONE-STOP TOOL THAT CONVERTS PIXEL-ART GIFS INTO STICKER FORMATS AND TGS (TELEGRAM ANIMATED STICKERS) INTO RASTER FORMATS FOR CROSS-PLATFORM USE. PIXEL-PERFECT NEAREST-NEIGHBOR SCALING, NO GHOSTING, ORIGINAL TIMING PRESERVED. EACH FILE GETS ITS OWN INDEPENDENT PROCESSING PANEL. ALL CONVERSION RUNS LOCALLY IN THE BROWSER — YOUR FILES ARE NEVER UPLOADED. THE ONLY NETWORK REQUESTS ARE FONTS AND, FOR TGS INPUT, A ONE-TIME LOTTIE-WEB FETCH FROM A CDN.</p>
 					</div>
@@ -1764,7 +1764,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			</div>
 			<div class="info-grid">
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">HOW TO USE — GIF CONVERTER</span></div>
+					<div class="info-card-h"><span class="sec-h">HOW DO I CONVERT A GIF?</span></div>
 					<div class="info-card-body">
 						<ol class="steps">
 							<li>ADD — DROP GIFS ANYWHERE OR CLICK ADD GIF. ONE PANEL PER GIF.</li>
@@ -1775,7 +1775,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					</div>
 				</div>
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">HOW TO USE — TGS CONVERTER</span></div>
+					<div class="info-card-h"><span class="sec-h">HOW DO I CONVERT A TGS STICKER?</span></div>
 					<div class="info-card-body">
 						<ol class="steps">
 							<li>ADD — DROP TGS ANYWHERE OR CLICK ADD TGS. LOTTIE-WEB LOADS FROM CDN ON FIRST USE (NETWORK REQUIRED ONCE).</li>
@@ -1808,25 +1808,25 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			</div>
 			<div class="info-grid">
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">RASTER PIPELINE</span></div>
+					<div class="info-card-h"><span class="sec-h">WHAT HAPPENS TO MY PIXELS?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">APNG — FULL-FRAME RECONSTRUCTION (GIF DISPOSAL METHODS RESOLVED, NO GHOSTING), TIMING PRESERVED, TRANSPARENT CENTERED CANVAS, PALETTE · DELTA · ADAPTIVE-FILTER COMPRESSION. DISCORD — SAME PIPELINE ON A 320 CANVAS; EACH STICKER NEEDS AN EMOJI TAG ON UPLOAD. PNG — PALETTE + ADAPTIVE FILTER, TRANSPARENT BACKGROUND. TGS — PIXELS AS VECTOR RECTS, ONE PRECOMP REUSED × 2 LAYERS. WEBP — LOSSLESS VP8L DELTA FRAMES + DUPLICATE-FRAME DEDUP (LOSSY VP8 OPTIONAL).</p>
 					</div>
 				</div>
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">TGS CONVERTER PIPELINE</span></div>
+					<div class="info-card-h"><span class="sec-h">HOW DOES THE TGS CONVERTER WORK?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">LOTTIE-WEB RENDERS EACH FRAME TO AN OFF-SCREEN CANVAS AT TARGET SIZE. EVERY ENABLED OUTPUT IS BUILT AS SOON AS THE FILE LANDS, SO EXPORT IS A CACHE READ, AND EACH CELL SHOWS THE ENCODED SIZE — NOT THE SOURCE SIZE. FRAMES ARE ASSEMBLED INTO: APNG (DELTA + PALETTE), DISCORD・320APNG (CONFIGURABLE SIZE), WEBP (VP8/VP8L, LOSSY OR LOSSLESS), PNG (SINGLE FRAME — FIRST / LAST / MID / CUSTOM — WITH OR WITHOUT PADDING). SIGNAL・512APNG WARNS IF ANIMATION EXCEEDS 3 SECONDS.</p>
 					</div>
 				</div>
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">AUTO-FIT LADDER</span></div>
+					<div class="info-card-h"><span class="sec-h">WHAT HAPPENS IF MY OUTPUT IS TOO BIG?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">WHEN AN OUTPUT EXCEEDS ITS PLATFORM BYTE LIMIT, THE FRAME RATE IS STEPPED DOWN FIRST (60 → 30 → 20 → 10 FPS), WHICH COSTS SMOOTHNESS BUT NOT A SINGLE PIXEL. ONLY IF THAT STILL DOES NOT FIT DOES THE PALETTE DROP (256 → 128 → 64 COLORS; FOR LOSSY WEBP, QUALITY DROPS INSTEAD). THE FIRST CANDIDATE AT OR UNDER THE LIMIT WINS. IF NOTHING FITS, THE SMALLEST IS KEPT AND THE CELL WARNS. TURN AUTO-FIT OFF TO SET FPS AND MAX COLORS BY HAND, PER FILE.</p>
 					</div>
 				</div>
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">VECTOR OFFSET</span></div>
+					<div class="info-card-h"><span class="sec-h">WHY IS THERE A 0.4PX OFFSET ON TGS OUTPUT?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">ADJACENT VECTOR RECTANGLES CAN SHOW HAIRLINE SEAMS WHEN ANTI-ALIASED BY LOTTIE RENDERERS. THE TGS IS DRAWN AS TWO STACKED COPIES OF THE SAME PRECOMP — THE SECOND NUDGED BY 0.4 PX — SO THE OVERLAP FILLS THE GAPS.</p>
 					</div>
@@ -4891,7 +4891,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	const infoModal = document.getElementById("infoModal");
 	const modalTabs = document.getElementById("modalTabs");
 	const modalTitle = document.getElementById("modalTitle");
-	const TAB_TITLES = { settings: "Settings", about: "About", license: "License" };
+	const TAB_TITLES = { settings: "Settings", about: "FAQ", license: "License" };
 	function showTab(tab) {
 		modalTabs.querySelectorAll(".bf-seg-btn").forEach(b => b.classList.toggle("bf-on", b.dataset.tab === tab));
 		infoModal.querySelectorAll(".tab-page").forEach(p => p.classList.toggle("on", p.dataset.page === tab));
