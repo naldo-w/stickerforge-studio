@@ -1280,14 +1280,15 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	min-height: 48px;
 	margin: 0;
 	padding: 0;
-	gap: 1px;
-	border: 1px solid var(--line);
-	background: var(--line);
+	gap: 0;
+	border: 0;
+	border-bottom: 1px solid var(--line);
+	background: var(--paper);
 }
 .ws-tab {
 	min-width: 104px;
 	border: 0;
-	border-bottom: 1px solid transparent;
+	border-bottom: 2px solid transparent;
 	background-color: var(--paper);
 }
 .ws-tab.on { border-bottom: 2px solid var(--accent-ink); }
@@ -4621,6 +4622,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			bindExports(it);
 			refreshStatic(it, { skipSchedule: true });
 			justLoaded.push(it);
+			updateStats(); // show/update the stats block per file as it loads, not after the whole batch
 		}
 		applyCellToggles(); // sync cell visibility on newly added panels
 		updateStatus();
@@ -6378,6 +6380,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				tgsItems.push(it);
 				_initTgsPanel(it, { deferPrime: true });
 				justLoaded.push(it);
+				updateStats(); // show/update the stats block per file as it loads, not after the whole batch
 			} catch (e) {
 				reportError("TGS_LOAD_ERROR", e, { file: file.name, size: file.size });
 				alert(`CANNOT LOAD TGS: ${file.name}. COPY ERROR REPORT AND SEND IT TO CODEX.`);
