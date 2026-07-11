@@ -2401,6 +2401,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			chunks.push(pngChunk("fcTL", fctl(seq++, box.w, box.h, box.x, box.y, coalesced[i].delayMs)));
 			if (i === 0) chunks.push(pngChunk("IDAT", compressed));
 			else chunks.push(pngChunk("fdAT", concatBytes([u32be(seq++), compressed])));
+			if (opts.onFrame) opts.onFrame(i + 1, coalesced.length);
 		}
 		chunks.push(pngChunk("IEND", new Uint8Array(0)));
 		return concatBytes(chunks);
@@ -2927,10 +2928,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (state === 'built') return 'DONE';
 		if (state === 'error') return 'FAILED';
 		if (state === 'skipped') return 'SKIPPED';
+		const ft = it?.stats?.[key]?.framesTotal;
+		const frameSuffix = (state === 'processing' && ft > 0) ? ` ${it.stats[key].framesDone || 0}/${ft}` : '';
 		const ordinal = _encQueueOrdinal(it, key, state);
-		if (!ordinal) return _cellProgressText(state);
+		if (!ordinal) return _cellProgressText(state) + frameSuffix;
 		const active = !!_encActive && _encActive.some(job => job.meta?.it === it && (key === 'settings' || job.meta?.key === key));
-		return `${String(ordinal).padStart(3, '0')} ${active ? 'PROCESSING' : 'QUEUED'}`;
+		return `${String(ordinal).padStart(3, '0')} ${active ? 'PROCESSING' : 'QUEUED'}${frameSuffix}`;
 	}
 	function _progressSourceForItem(it) {
 		return tgsItems.includes(it) ? tgsItems : items;
@@ -2964,7 +2967,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const node = _ensureHeaderProgress(header);
 		const state = it.stats?.[key]?.state || ((key === 'frame' || key === 'pad') ? 'ready' : 'queued');
 		const handled = state === 'built' || state === 'skipped' || state === 'error';
-		const pct = handled ? 100 : (state === 'processing' ? 50 : 0);
+		const ft = it.stats?.[key]?.framesTotal;
+		const framePct = ft > 0 ? Math.round(((it.stats[key].framesDone || 0) / ft) * 100) : null;
+		const pct = handled ? 100 : (state === 'processing' ? (framePct != null ? framePct : 50) : 0);
 		header.classList.remove('has-progress', 'processing', 'built', 'queued', 'failed', 'ready', 'skipped');
 		header.classList.add('has-progress', state === 'error' ? 'failed' : state);
 		header.style.setProperty('--progress', `${pct}%`);
@@ -3021,7 +3026,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (!it) return;
 		it.stats = it.stats || {};
 		const prev = it.stats[key] || {};
-		it.stats[key] = Object.assign({}, prev, data || {}, { state, updatedAt: Date.now() });
+		const resetFrames = state === 'queued' ? { framesDone: 0, framesTotal: 0 } : null;
+		it.stats[key] = Object.assign({}, prev, resetFrames, data || {}, { state, updatedAt: Date.now() });
 		_refreshCellProgress(it, key);
 		_refreshItemProgress(it);
 		_queueStatsRefresh();
@@ -4015,13 +4021,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		let src = quantizeFrames(activeFrames(it), s.apngMaxColors);
 		if (s.fit3s) src = fit3sDelays(src);
 		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc), delayMs: f.delayMs }));
-		return C.encodeApng(frames, CS, CS, s.apngLoops);
+		return C.encodeApng(frames, CS, CS, s.apngLoops, { onFrame: (done, total) => _setOutputState(it, 'apng', 'processing', { framesDone: done, framesTotal: total }) });
 	}
 	async function buildApng320(it) {
 		const s = it.settings, sc = dcScale(it);
 		const src = quantizeFrames(activeFrames(it), s.dcMaxColors);
 		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 320), delayMs: f.delayMs }));
-		return C.encodeApng(frames, 320, 320, s.dcLoops);
+		return C.encodeApng(frames, 320, 320, s.dcLoops, { onFrame: (done, total) => _setOutputState(it, 'discord', 'processing', { framesDone: done, framesTotal: total }) });
 	}
 	async function buildApngLine(it) {
 		const s = it.settings, sc = lineScale(it);
@@ -4029,7 +4035,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		src = fitDurationDelays(src, 4000);
 		src = _normalizeLineFrameCount(src);
 		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 270), delayMs: f.delayMs }));
-		return C.encodeApng(frames, 270, 270, 1, { coalesce: false }); // LINE requires finite loops and 5–20 APNG frames
+		return C.encodeApng(frames, 270, 270, 1, { coalesce: false, onFrame: (done, total) => _setOutputState(it, 'line', 'processing', { framesDone: done, framesTotal: total }) }); // LINE requires finite loops and 5–20 APNG frames
 	}
 	/* Global encode queue — one heavy encode at a time, file-first.
 	   Jobs are sorted by file order, then by each converter's processing priority. */
@@ -4241,7 +4247,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const ctx = cv.getContext("2d", { willReadFrequently: true });
 		const sub = document.createElement("canvas");
 		const encoded = [];
-		let prev = null;
+		let prev = null, done = 0;
 		for (const f of frames) {
 			it.off.getContext("2d").putImageData(new ImageData(f.rgba, w, h), 0, 0);
 			ctx.clearRect(0, 0, CS, CS);
@@ -4250,7 +4256,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const cur = ctx.getImageData(0, 0, CS, CS).data;
 			// delta: encode only the changed region (apngasm-style); ANMF x/y must be even
 			let box = prev ? C.diffBox(prev, cur, CS, CS) : { x: 0, y: 0, w: CS, h: CS };
-			if (!box) { encoded[encoded.length - 1].delayMs += f.delayMs; prev = cur; continue; } // identical frame → extend previous delay (libwebp-style dedup)
+			if (!box) { encoded[encoded.length - 1].delayMs += f.delayMs; prev = cur; _setOutputState(it, 'webp', 'processing', { framesDone: ++done, framesTotal: frames.length }); continue; } // identical frame → extend previous delay (libwebp-style dedup)
 			if (!lossless) box = { x: 0, y: 0, w: CS, h: CS }; // lossy VP8 → full frames (avoids seams at delta borders)
 			if (box.x & 1) { box.x--; box.w++; }
 			if (box.y & 1) { box.y--; box.h++; }
@@ -4260,6 +4266,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			if (!blob || blob.type !== "image/webp") throw new Error("WEBP ENCODE UNSUPPORTED IN THIS BROWSER");
 			encoded.push({ bytes: new Uint8Array(await blob.arrayBuffer()), delayMs: f.delayMs, x: box.x, y: box.y, w: box.w, h: box.h });
 			prev = cur;
+			_setOutputState(it, 'webp', 'processing', { framesDone: ++done, framesTotal: frames.length });
 		}
 		return C.muxAnimatedWebp(encoded, CS, CS, it.settings.webpLoops);
 	}
@@ -5611,18 +5618,19 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		});
 	}
 
-	async function _buildTgsWebp(frames, lossless, quality, loops) {
+	async function _buildTgsWebp(frames, lossless, quality, loops, onFrame) {
 		const cv = document.createElement('canvas');
 		cv.width = CS; cv.height = CS;
 		const ctx = cv.getContext('2d', { willReadFrequently: true });
 		const sub = document.createElement('canvas');
 		const encoded = []; let prev = null;
+		let done = 0;
 		for (const f of frames) {
 			const id = new ImageData(new Uint8ClampedArray(f.rgba), CS, CS);
 			ctx.clearRect(0, 0, CS, CS); ctx.putImageData(id, 0, 0);
 			const cur = ctx.getImageData(0, 0, CS, CS).data;
 			let box = prev ? C.diffBox(prev, cur, CS, CS) : { x: 0, y: 0, w: CS, h: CS };
-			if (!box) { if (encoded.length) encoded[encoded.length - 1].delayMs += f.delayMs; prev = cur; continue; }
+			if (!box) { if (encoded.length) encoded[encoded.length - 1].delayMs += f.delayMs; prev = cur; if (onFrame) onFrame(++done, frames.length); continue; }
 			if (!lossless) box = { x: 0, y: 0, w: CS, h: CS };
 			if (box.x & 1) { box.x--; box.w++; } if (box.y & 1) { box.y--; box.h++; }
 			sub.width = box.w; sub.height = box.h;
@@ -5631,6 +5639,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			if (!blob || blob.type !== 'image/webp') throw new Error('WEBP ENCODE UNSUPPORTED IN THIS BROWSER');
 			encoded.push({ bytes: new Uint8Array(await blob.arrayBuffer()), delayMs: f.delayMs, x: box.x, y: box.y, w: box.w, h: box.h });
 			prev = cur;
+			if (onFrame) onFrame(++done, frames.length);
 		}
 		return C.muxAnimatedWebp(encoded, CS, CS, loops);
 	}
@@ -6128,7 +6137,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					if (!r) { r = _resizeTgsFrames(f, size); resizedByFps.set(fps, r); }
 					src = r;
 				}
-				return C.encodeApng(quantizeFrames(src, colors), size, size, loops);
+				return C.encodeApng(quantizeFrames(src, colors), size, size, loops, { onFrame: (done, total) => _setOutputState(it, key, 'processing', { framesDone: done, framesTotal: total }) });
 			};
 			let res;
 			if (autoFit) {
@@ -6149,7 +6158,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const encode = async (f, { fps, colors }) => {
 				let r = resizedByFps.get(fps);
 				if (!r) { r = _normalizeLineFrameCount(fitDurationDelays(_resizeTgsFrames(f, size), 4000)); resizedByFps.set(fps, r); }
-				return C.encodeApng(quantizeFrames(r, colors), size, size, loops, { coalesce: false });
+				return C.encodeApng(quantizeFrames(r, colors), size, size, loops, { coalesce: false, onFrame: (done, total) => _setOutputState(it, 'line', 'processing', { framesDone: done, framesTotal: total }) });
 			};
 			let res;
 			if (autoFit) {
@@ -6168,7 +6177,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const loops = it.settings.webpLoops;
 		const baseQuality = clamp(Math.round(+it.settings.webpQuality) || 90, 1, 100);
 		const encode = async (f, { colors, quality }) =>
-			_buildTgsWebp(quantizeFrames(f, colors), lossless, quality, loops);
+			_buildTgsWebp(quantizeFrames(f, colors), lossless, quality, loops, (done, total) => _setOutputState(it, 'webp', 'processing', { framesDone: done, framesTotal: total }));
 		if (autoFit) {
 			// palette reduction shrinks VP8L (fewer literals) but does nothing for lossy VP8
 			const stage2 = lossless ? TGS_COLOR_LADDER.map(c => ({ colors: c })) : TGS_QUALITY_LADDER.map(q => ({ quality: q }));
