@@ -46,6 +46,11 @@
 	--ok: #24a148;
 	--warn: #b28600;
 	--err: #da1e28;
+	/* auxiliary colours: distinct from --warn/--err, used for in-progress build failures
+	   and destructive actions. --fail stays constant across themes like --accent (it only
+	   ever sits inside a fill/text pairing, never as a background needing per-theme contrast). */
+	--fail: #ff9800;
+	--danger: #c0392b;
 
 	/* type */
 	--font-display: "Faculty Glyphic", Georgia, "Times New Roman", serif;
@@ -87,6 +92,7 @@
 	--ok: #42be65;
 	--warn: #f1c21b;
 	--err: #fa4d56;
+	--danger: #e74c3c;
 }
 .theme-dark .dropzone { color: #17191A; }
 
@@ -330,7 +336,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		linear-gradient(90deg, var(--accent) 0 var(--progress), var(--accent-track) var(--progress) 100%);
 }
 .cell-h.has-progress.failed {
-	background: linear-gradient(90deg, #ff9800 0 var(--progress), var(--accent-track) var(--progress) 100%);
+	background: linear-gradient(90deg, var(--fail) 0 var(--progress), var(--accent-track) var(--progress) 100%);
 }
 .cell-h.has-progress.built {
 	color: var(--accent-ink);
@@ -374,7 +380,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	background: repeating-linear-gradient(90deg, var(--accent) 0 8px, #fff 8px 12px);
 	animation: statsProgressMove .6s linear infinite;
 }
-.cell-progress.failed .cell-progress-fill { background: #ff9800; }
+.cell-progress.failed .cell-progress-fill { background: var(--fail); }
 .cell-b { padding: 0; display: flex; flex-direction: column; gap: 0; flex: 1; }
 
 .pv {
@@ -620,8 +626,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 /* v9 — settings sections, section divider, danger button */
 .gb-section.off { opacity: .66; }
 .gb-subsection.off { display: none; }
-.bf-btn--danger { border-color: #c0392b !important; color: #c0392b !important; }
-[data-theme="dark"] .bf-btn--danger { border-color: #e74c3c !important; color: #e74c3c !important; }
+.bf-btn--danger { border-color: var(--danger) !important; color: var(--danger) !important; }
 .section-divider { padding: 20px 20px 14px; border-top: 1px solid var(--line); margin-top: 8px; }
 
 /* ── output stats cards ── */
@@ -684,7 +689,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		linear-gradient(90deg, var(--accent) 0 var(--progress), var(--accent-track) var(--progress) 100%);
 }
 .stats-row--progress.failed {
-	background: linear-gradient(90deg, #ff9800 0 var(--progress), var(--accent-track) var(--progress) 100%);
+	background: linear-gradient(90deg, var(--fail) 0 var(--progress), var(--accent-track) var(--progress) 100%);
 }
 .stats-row--progress.built {
 	color: var(--accent-ink);
@@ -699,7 +704,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 .stats-row:first-of-type { border-top: 1px solid var(--line); }
 .stats-label { color: var(--ink-2); white-space: nowrap; }
 .stats-value { color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
-.stats-value.warn { color: #ff9800; font-weight: 700; }
+.stats-value.warn { color: var(--fail); font-weight: 700; }
 .stats-over-list { white-space: normal; line-height: 1.45; text-align: right; }
 .stats-over-link {
 	font: inherit; letter-spacing: inherit; color: inherit;
@@ -719,7 +724,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 }
 .stats-progress-value { display: flex; justify-content: flex-end; min-width: 0; }
 .stats-progress-meta { color: var(--ink); font-size: var(--text-note); letter-spacing: var(--label-track-sm); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
-.stats-progress-meta.warn { color: #ff9800; font-weight: 700; }
+.stats-progress-meta.warn { color: var(--fail); font-weight: 700; }
 .stats-progress {
 	display: none;
 }
@@ -731,7 +736,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	background: repeating-linear-gradient(90deg, var(--accent) 0 8px, #fff 8px 12px);
 	animation: statsProgressMove .6s linear infinite;
 }
-.stats-progress-fill.failed { background: #ff9800; }
+.stats-progress-fill.failed { background: var(--fail); }
 @keyframes statsProgressMove {
 	from { background-position: 0 0; }
 	to { background-position: 20px 0; }
@@ -1018,7 +1023,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
    background IS --accent, so an --accent indicator would vanish against it. */
 .ws-tab.on { outline: 2px solid var(--accent-ink); outline-offset: -2px; color: var(--accent-ink); }
 .ws-tab.on .s { color: var(--accent-ink); border-color: var(--accent-ink); }
-.ws-tab[data-state="failed"] .s { color: #b00020; border-color: #b00020; }
+.ws-tab[data-state="failed"] .s { color: var(--danger); border-color: var(--danger); }
 /* split: center preview column + right inspector column */
 .ws .ws-act > .cell-b.ws-split { display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: stretch; padding: 0; flex: 1 1 auto; min-height: 0; }
 .panel.ws > .cell.ws-act.ws-clps > .cell-b.ws-split { grid-template-columns: minmax(0, 1fr) 40px; }

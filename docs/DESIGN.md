@@ -17,6 +17,8 @@ colors:
   ok: "#24a148"
   warn: "#b28600"
   err: "#da1e28"
+  fail: "#ff9800"
+  danger: "#c0392b"
   dark-paper: "rgb(13, 13, 13)"
   dark-ink: "#E4E6E7"
   dark-ink-inv: "#17191A"
@@ -25,6 +27,7 @@ colors:
   dark-ok: "#42be65"
   dark-warn: "#f1c21b"
   dark-err: "#fa4d56"
+  dark-danger: "#e74c3c"
 
 typography:
   wordmark:
@@ -102,8 +105,8 @@ components:
     rounded: "{rounded.none}"
   bf-btn-danger:
     backgroundColor: transparent
-    textColor: "#c0392b"
-    borderColor: "#c0392b"
+    textColor: "{colors.danger}"
+    borderColor: "{colors.danger}"
   bf-seg-btn:
     backgroundColor: transparent
     textColor: "{colors.ink}"
@@ -206,10 +209,14 @@ The defining choice is **uppercase monospace everywhere functional**: body text,
 
 ### Semantic
 - **OK** (`{colors.ok}`) / **Warn** (`{colors.warn}`) / **Err** (`{colors.err}`): borrowed directly from IBM Carbon's semantic palette (green-50 / yellow-60-ish amber / red-60) for the collapsed-panel completion summary (`.item-status .st--warn/.st--err`). These are the only borrowed-from-elsewhere colors in the system and exist purely as small status accents, never as fills.
-- An additional ad hoc warning orange (`#ff9800`) appears on failed-build progress fills and stat values — not tokenized alongside `--warn`, so treat it as a legacy one-off rather than a system color if extending this further.
+
+### Auxiliary
+Two further tokens cover states that `{colors.warn}`/`{colors.err}` don't quite mean:
+- **Fail** (`{colors.fail}`): a harder, more saturated orange than `{colors.warn}` — used specifically for "this build attempt failed" (cell/stat progress fills, over-budget stat values), as distinct from `{colors.warn}`'s softer "this is a soft advisory" meaning on the collapsed-panel summary tag. Theme-invariant like `{colors.accent}` — it only ever appears inside a fill/text pairing, never as a background needing independent per-theme contrast tuning.
+- **Danger** (`{colors.danger}`): the destructive-action red for `.bf-btn--danger` and the failed-workspace-tab state (`.ws-tab[data-state="failed"]`). Does invert per theme (`{colors.dark-danger}` `#e74c3c`), unlike `{colors.fail}` — because it sits directly on the paper background as text/border and needs the brightness bump dark grounds require, the same reason `{colors.err}` inverts.
 
 ### Dark theme
-Dark mode (`.theme-dark` / `[data-theme="dark"]`) is a straight inversion: `{colors.paper}` ↔ near-black, `{colors.ink}` ↔ light gray, `{colors.field}`/`{colors.checker}` re-tuned for a dark ground, and `{colors.ok}/{colors.warn}/{colors.err}` swap to their Carbon dark-theme equivalents. `{colors.accent}` and `{colors.accent-ink}` do **not** change — that invariance is the load-bearing detail referenced throughout the CSS comments.
+Dark mode is a straight inversion toggled by adding the `.theme-dark` class to `<body>` (the theme-picker buttons carry a `data-theme` attribute purely as a data hook for the click handler — it is never read by CSS, so don't gate new dark-mode rules on a `[data-theme="dark"]` selector, only on `.theme-dark`). `{colors.paper}` ↔ near-black, `{colors.ink}` ↔ light gray, `{colors.field}`/`{colors.checker}` re-tuned for a dark ground, and `{colors.ok}/{colors.warn}/{colors.err}/{colors.danger}` swap to their brighter dark-theme equivalents. `{colors.accent}`, `{colors.accent-ink}`, and `{colors.fail}` do **not** change — that invariance is the load-bearing detail referenced throughout the CSS comments.
 
 ## Typography
 
@@ -267,7 +274,7 @@ There is effectively **one elevation level**: flat surface + 1px hairline border
 
 ### Panels & cells
 - **`.item` / `.item-head`** — one collapsible section per uploaded file; the collapsed header shows a compact per-format completion summary (`.item-status .st`) as small accent-progress tiles.
-- **`.cell` / `.cell-h` / `.cell-b`** — one output-format card per cell inside a file's panel; cell header is a progress-gradient bar that fills as that format builds, switches to a striped "processing" animation mid-build, and turns orange (`#ff9800`) on failure.
+- **`.cell` / `.cell-h` / `.cell-b`** — one output-format card per cell inside a file's panel; cell header is a progress-gradient bar that fills as that format builds, switches to a striped "processing" animation mid-build, and turns `{colors.fail}` orange on failure.
 - **`.stats-card` / `.stats-row`** — the Output Stats view's per-format summary card, same progress-gradient language as `.cell-h`.
 - **`.ws-tab`** — workspace-view format tabs (Tool Box results), same progress-fill idiom again — this repetition across three unrelated components (`.cell-h`, `.stats-card-h`, `.ws-tab`) is a deliberate, explicitly-commented pattern: progress is always "this element's background fills toward accent," never a separate bar.
 
@@ -305,5 +312,5 @@ There is effectively **one elevation level**: flat surface + 1px hairline border
 ## Known Gaps
 
 - There is no formal spacing token scale (no `{spacing.xs}/{spacing.sm}/...` ramp) — component padding/gap values are set ad hoc per rule rather than drawn from a shared scale. Anyone extending the system should match the nearest existing component's literal values rather than inventing a new token tier.
-- The ad hoc failure-state orange (`#ff9800`) used on progress fills and warning values isn't part of the `colors:` front matter or aligned with `{colors.warn}` — worth reconciling if the warning/error palette is ever revisited.
+- ~~The failure-state orange and danger red were hardcoded hex literals repeated across 9 call sites, with no dark-theme variant for the danger red.~~ Fixed: both are now `{colors.fail}`/`{colors.danger}` tokens in `:root`/`.theme-dark`. This also fixed a dead `[data-theme="dark"] .bf-btn--danger` selector that never matched anything (dark mode toggles via the `.theme-dark` body class, not a `data-theme` attribute) — the danger button silently kept its light-theme red in dark mode until now.
 - This document was reverse-engineered from the CSS in `index.html`'s `<style>` block (lines ~27–1504) rather than authored ahead of the implementation — component names above (`bf-btn`, `s-card`, etc.) are the actual CSS class names, not abstracted design-tool tokens, so cross-check against `index.html` directly for any pixel-level detail not called out here.
