@@ -70,9 +70,9 @@ Six outputs, built per platform target:
 
 A detailed (Traditional Chinese) deep-dive into the GIF and TGS pipelines, written by cross-checking three parallel sub-agent extractions against the source. It's a useful reference for pipeline internals and historical known-issues, but **line-number references inside it drift** (it says so itself) and some of the issues it lists have since been fixed by later commits (e.g. Export/Import losing TGS settings, APNG duplicate-frame dedup, LINE's dedicated 270 canvas were all called out as gaps there and have since landed) — verify against current code rather than trusting it as ground truth.
 
-### `docs/DESIGN-ibm.md`
+### `docs/DESIGN.md`
 
-A design-system extraction of IBM's Carbon Design System (colors, type scale, components, spacing). This documents an *external* reference design system used for comparison/inspiration — it is not the design system this app itself uses. The app's own visual system is the "BatchFrame Design System" defined inline in `index.html`'s `<style>` block (CSS custom properties: `--paper`, `--ink`, `--accent`, etc.).
+The canonical design-system reference for this app's own UI — the "BatchFrame Design System" (colors, type scale, components, spacing) reverse-engineered from the CSS custom properties and class rules in `index.html`'s `<style>` block (`--paper`, `--ink`, `--accent`, `.bf-btn`, `.cell`, etc.). Treat it as the default `design.md` for any future design work on this app; cross-check against `index.html` directly for pixel-level detail it doesn't call out.
 
 ## Licensing
 
