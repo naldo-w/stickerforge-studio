@@ -571,18 +571,23 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 .info-card-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 .info-card-body .steps { padding-left: 18px; }
 .info-card-body .spec-scroll { margin: 0 -16px; padding: 0 16px; }
-.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
-.info-grid .info-card { height: 100%; }
+.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
 @media (max-width: 720px) { .info-grid { grid-template-columns: 1fr; } }
+/* collapsible info-cards (About tab defaults closed — content runs long) */
+.info-card.is-collapsible > .info-card-h { cursor: pointer; user-select: none; justify-content: space-between; }
+.info-card.is-collapsible > .info-card-h::after { content: "+"; opacity: .6; font-size: 13px; }
+.info-card.is-collapsible.open > .info-card-h::after { content: "\2212"; }
+.info-card.is-collapsible:not(.open) > .info-card-body { display: none; }
 /* License tab byline: app icon (the one deliberately rounded mark in the system) + author links */
-.license-byline { flex-direction: row; align-items: center; gap: 16px; }
+.license-byline { flex-direction: row; align-items: center; gap: 20px; }
 .license-icon-link { flex-shrink: 0; display: block; line-height: 0; transition: opacity var(--dur-fast) ease; }
 .license-icon-link:hover { opacity: .8; }
-.license-icon { width: 72px; height: 72px; border-radius: 16px; display: block; border: 1px solid var(--line); }
-.license-byline-text { display: flex; flex-direction: column; gap: 4px; }
-.license-byline-name { font-size: var(--text-subhead); letter-spacing: var(--label-track); }
-.license-byline-handles { font-size: var(--text-note); letter-spacing: var(--label-track-sm); opacity: .8; }
-.license-byline-handles a { color: inherit; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+.license-icon { width: 96px; height: 96px; border-radius: 20px; display: block; border: 1px solid var(--line); }
+.license-byline-text { display: flex; flex-direction: column; gap: 6px; }
+.license-app-name { font-family: var(--font-display); text-transform: none; font-size: clamp(20px, 2.4vw, 26px); line-height: 1; letter-spacing: -.01em; }
+.license-app-name .dot { color: var(--accent); }
+.license-byline-credit { font-size: var(--text-note); letter-spacing: var(--label-track-sm); opacity: .8; }
+.license-byline-credit a { color: inherit; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
 .steps { margin: 0; padding-left: 20px; font-size: var(--text-body); letter-spacing: var(--label-track-sm); line-height: 1.9; }
 .steps li + li { margin-top: 4px; }
 .footer #footLicense { color: inherit; }
@@ -908,6 +913,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	border-top: 1px solid var(--line);
 }
 .s-card-body .s-item:first-child { border-top: 0; }
+#gFolderCustomRows > .s-item:first-child { border-top: 1px solid var(--line); }
 .s-item-lbl, .s-tag { font-size: 10px; letter-spacing: .11em; color: var(--ink-2); white-space: nowrap; }
 .s-item-ctl { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0; min-height: var(--ctl-h); }
 .s-group { display: inline-flex; flex-direction: row; align-items: center; justify-content: flex-end; gap: 6px; min-width: min-content; }
@@ -1473,20 +1479,27 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	background: var(--paper);
 	color: var(--ink);
 }
+/* modal page nav: flat Carbon product-tab — no per-tab boxes, one shared hairline + accent underline */
+.modal-h { border-bottom: 1px solid var(--line); }
 .modal-h .bf-seg { gap: 0; }
 .modal-h .bf-seg-btn {
 	border: 0;
-	border-right: 1px solid var(--line);
 	border-bottom: 2px solid transparent;
-	background: var(--paper);
+	background: transparent;
+	padding: 0 16px;
 }
-.modal-h .bf-seg-btn:first-child { border-left: 1px solid var(--line); }
-.modal-h .bf-seg .bf-seg-btn:not(:last-child) { border-right: 1px solid var(--line); }
 .modal-h .bf-seg-btn.bf-on {
 	border-bottom-color: var(--accent);
-	background: var(--paper);
+	background: transparent;
 	color: var(--ink);
+	font-weight: 700;
 }
+/* Close reads as a plain ghost action, distinct from the tab strip beside it */
+#infoClose, #toolboxClose {
+	border: 0; background: transparent; padding: 0 4px;
+}
+#infoClose:hover, #toolboxClose:hover { background: transparent; transform: none; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+.modal-h-actions { gap: 20px; }
 
 @media (max-width: 900px) {
 	.panel.ws { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; gap: 16px; }
@@ -1540,10 +1553,20 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			<section class="s-sec on" data-ssec="global">
 				<div class="s-sec-h">GLOBAL · EXPORT</div>
 				<div class="s-grid">
-					<div class="s-card">
+					<div class="s-card s-card--wide">
 						<div class="s-card-h"><span class="s-card-title">FOLDER</span></div>
 						<div class="s-card-body">
-							<div class="s-item"><span class="s-item-lbl">PRESET</span><span class="s-item-ctl"><span class="bf-seg" id="gFolderSeg"><button type="button" class="bf-seg-btn bf-on" data-v="platform">Platform</button><button type="button" class="bf-seg-btn" data-v="format">Format</button></span></span></div>
+							<div class="s-item"><span class="s-item-lbl">PRESET</span><span class="s-item-ctl"><span class="bf-seg" id="gFolderSeg"><button type="button" class="bf-seg-btn bf-on" data-v="platform">Platform</button><button type="button" class="bf-seg-btn" data-v="format">Format</button><button type="button" class="bf-seg-btn" data-v="custom">Custom</button></span></span></div>
+							<div id="gFolderCustomRows" hidden>
+								<div class="s-item"><span class="s-item-lbl">TELEGRAM・TGS</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdTgs" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">SIGNAL・512APNG</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdApng" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">DISCORD・320APNG</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdDiscord" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">LINE・APNG 270</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdLine" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">WHATSAPP・WEBP</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdWebp" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">STATIC・512PNG</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdFrame" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">STATIC・NO PADDING</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdPad" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">TELEGRAM・LOTTIE JSON</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdLottie" /></span></div>
+							</div>
 						</div>
 					</div>
 					<div class="s-card">
@@ -1580,20 +1603,14 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						<div class="s-acc-h">
 							<span class="s-acc-title">DISCORD・320APNG</span>
 							<span class="s-acc-meta">DISCORD</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="discord" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdDiscord" /></span></div>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="discord" checked /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="line">
 						<div class="s-acc-h">
 							<span class="s-acc-title">LINE・APNG 270</span>
 							<span class="s-acc-meta">LINE</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="line" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdLine" /></span></div>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="line" /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="apng">
@@ -1605,38 +1622,27 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gApngLoops" /></span></div>
 							<div class="s-item"><span class="s-item-lbl">MAX COLORS</span><span class="s-item-ctl"><input class="bf-field" type="number" min="2" max="256" step="1" value="256" id="gApngColors" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FIT 3S</span><span class="s-item-ctl"><label class="bf-switch"><input type="checkbox" id="gFit3s" /><span class="track"></span></label></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdApng" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">FIT 3S</span><span class="s-item-ctl"><label class="bf-switch"><input type="checkbox" id="gFit3s" /><span class="track"></span></label></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="frame">
 						<div class="s-acc-h">
 							<span class="s-acc-title">512PNG</span>
 							<span class="s-acc-meta">STATIC</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="frame" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdFrame" /></span></div>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="frame" /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="pad">
 						<div class="s-acc-h">
 							<span class="s-acc-title">512PNGNOPADDING</span>
 							<span class="s-acc-meta">STATIC</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="pad" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdPad" /></span></div>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="pad" /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="lottie">
 						<div class="s-acc-h">
 							<span class="s-acc-title">TELEGRAM・LOTTIE JSON</span>
 							<span class="s-acc-meta">TELEGRAM</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="lottie" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item" id="gFdLottieRow"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdLottie" /></span></div>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="lottie" /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="tgs">
@@ -1647,9 +1653,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">OFFSET</span><span class="s-item-ctl"><label class="bf-switch"><input type="checkbox" id="gOffsetOn" checked /><span class="track"></span></label></span></div>
-							<div class="s-item"><span class="s-item-lbl">OFFSET PX</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0.1" max="1" step="0.1" value="0.4" id="gOffsetNum" /></span></div>
-							<div class="s-item" id="gFdTgsRow"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdTgs" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">OFFSET PX</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0.1" max="1" step="0.1" value="0.4" id="gOffsetNum" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="webp">
 						<div class="s-acc-h">
@@ -1660,9 +1664,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">MODE</span><span class="s-item-ctl"><span class="bf-seg" id="gWebpSeg"><button type="button" class="bf-seg-btn bf-on" data-v="lossless">Lossless</button><button type="button" class="bf-seg-btn" data-v="lossy">Lossy</button></span></span></div>
 							<div class="s-item"><span class="s-item-lbl">QUALITY</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="100" step="1" value="90" id="gWebpQ" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gWebpLoops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdWebp" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gWebpLoops" /></span></div>						</div>
 					</div>
 				</div>
 			</section>
@@ -1679,9 +1681,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">SIZE</span><span class="s-item-ctl"><input class="bf-field" type="number" min="64" max="512" step="8" value="320" id="gtApng320Size" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtApng320Loops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdApng320" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtApng320Loops" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="line">
 						<div class="s-acc-h">
@@ -1690,9 +1690,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="line" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="4" step="1" value="1" id="gtLineLoops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdLine" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="4" step="1" value="1" id="gtLineLoops" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="apng">
 						<div class="s-acc-h">
@@ -1701,9 +1699,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="apng" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtApng512Loops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdApng512" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtApng512Loops" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="frame">
 						<div class="s-acc-h">
@@ -1713,9 +1709,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">DEFAULT FRAME</span><span class="s-item-ctl"><span class="bf-seg" id="gtFrameSeg"><button type="button" class="bf-seg-btn bf-on" data-v="first">First</button><button type="button" class="bf-seg-btn" data-v="mid">Middle</button><button type="button" class="bf-seg-btn" data-v="last">Last</button><button type="button" class="bf-seg-btn" data-v="no">No.</button></span></span></div>
-							<div class="s-item"><span class="s-item-lbl">FRAME NO.</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="999" step="1" value="1" id="gtFrameNum" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdFrame" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">FRAME NO.</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="999" step="1" value="1" id="gtFrameNum" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="pad">
 						<div class="s-acc-h">
@@ -1724,18 +1718,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="pad" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">DEFAULT FRAME</span><span class="s-item-ctl"><span class="bf-seg" id="gtPadSeg"><button type="button" class="bf-seg-btn bf-on" data-v="first">First</button><button type="button" class="bf-seg-btn" data-v="mid">Middle</button><button type="button" class="bf-seg-btn" data-v="last">Last</button></span></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdPad" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">DEFAULT FRAME</span><span class="s-item-ctl"><span class="bf-seg" id="gtPadSeg"><button type="button" class="bf-seg-btn bf-on" data-v="first">First</button><button type="button" class="bf-seg-btn" data-v="mid">Middle</button><button type="button" class="bf-seg-btn" data-v="last">Last</button></span></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="lottie">
 						<div class="s-acc-h">
 							<span class="s-acc-title">TELEGRAM・LOTTIE JSON</span>
 							<span class="s-acc-meta">TELEGRAM</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="lottie" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdLottie" /></span></div>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="lottie" checked /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="webp">
@@ -1747,9 +1736,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">MODE</span><span class="s-item-ctl"><span class="bf-seg" id="gtWebpSeg"><button type="button" class="bf-seg-btn bf-on" data-v="lossless">Lossless</button><button type="button" class="bf-seg-btn" data-v="lossy">Lossy</button></span></span></div>
 							<div class="s-item"><span class="s-item-lbl">QUALITY</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="100" step="1" value="90" id="gtWebpQ" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtWebpLoops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdWebp" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtWebpLoops" /></span></div>						</div>
 					</div>
 				</div>
 			</section>
@@ -1870,12 +1857,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		<div class="tab-page" data-page="license">
 			<div class="sec license-byline">
 				<a class="license-icon-link" href="https://naldo-w.github.io/stickerforge-studio/" target="_blank" rel="noopener" aria-label="StickerForge Studio on GitHub Pages">
-					<img class="license-icon" src="StickerForge-Studio.png" alt="StickerForge Studio app icon" width="72" height="72" loading="lazy" />
+					<img class="license-icon" src="StickerForge-Studio.png" alt="StickerForge Studio app icon" width="96" height="96" loading="lazy" />
 				</a>
 				<div class="license-byline-text">
-					<span class="license-byline-name">NALDO WONG</span>
-					<span class="license-byline-handles handles">
-						<a href="https://www.instagram.com/n_do.w" target="_blank" rel="noopener">@n_do.w</a> · <a href="https://www.instagram.com/naldo.design" target="_blank" rel="noopener">@naldo.design</a>
+					<span class="license-app-name">StickerForge Studio<span class="dot">.</span></span>
+					<span class="license-byline-credit handles">
+						BY NALDO WONG · <a href="https://www.instagram.com/n_do.w" target="_blank" rel="noopener">@n_do.w</a> · <a href="https://www.instagram.com/naldo.design" target="_blank" rel="noopener">@naldo.design</a>
 					</span>
 				</div>
 			</div>
@@ -2860,6 +2847,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		format: { apng: "512APNG", discord: "320APNG", frame: "512PNG", pad: "512PNGNOPADDING", tgs: "TGS", lottie: "LOTTIE", webp: "WEBP", line: "LINE" },
 	};
 	const FOLDER_KEYS = ["apng", "discord", "frame", "pad", "tgs", "lottie", "webp", "line"];
+	/* one custom folder name per platform/format now drives both converters — GIF's own key names differ slightly from G.tgsSettings' */
+	const FOLDER_KEY_TO_TGS = { apng: "apng512", discord: "discord", frame: "frame", pad: "pad", lottie: "lottie", webp: "webp", line: "line" };
 	G.folderMode = "platform";
 	G.folderNames = { ...FOLDER_PRESETS.platform };
 
@@ -4738,6 +4727,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		offsetNum: document.getElementById("gOffsetNum"),
 		toggles: document.getElementById("outToggles"),
 		folderSeg: document.getElementById("gFolderSeg"),
+		folderCustomRows: document.getElementById("gFolderCustomRows"),
 		apngLoops: document.getElementById("gApngLoops"),
 		apngColors: document.getElementById("gApngColors"),
 		fit3s: document.getElementById("gFit3s"),
@@ -4758,6 +4748,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		g.offsetNum.value = G.offsetPx;
 		g.offsetNum.disabled = !G.offsetEnabled;
 		g.folderSeg.querySelectorAll(".bf-seg-btn").forEach(b => b.classList.toggle("bf-on", b.dataset.v === G.folderMode));
+		if (g.folderCustomRows) g.folderCustomRows.hidden = G.folderMode !== "custom";
 		g.apngLoops.value = G.apngLoops;
 		g.apngColors.value = G.apngMaxColors;
 		g.fit3s.checked = G.fit3s;
@@ -4812,8 +4803,10 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const b = e.target.closest("[data-v]");
 		if (!b) return;
 		G.folderMode = b.dataset.v;
-		G.folderNames = { ...FOLDER_PRESETS[G.folderMode] };
-		applyTgsFolderPreset(G.folderMode);
+		if (G.folderMode !== "custom") {
+			G.folderNames = { ...FOLDER_PRESETS[G.folderMode] };
+			applyTgsFolderPreset(G.folderMode);
+		}
 		syncFolderInputs();
 		refreshGlobalUI();
 		for (const it of items) {
@@ -4918,6 +4911,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		modalTitle.innerHTML = `${TAB_TITLES[tab]}<span class="dot">.</span>`;
 	}
 	modalTabs.addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) showTab(b.dataset.tab); });
+	/* About runs long — every card starts collapsed, click the header to expand */
+	document.querySelectorAll('[data-page="about"] .info-card').forEach(card => {
+		card.classList.add('is-collapsible');
+		card.querySelector('.info-card-h').addEventListener('click', () => card.classList.toggle('open'));
+	});
 	function showSettingsConverterTab(tab) {
 		const next = tab === "tgs" ? "tgs" : "gif";
 		document.querySelectorAll('#settingsConverterTabs [data-settings-tab]').forEach(btn => {
@@ -5220,8 +5218,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (!inp) return;
 		inp.addEventListener('change', () => {
 			const v = inp.value.trim();
-			if (v) { G.folderNames[k] = v; saveSettings(); }
-			else inp.value = G.folderNames[k];
+			if (v) {
+				G.folderNames[k] = v;
+				const tk = FOLDER_KEY_TO_TGS[k]; // one custom name now drives both GIF and TGS output for the same platform/format
+				if (tk && G.tgsSettings?.[tk]) G.tgsSettings[tk].folder = v;
+				saveSettings();
+			} else inp.value = G.folderNames[k];
 		});
 	});
 
@@ -7126,22 +7128,15 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			s.querySelectorAll('.bf-seg-btn').forEach(b => b.classList.toggle('bf-on', b.dataset.v === v));
 		};
 		set('gtApng512Loops', S.apng512.loops);
-		set('gtFdApng512', S.apng512.folder);
 		set('gtApng320Size', S.discord.size);
 		set('gtApng320Loops', S.discord.loops);
-		set('gtFdApng320', S.discord.folder);
 		seg('gtWebpSeg', S.webp.lossless ? 'lossless' : 'lossy');
 		set('gtWebpQ', S.webp.quality);
 		set('gtWebpLoops', S.webp.loops);
-		set('gtFdWebp', S.webp.folder);
 		seg('gtFrameSeg', S.frame.mode);
 		set('gtFrameNum', S.frame.num);
-		set('gtFdFrame', S.frame.folder);
 		seg('gtPadSeg', S.pad.mode);
-		set('gtFdPad', S.pad.folder);
 		set('gtLineLoops', S.line.loops);
-		set('gtFdLine', S.line.folder);
-		set('gtFdLottie', S.lottie.folder);
 	}
 
 	function updateTgsSettingsSections() {
@@ -7177,14 +7172,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			['gtApng320Loops', v => { G.tgsSettings.discord.loops = clamp(Math.round(+v) || 0, 0, 99); }],
 			['gtWebpQ', v => { G.tgsSettings.webp.quality = clamp(Math.round(+v) || 90, 1, 100); }],
 			['gtWebpLoops', v => { G.tgsSettings.webp.loops = clamp(Math.round(+v) || 0, 0, 99); }],
-			['gtFdApng512', v => { G.tgsSettings.apng512.folder = v.trim() || '512APNG'; }],
-			['gtFdApng320', v => { G.tgsSettings.discord.folder = v.trim() || '320APNG'; }],
-			['gtFdWebp', v => { G.tgsSettings.webp.folder = v.trim() || 'WEBP'; }],
-			['gtFdFrame', v => { G.tgsSettings.frame.folder = v.trim() || '512PNG'; }],
-			['gtFdPad', v => { G.tgsSettings.pad.folder = v.trim() || '512PNGNOPADDING'; }],
 			['gtLineLoops', v => { G.tgsSettings.line.loops = clamp(Math.round(+v) || 1, 1, 4); }],
-			['gtFdLine', v => { G.tgsSettings.line.folder = v.trim() || 'LINE'; }],
-			['gtFdLottie', v => { G.tgsSettings.lottie.folder = v.trim() || 'LOTTIE'; }],
 			['gtFrameNum', v => {
 				G.tgsSettings.frame.num = Math.max(1, Math.round(+v) || 1);
 				tgsItems.forEach(it => _onTgsFrameModeChanged(it));
