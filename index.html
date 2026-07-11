@@ -3174,7 +3174,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				main.appendChild(pvh);
 				/* route children: preview + controls stay center, output facts go right */
 				const sumRows = [], warns = [], ctrls = [], exports = [];
-				let pv = null, fdRow = null;
+				let pv = null; const fdRows = [];
 				for (const n of kids) {
 					if (n.matches('.pv')) { pv = n; continue; }
 					if (n.matches('.warn')) { warns.push(n); continue; }
@@ -3186,7 +3186,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					}
 					if (n.matches('.bf-btn--block')) { exports.push(n); continue; }
 					if (n.matches('.spacer')) { n.remove(); continue; }
-					if (n.matches('.row') && n.querySelector('.fd')) { fdRow = n; continue; }
+					if (n.matches('.row') && n.querySelector('.fd')) { fdRows.push(n); continue; }
 					ctrls.push(n);
 				}
 				if (pv) main.appendChild(pv);
@@ -3220,10 +3220,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				/* inspector: output facts, destination, warning, export */
 				if (sumRows.length) { insp.appendChild(sumGrp); insp.appendChild(sumWrap); }
 				warns.forEach(wn => insp.appendChild(wn));
-				if (fdRow) {
-					const fdLabel = fdRow.firstElementChild;
+				if (fdRows.length === 1) {
+					const fdLabel = fdRows[0].firstElementChild;
 					if (fdLabel) fdLabel.textContent = 'EXPORT FOLDER';
-					insp.appendChild(fdRow);
+					insp.appendChild(fdRows[0]);
+				}
+				else if (fdRows.length > 1) {
+					fdRows.forEach(r => insp.appendChild(r)); // keep each row's own label — more than one export folder here
 				}
 				else {
 					const outputFolders = { apng: '512APNG/', discord: '320APNG/', line: 'LINE/', tgs: 'TGS/', lottie: 'LOTTIE/', webp: 'WEBP/', frame: '512PNG/', pad: '512PNGNOPADDING/' };
