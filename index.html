@@ -6291,15 +6291,23 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (sizeEl) sizeEl.textContent = '…';
 		if (it.pendingBuilds && it.pendingBuilds[key]) return; // already queued — the job reads the latest settings when it runs
 		(it.pendingBuilds = it.pendingBuilds || {})[key] = true;
+		const isCheap = key === 'frame' || key === 'pad';
 		(async () => {
 			let token;
 			try {
-				const res = await _encGate(() => {
+				const run = () => {
 					it.pendingBuilds[key] = false;
 					token = ++it.tokens[key];
 					_setOutputState(it, key, 'processing');
 					return _buildTgsOutput(it, key);
-				}, { scope: 'tgs', it, key });
+				};
+				/* frame/pad just re-encode a single already-rendered frame to PNG — cheap
+				   enough to run immediately rather than wait in the heavy multi-frame encode
+				   gate. _encGate is one shared FIFO across both pipelines, ordered by DOM
+				   position — since #items (GIF) precedes #tgsItems in the DOM, every GIF job
+				   runs before any TGS job, so routing frame/pad through it meant they sat
+				   behind the entire GIF backlog and never looked "pre-built" after upload. */
+				const res = isCheap ? await run() : await _encGate(run, { scope: 'tgs', it, key });
 				if (token !== it.tokens[key]) return;
 				_applyTgsBuild(it, key, res);
 			} catch (e) {
