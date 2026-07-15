@@ -1999,7 +1999,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	</footer>
 </div>
 
-<script>
+<script id="pixelcore-src">
 /* StickerForge Studio — core pipeline (browser + node)
    GIF decode (LZW + disposal compositing) → full frames →
    integer nearest-neighbor scale → center on 512 canvas →
@@ -2677,6 +2677,54 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		return { json, jsonSize: jsonBytes.length, tgs: gz, tgsSize: gz.length };
 	}
 
+	/* nearest-color quantization down to a max palette size (transparent always kept) */
+	function quantizeFrames(frames, maxColors) {
+		if (!maxColors || maxColors >= 256) return frames;
+		const count = new Map();
+		for (const f of frames) {
+			const a = f.rgba;
+			for (let i = 0; i < a.length; i += 4) {
+				if (a[i + 3] === 0) continue;
+				const k = (a[i] << 24 | a[i + 1] << 16 | a[i + 2] << 8 | a[i + 3]) >>> 0;
+				count.set(k, (count.get(k) || 0) + 1);
+			}
+		}
+		if (count.size <= maxColors) return frames;
+		const kept = [...count.entries()].sort((x, y) => y[1] - x[1]).slice(0, maxColors).map(e => e[0]);
+		const comps = kept.map(k => [(k >>> 24) & 255, (k >>> 16) & 255, (k >>> 8) & 255, k & 255]);
+		const memo = new Map(kept.map(k => [k, k]));
+		const near = k => {
+			let v = memo.get(k);
+			if (v !== undefined) return v;
+			const r = (k >>> 24) & 255, g = (k >>> 16) & 255, b = (k >>> 8) & 255, al = k & 255;
+			let best = 0, bd = Infinity;
+			for (let i = 0; i < comps.length; i++) {
+				const c = comps[i];
+				const d = (r - c[0]) ** 2 + (g - c[1]) ** 2 + (b - c[2]) ** 2 + 3 * (al - c[3]) ** 2;
+				if (d < bd) { bd = d; best = i; }
+			}
+			v = kept[best];
+			memo.set(k, v);
+			return v;
+		};
+		return frames.map(f => {
+			const a = f.rgba, out = new Uint8ClampedArray(a.length);
+			for (let i = 0; i < a.length; i += 4) {
+				if (a[i + 3] === 0) continue;
+				const v = near((a[i] << 24 | a[i + 1] << 16 | a[i + 2] << 8 | a[i + 3]) >>> 0);
+				out[i] = (v >>> 24) & 255; out[i + 1] = (v >>> 16) & 255; out[i + 2] = (v >>> 8) & 255; out[i + 3] = v & 255;
+			}
+			return { rgba: out, delayMs: f.delayMs };
+		});
+	}
+	/* signal caps animations at 3 s — speed the whole clip up to fit */
+	function fit3sDelays(frames) {
+		const total = frames.reduce((a, f) => a + f.delayMs, 0);
+		if (total <= 3000) return frames;
+		const k = 3000 / total;
+		return frames.map(f => ({ rgba: f.rgba, delayMs: Math.max(10, Math.round(f.delayMs * k)) }));
+	}
+
 	const PixelCore = {
 		CANVAS_SIZE,
 		decodeGif,
@@ -2694,6 +2742,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		buildLottie,
 		encodeTgs,
 		compress,
+		quantizeFrames,
+		fit3sDelays,
 	};
 
 	if (typeof module !== "undefined" && module.exports) module.exports = PixelCore;
@@ -2708,6 +2758,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	const C = window.PixelCore;
 	const CS = C.CANVAS_SIZE; // 512
 	const LIMIT = 64 * 1024;
+	const quantizeFrames = C.quantizeFrames;
+	const fit3sDelays = C.fit3sDelays;
 
 	const el = {
 		items: document.getElementById("items"),
@@ -3948,53 +4000,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	}
 
 	/* ── APNG builders + live sizes (512 · SIGNAL / 320 · DISCORD) ── */
-	/* nearest-color quantization down to a max palette size (transparent always kept) */
-	function quantizeFrames(frames, maxColors) {
-		if (!maxColors || maxColors >= 256) return frames;
-		const count = new Map();
-		for (const f of frames) {
-			const a = f.rgba;
-			for (let i = 0; i < a.length; i += 4) {
-				if (a[i + 3] === 0) continue;
-				const k = (a[i] << 24 | a[i + 1] << 16 | a[i + 2] << 8 | a[i + 3]) >>> 0;
-				count.set(k, (count.get(k) || 0) + 1);
-			}
-		}
-		if (count.size <= maxColors) return frames;
-		const kept = [...count.entries()].sort((x, y) => y[1] - x[1]).slice(0, maxColors).map(e => e[0]);
-		const comps = kept.map(k => [(k >>> 24) & 255, (k >>> 16) & 255, (k >>> 8) & 255, k & 255]);
-		const memo = new Map(kept.map(k => [k, k]));
-		const near = k => {
-			let v = memo.get(k);
-			if (v !== undefined) return v;
-			const r = (k >>> 24) & 255, g = (k >>> 16) & 255, b = (k >>> 8) & 255, al = k & 255;
-			let best = 0, bd = Infinity;
-			for (let i = 0; i < comps.length; i++) {
-				const c = comps[i];
-				const d = (r - c[0]) ** 2 + (g - c[1]) ** 2 + (b - c[2]) ** 2 + 3 * (al - c[3]) ** 2;
-				if (d < bd) { bd = d; best = i; }
-			}
-			v = kept[best];
-			memo.set(k, v);
-			return v;
-		};
-		return frames.map(f => {
-			const a = f.rgba, out = new Uint8ClampedArray(a.length);
-			for (let i = 0; i < a.length; i += 4) {
-				if (a[i + 3] === 0) continue;
-				const v = near((a[i] << 24 | a[i + 1] << 16 | a[i + 2] << 8 | a[i + 3]) >>> 0);
-				out[i] = (v >>> 24) & 255; out[i + 1] = (v >>> 16) & 255; out[i + 2] = (v >>> 8) & 255; out[i + 3] = v & 255;
-			}
-			return { rgba: out, delayMs: f.delayMs };
-		});
-	}
-	/* signal caps animations at 3 s — speed the whole clip up to fit */
-	function fit3sDelays(frames) {
-		const total = frames.reduce((a, f) => a + f.delayMs, 0);
-		if (total <= 3000) return frames;
-		const k = 3000 / total;
-		return frames.map(f => ({ rgba: f.rgba, delayMs: Math.max(10, Math.round(f.delayMs * k)) }));
-	}
+	/* quantizeFrames/fit3sDelays now live in PixelCore (see const C = window.PixelCore
+	   alias above) — moved there so a future encode worker can load PixelCore verbatim
+	   without also needing these pulled in separately. */
 	/* generalized duration cap — LINE caps total animation at 4 s, same shape as fit3sDelays */
 	function fitDurationDelays(frames, maxMs) {
 		const total = frames.reduce((a, f) => a + f.delayMs, 0);
@@ -4046,11 +4054,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		return clamp(Math.round(1000 * frames.length / totalMs), 1, 60);
 	}
 	async function _encodeApng512Frames(it, frames, colors) {
-		const s = it.settings, sc = effScale(it);
-		let src = quantizeFrames(frames, colors);
-		if (s.fit3s) src = fit3sDelays(src);
-		const out = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc), delayMs: f.delayMs }));
-		return C.encodeApng(out, CS, CS, s.apngLoops);
+		const s = it.settings;
+		return _apngEncodeInWorker(frames, {
+			width: it.gif.width, height: it.gif.height, scale: effScale(it), canvasSize: CS,
+			loops: s.apngLoops, colors, fit3s: s.fit3s,
+		});
 	}
 	async function buildApng512(it) {
 		const s = it.settings;
@@ -4067,10 +4075,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		return res.data;
 	}
 	async function _encodeApng320Frames(it, frames, colors) {
-		const s = it.settings, sc = dcScale(it);
-		const src = quantizeFrames(frames, colors);
-		const out = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 320), delayMs: f.delayMs }));
-		return C.encodeApng(out, 320, 320, s.dcLoops);
+		const s = it.settings;
+		return _apngEncodeInWorker(frames, {
+			width: it.gif.width, height: it.gif.height, scale: dcScale(it), canvasSize: 320,
+			loops: s.dcLoops, colors, fit3s: false,
+		});
 	}
 	async function buildApng320(it) {
 		const s = it.settings;
@@ -4101,8 +4110,76 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		tgs: ['lottie', 'frame', 'pad', 'apng', 'discord', 'line', 'webp', 'settings'],
 	};
 	let _encSeq = 0;
-	let _encActive = null;
+	let _encActive = [];
 	const _encQueue = [];
+	const ENC_POOL_SIZE = 2;
+
+	/* ── APNG encode worker pool ──
+	   The heaviest, most-repeated-per-file work (quantize → fit3s → scaleAndCenter →
+	   encodeApng, and its AUTO-FIT ladder retries) runs in a small pool of Workers instead
+	   of the main thread, so a big batch doesn't freeze scrolling/clicks while it encodes.
+	   Pool size is fixed at 2 rather than navigator.hardwareConcurrency — concurrency here
+	   is exactly what caused the crash _encGate itself was built to prevent (see comment
+	   below), so it stays a deliberately small, explicit number rather than scaling with
+	   the machine. WebP/Lottie/frame/pad stay on the main thread (WebP needs a real
+	   canvas.toBlob(); the rest are already cheap or a one-time cost per file). */
+	let _encWorkers = null;
+	let _encWorkerSeq = 0;
+	function _ensureEncWorkers() {
+		if (_encWorkers) return _encWorkers;
+		const coreSrc = document.getElementById('pixelcore-src').textContent;
+		const epilogue = `
+			self.onmessage = async (ev) => {
+				const { id, frames, params } = ev.data;
+				try {
+					let src = PixelCore.quantizeFrames(frames, params.colors);
+					if (params.fit3s) src = PixelCore.fit3sDelays(src);
+					const out = src.map(f => ({
+						rgba: PixelCore.scaleAndCenter(f.rgba, params.width, params.height, params.scale, params.canvasSize),
+						delayMs: f.delayMs,
+					}));
+					const data = await PixelCore.encodeApng(out, params.canvasSize, params.canvasSize, params.loops);
+					self.postMessage({ id, ok: true, data }, [data.buffer]);
+				} catch (e) {
+					self.postMessage({ id, ok: false, error: String((e && e.message) || e) });
+				}
+			};
+		`;
+		const blob = new Blob([coreSrc, epilogue], { type: 'text/javascript' });
+		const url = URL.createObjectURL(blob);
+		_encWorkers = Array.from({ length: ENC_POOL_SIZE }, () => {
+			const w = new Worker(url);
+			w._pending = new Map();
+			w.onmessage = (ev) => {
+				const { id, ok, data, error } = ev.data;
+				const p = w._pending.get(id);
+				if (!p) return;
+				w._pending.delete(id);
+				if (ok) p.resolve(data); else p.reject(new Error(error));
+			};
+			w.onerror = (ev) => {
+				for (const [, p] of w._pending) p.reject(new Error(ev.message || 'APNG encode worker error'));
+				w._pending.clear();
+			};
+			return w;
+		});
+		return _encWorkers;
+	}
+	/** Runs the quantize→fit3s→scaleAndCenter→encodeApng step in whichever pool worker
+	 *  has the fewest jobs in flight. `frames` is structured-cloned (not transferred) going
+	 *  in, since the same cached frame array can be read again concurrently by another
+	 *  format's build; the encoded output bytes are transferred back (freshly allocated
+	 *  per call, safe to move). */
+	function _apngEncodeInWorker(frames, params) {
+		const pool = _ensureEncWorkers();
+		let w = pool[0];
+		for (const cand of pool) if (cand._pending.size < w._pending.size) w = cand;
+		const id = ++_encWorkerSeq;
+		return new Promise((resolve, reject) => {
+			w._pending.set(id, { resolve, reject });
+			w.postMessage({ id, frames, params });
+		});
+	}
 	function _encScope(meta) {
 		if (meta?.scope) return meta.scope;
 		if (meta?.it && tgsItems.includes(meta.it)) return 'tgs';
@@ -4141,7 +4218,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			seen.add(id);
 			jobs.push(virtual ? { meta, seq: Number.MAX_SAFE_INTEGER } : job);
 		};
-		if (_encActive) _encActive.forEach(job => add(job));
+		_encActive.forEach(job => add(job));
 		for (const job of _encQueue.slice().sort(_encCompare)) add(job);
 		const collect = (source, scope, keys) => {
 			for (const it of source) {
@@ -4177,24 +4254,27 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		} catch (e) { /* never let progress rendering break the encode queue */ }
 	}
 	function _pumpEncQueue() {
-		if (_encActive || !_encQueue.length) return;
-		/* Strictly one job in flight at a time, across the whole app. Every real job is
-		   enqueued synchronously as soon as a file's shared intermediate is ready (see
-		   _primeTgsStats / activeFrames — the expensive render/decode step runs ONCE per
-		   file and every format reuses it, never recomputed), so sorting the actual queue
-		   is enough to guarantee: file N, each enabled format in order, then file N+1.
-		   This trades speed for safety — unbounded per-file/per-format concurrency is
-		   what spiked memory and crashed the app before this queue existed. */
-		_encQueue.sort(_encCompare);
-		const job = _encQueue.shift();
-		_encActive = [job];
-		_refreshQueuedProgress();
-		Promise.resolve().then(job.fn).then(job.resolve, job.reject)
-			.finally(() => {
-				_encActive = null;
-				_refreshQueuedProgress();
-				_pumpEncQueue();
-			});
+		/* Up to ENC_POOL_SIZE jobs in flight at once, across the whole app — bounded,
+		   explicit concurrency instead of the unbounded per-file/per-format concurrency
+		   that spiked memory and crashed the app before this queue existed (that risk is
+		   now bounded by ENC_POOL_SIZE regardless of how many files/formats are queued).
+		   Every real job is enqueued synchronously as soon as a file's shared intermediate
+		   is ready (see _primeTgsStats / activeFrames — the expensive render/decode step
+		   runs ONCE per file and every format reuses it, never recomputed), so sorting the
+		   actual queue is enough to guarantee: file N's formats before file N+1's. */
+		while (_encActive.length < ENC_POOL_SIZE && _encQueue.length) {
+			_encQueue.sort(_encCompare);
+			const job = _encQueue.shift();
+			_encActive.push(job);
+			_refreshQueuedProgress();
+			Promise.resolve().then(job.fn).then(job.resolve, job.reject)
+				.finally(() => {
+					const idx = _encActive.indexOf(job);
+					if (idx >= 0) _encActive.splice(idx, 1);
+					_refreshQueuedProgress();
+					_pumpEncQueue();
+				});
+		}
 	}
 	function _encGate(fn, meta) {
 		return new Promise((resolve, reject) => {
@@ -6192,14 +6272,15 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const size = key === 'apng' ? CS : _tgs320Size();
 			const resizedByFps = new Map();
 			const encode = async (f, { fps, colors }) => {
-				let src = f;
-				if (key === 'discord') {
-					// downscale BEFORE quantizing: smoothing reintroduces colours
-					let r = resizedByFps.get(fps);
-					if (!r) { r = _resizeTgsFrames(f, size); resizedByFps.set(fps, r); }
-					src = r;
-				}
-				return C.encodeApng(quantizeFrames(src, colors), size, size, loops);
+				/* apng needs no resize (frames are already rendered at the 512 canvas the
+				   Signal output uses) so it runs in the shared APNG encode worker pool.
+				   discord downscales first via a real <canvas> (smoothing reintroduces
+				   colours if quantized before resizing) — that step stays on the main
+				   thread until an OffscreenCanvas-based worker path exists for it. */
+				if (key === 'apng') return _apngEncodeInWorker(f, { width: CS, height: CS, scale: 1, canvasSize: CS, loops, colors, fit3s: false });
+				let r = resizedByFps.get(fps);
+				if (!r) { r = _resizeTgsFrames(f, size); resizedByFps.set(fps, r); }
+				return C.encodeApng(quantizeFrames(r, colors), size, size, loops);
 			};
 			let res;
 			if (autoFit) {
