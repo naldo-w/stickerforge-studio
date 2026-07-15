@@ -4080,18 +4080,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	function _encFileIndex(meta) {
 		const node = _encNode(meta);
 		if (!node) return Number.MAX_SAFE_INTEGER;
-		/* Interleave the two pipelines round-robin (gif[0], tgs[0], gif[1], tgs[1], …)
-		   instead of ranking every node by raw DOM position. #items (GIF) always precedes
-		   #tgsItems (TGS) in the DOM, so a pure DOM-order sort meant every GIF job — across
-		   every loaded GIF file — ran before a single TGS job got a turn, no matter how many
-		   TGS files were waiting. Ranking each scope's files against their own list first,
-		   then merging the two per-scope ranks, keeps "file N before file N+1" within a
-		   pipeline while giving both pipelines a fair turn at the front of the queue. */
-		const scope = _encScope(meta);
-		const list = (scope === 'tgs' ? tgsItems.map(it => it.el) : items.map(it => it.root)).filter(Boolean);
-		const idx = list.indexOf(node);
-		if (idx < 0) return Number.MAX_SAFE_INTEGER;
-		return idx * 2 + (scope === 'tgs' ? 1 : 0);
+		const nodes = [...items.map(it => it.root), ...tgsItems.map(it => it.el)]
+			.filter(Boolean)
+			.sort((a, b) => a === b ? 0 : (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING ? 1 : -1));
+		const idx = nodes.indexOf(node);
+		return idx >= 0 ? idx : Number.MAX_SAFE_INTEGER;
 	}
 	function _encFormatIndex(meta) {
 		const order = QUEUE_FORMAT_ORDER[_encScope(meta)] || [];
