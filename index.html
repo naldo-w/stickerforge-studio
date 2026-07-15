@@ -2725,7 +2725,6 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 
 	/* ── global defaults (per-panel settings can override) ── */
 	const G = {
-		filePrefix: '', fileSuffix: '',
 		scaleMode: "manual", manualScale: 12,
 		fpsMode: "auto", fps: 30,
 		offsetEnabled: true, offsetPx: 0.4,
@@ -3735,7 +3734,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					<input class="bf-field" type="number" min="1" step="1" data-r="rangeEnd" aria-label="range end" />
 				</span>
 			</div>
-			<div class="row"><span>SKIP FRAME</span><input class="bf-field" type="number" min="0" max="30" step="1" data-r="skipNum" aria-label="skip frames" /></div>
+			<div class="row"><span>SKIP FRAME</span><input class="bf-field" type="number" min="0" max="60" step="1" data-r="skipNum" aria-label="skip frames" /></div>
 			${switchRow("LOOP PREVIEW", "loop")}
 			<div class="grp">APNG</div>
 			<div class="row"><span>FULL FRAME RECONSTRUCTION</span><span class="ok-tag">ON</span></div>
@@ -4081,11 +4080,18 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	function _encFileIndex(meta) {
 		const node = _encNode(meta);
 		if (!node) return Number.MAX_SAFE_INTEGER;
-		const nodes = [...items.map(it => it.root), ...tgsItems.map(it => it.el)]
-			.filter(Boolean)
-			.sort((a, b) => a === b ? 0 : (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING ? 1 : -1));
-		const idx = nodes.indexOf(node);
-		return idx >= 0 ? idx : Number.MAX_SAFE_INTEGER;
+		/* Interleave the two pipelines round-robin (gif[0], tgs[0], gif[1], tgs[1], …)
+		   instead of ranking every node by raw DOM position. #items (GIF) always precedes
+		   #tgsItems (TGS) in the DOM, so a pure DOM-order sort meant every GIF job — across
+		   every loaded GIF file — ran before a single TGS job got a turn, no matter how many
+		   TGS files were waiting. Ranking each scope's files against their own list first,
+		   then merging the two per-scope ranks, keeps "file N before file N+1" within a
+		   pipeline while giving both pipelines a fair turn at the front of the queue. */
+		const scope = _encScope(meta);
+		const list = (scope === 'tgs' ? tgsItems.map(it => it.el) : items.map(it => it.root)).filter(Boolean);
+		const idx = list.indexOf(node);
+		if (idx < 0) return Number.MAX_SAFE_INTEGER;
+		return idx * 2 + (scope === 'tgs' ? 1 : 0);
 	}
 	function _encFormatIndex(meta) {
 		const order = QUEUE_FORMAT_ORDER[_encScope(meta)] || [];
@@ -4259,9 +4265,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	}
 
 	/* ── ANIMATED WEBP — browser-native per-frame lossless encode + RIFF/ANMF mux ── */
-	async function buildWebp(it) {
-		const lossless = it.settings.webpLossless !== false;
-		const frames = activeFrames(it);
+	async function _encodeWebpFrames(it, frames, { quality, colors }, lossless) {
+		const src = colors != null && colors < 256 ? quantizeFrames(frames, colors) : frames;
 		const sc = effScale(it);
 		const w = it.gif.width, h = it.gif.height;
 		const fw = w * sc, fh = h * sc;
@@ -4272,7 +4277,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const sub = document.createElement("canvas");
 		const encoded = [];
 		let prev = null;
-		for (const f of frames) {
+		for (const f of src) {
 			it.off.getContext("2d").putImageData(new ImageData(f.rgba, w, h), 0, 0);
 			ctx.clearRect(0, 0, CS, CS);
 			ctx.imageSmoothingEnabled = false;
@@ -4286,12 +4291,33 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			if (box.y & 1) { box.y--; box.h++; }
 			sub.width = box.w; sub.height = box.h;
 			sub.getContext("2d").putImageData(ctx.getImageData(box.x, box.y, box.w, box.h), 0, 0);
-			const blob = await new Promise(res => sub.toBlob(res, "image/webp", lossless ? 1 : Math.min(99, it.settings.webpQuality) / 100)); // 1 → lossless VP8L in Chromium, < 1 → lossy VP8
+			const blob = await new Promise(res => sub.toBlob(res, "image/webp", lossless ? 1 : Math.min(99, quality) / 100)); // 1 → lossless VP8L in Chromium, < 1 → lossy VP8
 			if (!blob || blob.type !== "image/webp") throw new Error("WEBP ENCODE UNSUPPORTED IN THIS BROWSER");
 			encoded.push({ bytes: new Uint8Array(await blob.arrayBuffer()), delayMs: f.delayMs, x: box.x, y: box.y, w: box.w, h: box.h });
 			prev = cur;
 		}
 		return C.muxAnimatedWebp(encoded, CS, CS, it.settings.webpLoops);
+	}
+	async function buildWebp(it) {
+		const lossless = it.settings.webpLossless !== false;
+		const frames = activeFrames(it);
+		const baseQuality = clamp(Math.round(+it.settings.webpQuality) || 90, 1, 100);
+		if (!it.settings.webpAutoFit) {
+			return _encodeWebpFrames(it, frames, { quality: baseQuality, colors: null }, lossless);
+		}
+		/* AUTO FIT ≤ 100 KB: same fps-then-(colors|quality) ladder as the TGS pipeline's
+		   _encodeUnderBudget — fps costs smoothness, not pixels, so it's tried first. */
+		const totalMs = frames.reduce((a, f) => a + f.delayMs, 0) || 1;
+		const srcFps = clamp(Math.round(1000 * frames.length / totalMs), 1, 60);
+		const r = it.refs;
+		const res = await _encodeUnderBudget({
+			frames, srcFps, budget: 100 * 1024,
+			encode: (f, { quality, colors }) => _encodeWebpFrames(it, f, { quality, colors }, lossless),
+			baseColors: 256, baseQuality,
+			stage2: lossless ? TGS_COLOR_LADDER.map(c => ({ colors: c })) : TGS_QUALITY_LADDER.map(q => ({ quality: q })),
+			onRung: label => { if (r?.webpSize) r.webpSize.textContent = label; },
+		});
+		return res.data;
 	}
 
 	function scheduleWebp(it) {
@@ -4528,7 +4554,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			s.rangeEnd = clamp(Math.round(+r.rangeEnd.value) - 1 || 0, s.rangeStart, it.gif.frames.length - 1);
 			it.animStart = performance.now(); upd();
 		});
-		r.skipNum.addEventListener("change", () => { s.skip = clamp(Math.round(+r.skipNum.value) || 0, 0, 30); it.animStart = performance.now(); upd(); });
+		r.skipNum.addEventListener("change", () => { s.skip = clamp(Math.round(+r.skipNum.value) || 0, 0, 60); it.animStart = performance.now(); upd(); });
 		r.frameSlider.addEventListener("input", () => { s.frameIndex = +r.frameSlider.value; refreshFrameCells(it); });
 		r.offsetSlider.addEventListener("input", () => {
 			s.offsetPx = Math.round(+r.offsetSlider.value * 10) / 10;
@@ -4543,6 +4569,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				else s[k] = cb.checked;
 				if (k === "loop") { it.animStart = performance.now(); return; }
 				if (k === "fit3s") { scheduleApng(it); return; }
+				if (k === "webpAutoFit") { scheduleWebp(it); return; }
 				if (k === "offsetEnabled") { r.offsetSlider.disabled = !s.offsetEnabled; it.lastAnimIdx = -1; }
 				scheduleTgs(it);
 			});
@@ -5422,7 +5449,6 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops,
 				fit3s: G.fit3s, frameTag: G.frameTag, frameTagPos: G.frameTagPos,
 				folderMode: G.folderMode, folderNames: Object.assign({}, G.folderNames),
-				filePrefix: G.filePrefix || '', fileSuffix: G.fileSuffix || '',
 				cells: Object.assign({}, G.cells),
 				tgsSettings: JSON.parse(JSON.stringify(G.tgsSettings)), tgsCells: Object.assign({}, G.tgsCells),
 			}, null, 2);
