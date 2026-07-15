@@ -2728,8 +2728,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		scaleMode: "manual", manualScale: 12,
 		fpsMode: "auto", fps: 30,
 		offsetEnabled: true, offsetPx: 0.4,
-		apngLoops: 0, apngMaxColors: 256, fit3s: false,
-		dcLoops: 0, dcMaxColors: 256,
+		apngLoops: 0, apngMaxColors: 256, fit3s: false, apngAutoFit: true,
+		dcLoops: 0, dcMaxColors: 256, dcAutoFit: true,
 			/* per-output scale defaults derived from 512APNG's 12× by canvas ratio, floored:
 			   320APNG floor(12·320/512)=7, LINE floor(12·270/512)=6; each capped to maxFitScale. */
 		dcScaleMode: "manual", dcManual: 7,
@@ -3571,6 +3571,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			</div>
 			<div class="kv"><span>TARGET</span><span class="v">DISCORD · ≤ 512 KB</span></div>
 			<div class="kv"><span>APNG SIZE</span><span class="v" data-r="dcSize">…</span></div>
+			${switchRow("AUTO FIT ≤ 512 KB", "dcAutoFit")}
 			<div class="warn" data-r="dcWarn">OVER 512 KB — DISCORD MAY REJECT · REDUCE SCALE · REDUCE FRAME · SKIP FRAME</div>
 			<div class="spacer"></div>
 			<div class="row"><span>FOLDER · ZIP</span><input class="bf-field fd" type="text" data-r="fdDiscord" aria-label="zip folder for discord apng" /></div>
@@ -3619,6 +3620,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			</div>
 			<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="apngLoopsNum" aria-label="apng loop count" /></div>
 			<div class="row"><span>MAX COLORS</span><input class="bf-field" type="number" min="2" max="256" step="1" data-r="apngColorsNum" aria-label="apng max colors" /></div>
+			${switchRow("AUTO FIT ≤ 300 KB", "apngAutoFit")}
 			${switchRow("FIT 3S · SIGNAL", "fit3s")}
 			<div class="warn" data-r="apngWarn">OVER 300 KB — SIGNAL MAY REJECT · REDUCE SCALE · REDUCE FRAME · SKIP FRAME</div>
 			<div class="spacer"></div>
@@ -4039,18 +4041,50 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		}
 		return out;
 	}
-	async function buildApng512(it) {
+	function _srcFpsOf(frames) {
+		const totalMs = frames.reduce((a, f) => a + f.delayMs, 0) || 1;
+		return clamp(Math.round(1000 * frames.length / totalMs), 1, 60);
+	}
+	async function _encodeApng512Frames(it, frames, colors) {
 		const s = it.settings, sc = effScale(it);
-		let src = quantizeFrames(activeFrames(it), s.apngMaxColors);
+		let src = quantizeFrames(frames, colors);
 		if (s.fit3s) src = fit3sDelays(src);
-		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc), delayMs: f.delayMs }));
-		return C.encodeApng(frames, CS, CS, s.apngLoops);
+		const out = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc), delayMs: f.delayMs }));
+		return C.encodeApng(out, CS, CS, s.apngLoops);
+	}
+	async function buildApng512(it) {
+		const s = it.settings;
+		const frames = activeFrames(it);
+		if (!s.apngAutoFit) return _encodeApng512Frames(it, frames, s.apngMaxColors);
+		const r = it.refs;
+		const res = await _encodeUnderBudget({
+			frames, srcFps: _srcFpsOf(frames), budget: 300 * 1024,
+			encode: (f, { colors }) => _encodeApng512Frames(it, f, colors),
+			baseColors: 256, baseQuality: null,
+			stage2: TGS_COLOR_LADDER.map(c => ({ colors: c })),
+			onRung: label => { if (r?.apngSize) r.apngSize.textContent = label; },
+		});
+		return res.data;
+	}
+	async function _encodeApng320Frames(it, frames, colors) {
+		const s = it.settings, sc = dcScale(it);
+		const src = quantizeFrames(frames, colors);
+		const out = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 320), delayMs: f.delayMs }));
+		return C.encodeApng(out, 320, 320, s.dcLoops);
 	}
 	async function buildApng320(it) {
-		const s = it.settings, sc = dcScale(it);
-		const src = quantizeFrames(activeFrames(it), s.dcMaxColors);
-		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 320), delayMs: f.delayMs }));
-		return C.encodeApng(frames, 320, 320, s.dcLoops);
+		const s = it.settings;
+		const frames = activeFrames(it);
+		if (!s.dcAutoFit) return _encodeApng320Frames(it, frames, s.dcMaxColors);
+		const r = it.refs;
+		const res = await _encodeUnderBudget({
+			frames, srcFps: _srcFpsOf(frames), budget: 512 * 1024,
+			encode: (f, { colors }) => _encodeApng320Frames(it, f, colors),
+			baseColors: 256, baseQuality: null,
+			stage2: TGS_COLOR_LADDER.map(c => ({ colors: c })),
+			onRung: label => { if (r?.dcSize) r.dcSize.textContent = label; },
+		});
+		return res.data;
 	}
 	async function buildApngLine(it) {
 		const s = it.settings, sc = lineScale(it);
@@ -4300,11 +4334,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		}
 		/* AUTO FIT ≤ 100 KB: same fps-then-(colors|quality) ladder as the TGS pipeline's
 		   _encodeUnderBudget — fps costs smoothness, not pixels, so it's tried first. */
-		const totalMs = frames.reduce((a, f) => a + f.delayMs, 0) || 1;
-		const srcFps = clamp(Math.round(1000 * frames.length / totalMs), 1, 60);
 		const r = it.refs;
 		const res = await _encodeUnderBudget({
-			frames, srcFps, budget: 100 * 1024,
+			frames, srcFps: _srcFpsOf(frames), budget: 100 * 1024,
 			encode: (f, { quality, colors }) => _encodeWebpFrames(it, f, { quality, colors }, lossless),
 			baseColors: 256, baseQuality,
 			stage2: lossless ? TGS_COLOR_LADDER.map(c => ({ colors: c })) : TGS_QUALITY_LADDER.map(q => ({ quality: q })),
@@ -4562,6 +4594,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				else s[k] = cb.checked;
 				if (k === "loop") { it.animStart = performance.now(); return; }
 				if (k === "fit3s") { scheduleApng(it); return; }
+				if (k === "apngAutoFit") { scheduleApng(it); return; }
+				if (k === "dcAutoFit") { scheduleDc(it); return; }
 				if (k === "webpAutoFit") { scheduleWebp(it); return; }
 				if (k === "offsetEnabled") { r.offsetSlider.disabled = !s.offsetEnabled; it.lastAnimIdx = -1; }
 				scheduleTgs(it);
@@ -4635,8 +4669,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					loop: true, frameIndex: 0,
 					offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
 					folders: { ...G.folderNames },
-					apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, fit3s: G.fit3s,
-					dcLoops: G.dcLoops, dcMaxColors: G.dcMaxColors,
+					apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, fit3s: G.fit3s, apngAutoFit: G.apngAutoFit,
+					dcLoops: G.dcLoops, dcMaxColors: G.dcMaxColors, dcAutoFit: G.dcAutoFit,
 					dcScaleMode: G.dcScaleMode, dcManual: G.dcManual,
 					lineScaleMode: G.lineScaleMode, lineManual: G.lineManual,
 					webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops, webpAutoFit: G.webpAutoFit,
@@ -5258,8 +5292,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				scaleMode: G.scaleMode, manualScale: G.manualScale,
 				fpsMode: G.fpsMode, fps: G.fps,
 				offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
-				apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors,
-				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops,
+				apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, apngAutoFit: G.apngAutoFit,
+				dcAutoFit: G.dcAutoFit,
+				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops, webpAutoFit: G.webpAutoFit,
 					fit3s: G.fit3s, frameTag: G.frameTag, frameTagPos: G.frameTagPos, jobPanelsExpanded: G.jobPanelsExpanded,
 				folderMode: G.folderMode,
 				folderNames: Object.assign({}, G.folderNames),
@@ -5275,7 +5310,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			if (!raw) return;
 			const s = JSON.parse(raw);
 			const props = ['scaleMode','manualScale','fpsMode','fps','offsetEnabled','offsetPx',
-				'apngLoops','apngMaxColors','webpLossless','webpQuality','webpLoops',
+				'apngLoops','apngMaxColors','apngAutoFit','dcAutoFit','webpLossless','webpQuality','webpLoops','webpAutoFit',
 				'fit3s','frameTag','frameTagPos','jobPanelsExpanded','folderMode'];
 			for (const k of props) if (k in s) G[k] = s[k];
 			if (s.folderNames) Object.assign(G.folderNames, s.folderNames);
@@ -5322,8 +5357,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				Object.assign(G, {
 					scaleMode: 'manual', manualScale: 12, fpsMode: 'auto', fps: 30,
 					offsetEnabled: true, offsetPx: 0.4,
-					apngLoops: 0, apngMaxColors: 256, fit3s: false,
-					webpLossless: true, webpQuality: 90, webpLoops: 0,
+					apngLoops: 0, apngMaxColors: 256, fit3s: false, apngAutoFit: true,
+					dcAutoFit: true,
+					webpLossless: true, webpQuality: 90, webpLoops: 0, webpAutoFit: true,
 					frameTag: false, frameTagPos: 'suffix', jobPanelsExpanded: false, folderMode: 'platform',
 				});
 				Object.keys(G.cells).forEach(k => { G.cells[k] = k !== 'lottie' && k !== 'frame' && k !== 'pad' && k !== 'line'; });
@@ -5335,11 +5371,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						scaleMode: G.scaleMode, manualScale: G.manualScale,
 						fpsMode: G.fpsMode, fps: G.fps,
 						offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
-						apngLoops: 0, apngMaxColors: 256, fit3s: false,
-						dcLoops: 0, dcMaxColors: 256,
+						apngLoops: 0, apngMaxColors: 256, fit3s: false, apngAutoFit: true,
+						dcLoops: 0, dcMaxColors: 256, dcAutoFit: true,
 						dcScaleMode: 'manual', dcManual: 7,
 						lineScaleMode: 'manual', lineManual: 6,
-						webpLossless: true, webpQuality: 90, webpLoops: 0,
+						webpLossless: true, webpQuality: 90, webpLoops: 0, webpAutoFit: true,
 						folders: Object.assign({}, FOLDER_PRESETS.platform),
 					});
 					for (const k of FOLDER_KEYS) {
@@ -5438,8 +5474,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const data = JSON.stringify({
 				_v: 1, scaleMode: G.scaleMode, manualScale: G.manualScale,
 				fpsMode: G.fpsMode, fps: G.fps, offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
-				apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors,
-				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops,
+				apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, apngAutoFit: G.apngAutoFit, dcAutoFit: G.dcAutoFit,
+				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops, webpAutoFit: G.webpAutoFit,
 				fit3s: G.fit3s, frameTag: G.frameTag, frameTagPos: G.frameTagPos,
 				folderMode: G.folderMode, folderNames: Object.assign({}, G.folderNames),
 				cells: Object.assign({}, G.cells),
@@ -5456,7 +5492,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				try {
 					const s = JSON.parse(await file.text());
 					const props = ['scaleMode','manualScale','fpsMode','fps','offsetEnabled','offsetPx',
-						'apngLoops','apngMaxColors','webpLossless','webpQuality','webpLoops',
+						'apngLoops','apngMaxColors','apngAutoFit','dcAutoFit','webpLossless','webpQuality','webpLoops','webpAutoFit',
 						'fit3s','frameTag','frameTagPos','folderMode'];
 					for (const k of props) if (k in s) G[k] = s[k];
 					if (s.folderNames) Object.assign(G.folderNames, s.folderNames);
