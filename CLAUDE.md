@@ -45,13 +45,14 @@ Both pipelines drive the same underlying encoders (`encodeApng`, `muxAnimatedWeb
 
 ### Output formats
 
-Six outputs, built per platform target:
+Seven outputs, built per platform target:
 
 | Output | Target platform | Canvas | Notes |
 |---|---|---|---|
-| `512APNG` | Signal, iMessage | 512×512 | ≤300 KB budget |
+| `512APNG` | Signal | 512×512 | ≤300 KB budget |
 | `320APNG` | Discord | 320×320 (configurable) | ≤512 KB budget |
 | `LINE・APNG 270` | LINE | 270×270 | ≤1 MB, 5–20 frames, 1–4 loops, ≤4s total (dedicated preset, not a reuse of another canvas) |
+| `IMESSAGE・APNG` | iMessage | 300×300, 408×408, 618×618 | ≤500 KB budget **per file**; ships all 3 sizes as one Xcode sticker-pack set, not a pick-one — see below |
 | `TGS` | Telegram | 512×512 | ≤64 KB budget (post-gzip); pixels emitted as vector rects |
 | `WEBP` | WhatsApp | 512×512 | lossless VP8L by default; ≤100 KB budget |
 | `PNG` (frame / pad) | static sticker / thumbnail | 512×512, padded or cropped | no size budget |
@@ -67,6 +68,8 @@ Six outputs, built per platform target:
 - **APNG encode Worker pool** (`_ensureEncWorkers`/`_apngEncodeInWorker`, `ENC_POOL_SIZE = 2`): the quantize→fit3s→scaleAndCenter→encodeApng step for GIF's 512APNG/320APNG and TGS's Signal APNG runs in a small fixed-size Worker pool instead of the main thread, so a big batch doesn't freeze the UI. The pool is deliberately capped at 2 rather than sized to `navigator.hardwareConcurrency` — unbounded concurrency here is exactly what crashed the app before `_encGate` existed (see below), so worker count is a fixed, explicit number, not one that scales with the machine. TGS's Discord output and all of WebP stay on the main thread: Discord needs a smoothed `<canvas>` resize before quantizing (real DOM canvas, not worker-portable without `OffscreenCanvas`), and WebP's `canvas.toBlob()` has the same constraint. Input frames are structured-cloned into the worker (not transferred) because the same cached frame array can be read concurrently by another format's build on the main thread; only the freshly-allocated encoded output bytes are transferred back.
 - **`_encGate`/`_pumpEncQueue`** is the single shared priority queue both pipelines' heavy builds go through, sorted by DOM file order then by `QUEUE_FORMAT_ORDER`. It now runs up to `ENC_POOL_SIZE` jobs concurrently (`_encActive` is an array, not a single job) — still a small fixed bound, not unbounded, for the same memory-safety reason as the worker pool above.
 - Settings persist to `localStorage` (key `stickerforge_studio_v1`) via `saveSettings`/`loadSettings`; this is separate from the user-facing Export/Import JSON feature — the two persistence paths are not guaranteed to carry the same fields, so check both when changing what state needs to survive a reload vs. an explicit export.
+- **iMessage is the one output that isn't a single `data` byte array.** Every other format's per-item cache (`it.lastApng`, `it.lastLine`, TGS's `it[TGS_CACHE_KEY[key]]`, etc.) and the generic bookkeeping built on top of it (`_setOutputState`/`_cachedOutputSize`/`_applyTgsBuild`/`scheduleTgsBuild`/`_collectTgsEntries`) all assume one file, one size, one budget. iMessage ships 3 fixed canvas sizes (300/408/618) as one Apple-mandated set, so it's deliberately implemented outside that generic machinery: `it.lastIMessage` is `{s300, s408, s618}`, `_imMaxSize()` reduces that to the single representative "size" the generic stats/warn UI expects (the *largest* of the 3, since the ≤500KB budget is per file — using the sum would misfire the warning), and GIF's `scheduleImessage`/`buildImessage` and TGS's `scheduleTgsImessage`/`_buildTgsImessage`/`_collectTgsImessageEntries` are bespoke functions rather than additions to `TGS_ALL_KEYS`'s generic loop. If you're adding another multi-file output, follow this pattern rather than trying to force multiple files through the single-value path.
+- GIF's iMessage build reuses `scaleAndCenter`'s integer nearest-neighbor upscale (via the same Worker pool as 512APNG/320APNG) since GIF sources are small pixel art needing enlargement. TGS's iMessage build instead reuses `_resizeTgsFrames` (smoothed `<canvas>` resize, same helper as TGS's Discord output) since TGS frames are already rendered at a native 512 canvas by lottie-web and need real downscaling for the two smaller sizes — `scaleAndCenter`'s integer-only scale can't do that, so it stays main-thread rather than going through the Worker pool.
 
 ### `docs/pipeline-logic.md`
 
