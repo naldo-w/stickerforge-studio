@@ -1678,6 +1678,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="imessage" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
+							<div class="s-item"><span class="s-item-lbl">SIZE</span><span class="s-item-ctl"><span class="bf-seg" id="gImessageSizeSeg"><button type="button" class="bf-seg-btn" data-v="300">Small</button><button type="button" class="bf-seg-btn bf-on" data-v="408">Regular</button><button type="button" class="bf-seg-btn" data-v="618">Large</button></span></span></div>
 							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gImessageLoops" /></span></div>
 							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdImessage" /></span></div>
 						</div>
@@ -1776,6 +1777,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="imessage" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
+							<div class="s-item"><span class="s-item-lbl">SIZE</span><span class="s-item-ctl"><span class="bf-seg" id="gtImessageSizeSeg"><button type="button" class="bf-seg-btn" data-v="300">Small</button><button type="button" class="bf-seg-btn bf-on" data-v="408">Regular</button><button type="button" class="bf-seg-btn" data-v="618">Large</button></span></span></div>
 							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtImessageLoops" /></span></div>
 							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdImessage" /></span></div>
 						</div>
@@ -2811,7 +2813,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		dcScaleMode: "manual", dcManual: 7,
 		lineScaleMode: "manual", lineManual: 6,
 		webpLossless: true, webpQuality: 90, webpLoops: 0, webpAutoFit: true,
-		imessageLoops: 0,
+		imessageLoops: 0, imessageSize: 408,
 		frameTag: false, frameTagPos: "suffix", jobPanelsExpanded: false,
 		cells: { apng: true, discord: true, frame: false, pad: false, tgs: true, lottie: false, webp: true, line: false, imessage: false },
 		tgsCells: { apng: true, discord: true, webp: true, frame: true, pad: true, line: false, lottie: true, imessage: false },
@@ -2825,7 +2827,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			pad: { mode: 'first', folder: '512PNGNOPADDING' },
 			line: { loops: 1, folder: 'LINE', autoFit: true, fps: null, maxColors: 256 },
 			lottie: { folder: 'LOTTIE' },
-			imessage: { loops: 0, folder: 'IMESSAGE' },
+			imessage: { loops: 0, size: 408, folder: 'IMESSAGE' },
 		},
 	};
 	let viewMode = "convert";
@@ -3801,14 +3803,19 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		<div class="cell-b">
 			<canvas class="pv" width="${CS}" height="${CS}" data-r="imCv"></canvas>
 			<div class="kv"><span>TARGET</span><span class="v">≤ 500 KB / FILE</span></div>
-			<div class="kv"><span>SMALL 300×300</span><span class="v" data-r="imSize300">…</span></div>
-			<div class="kv"><span>REGULAR 408×408</span><span class="v" data-r="imSize408">…</span></div>
-			<div class="kv"><span>LARGE 618×618</span><span class="v" data-r="imSize618">…</span></div>
+			<div class="row"><span>SIZE</span><div class="row-b">
+				<span class="bf-seg" data-r="imSizeSeg">
+					<button type="button" class="bf-seg-btn" data-v="300">Small</button>
+					<button type="button" class="bf-seg-btn" data-v="408">Regular</button>
+					<button type="button" class="bf-seg-btn" data-v="618">Large</button>
+				</span>
+				</div></div>
+			<div class="kv"><span>OUTPUT SIZE</span><span class="v" data-r="imSize">…</span></div>
 			<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="imLoopsNum" aria-label="imessage loop count" /></div>
 			<div class="warn" data-r="imWarn">OVER 500 KB — XCODE MAY REJECT · REDUCE FRAME · SKIP FRAME</div>
 			<div class="spacer"></div>
 			<div class="row"><span>FOLDER · ZIP</span><input class="bf-field fd" type="text" data-r="fdImessage" aria-label="zip folder for imessage apng" /></div>
-			<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expImessage">Export All 3 Sizes</button>
+			<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expImessage">Export APNG</button>
 		</div>
 	</div>
 
@@ -3909,6 +3916,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (r.webpQualityRow) r.webpQualityRow.classList.toggle("off", s.webpLossless);
 		r.webpLoopsNum.value = s.webpLoops;
 		r.imLoopsNum.value = s.imessageLoops;
+		r.imSizeSeg.querySelectorAll(".bf-seg-btn").forEach(b => b.classList.toggle("bf-on", +b.dataset.v === s.imessageSize));
 
 		/* fps / range / skip */
 		r.fpsSeg.querySelectorAll(".bf-seg-btn").forEach(b => b.classList.toggle("bf-on", b.dataset.v === s.fpsMode));
@@ -4147,27 +4155,19 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 270), delayMs: f.delayMs }));
 		return C.encodeApng(frames, 270, 270, 1, { coalesce: false }); // LINE requires finite loops and 5–20 APNG frames
 	}
-	/* iMessage ships as an Xcode sticker pack of three fixed canvas sizes, not a pick-one —
-	   small/regular/large (@1x/2x/3x-equivalent), each independently under Apple's 500KB/file
-	   cap. No AUTO-FIT or manual scale here: each canvas gets maxFitScale, matching the fixed,
-	   Apple-mandated sizes rather than a creative choice like Signal's manual scale. */
-	const IMESSAGE_SIZES = [300, 408, 618];
-	/* the representative "size" fed into the shared stats/warn bookkeeping (which assumes
-	   one file, one size, one limit) is the largest of the 3 — not the sum. The 500KB limit
-	   is per file, so "over budget" must mean "the biggest of the 3 exceeds it", not "the
-	   combined weight of 3 unrelated files exceeds a single file's budget". */
-	function _imMaxSize(x) { return x ? Math.max(x.s300.length, x.s408.length, x.s618.length) : null; }
+	/* iMessage's MSStickerSize is a 3-way choice (small 300 / regular 408 / large 618), not
+	   a bundle — you ship one @3x image for whichever size you picked, and the OS derives
+	   @2x/@1x by downscaling at runtime. So this is a single output like every other cell,
+	   just with a fixed 3-value size picker instead of a free manual scale. */
 	async function buildImessage(it) {
 		const s = it.settings;
 		const frames = activeFrames(it);
-		const [s300, s408, s618] = await Promise.all(IMESSAGE_SIZES.map(size => {
-			const sc = C.maxFitScale(it.gif.width, it.gif.height, size);
-			return _apngEncodeInWorker(frames, {
-				width: it.gif.width, height: it.gif.height, scale: sc, canvasSize: size,
-				loops: s.imessageLoops, colors: 256, fit3s: false,
-			});
-		}));
-		return { s300, s408, s618 };
+		const size = clamp(Math.round(+s.imessageSize) || 408, 300, 618);
+		const sc = C.maxFitScale(it.gif.width, it.gif.height, size);
+		return _apngEncodeInWorker(frames, {
+			width: it.gif.width, height: it.gif.height, scale: sc, canvasSize: size,
+			loops: s.imessageLoops, colors: 256, fit3s: false,
+		});
 	}
 	/* Global encode queue — one heavy encode at a time, file-first.
 	   Jobs are sorted by file order, then by each converter's processing priority. */
@@ -4440,32 +4440,27 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const r = it.refs;
 		it.lastIMessage = null;
 		_setOutputState(it, 'imessage', 'queued');
-		if (r.imSize300) r.imSize300.textContent = "…";
-		if (r.imSize408) r.imSize408.textContent = "…";
-		if (r.imSize618) r.imSize618.textContent = "…";
+		r.imSize.textContent = "…";
 		if (it.imessagePending) return; // already queued — the job reads the latest settings when it runs
 		it.imessagePending = true;
 		(async () => {
 			let token;
 			try {
-				const result = await _encGate(() => {
+				const data = await _encGate(() => {
 					it.imessagePending = false;
 					token = ++it.imessageToken;
 					_setOutputState(it, 'imessage', 'processing');
 					return buildImessage(it);
 				}, { scope: 'gif', it, key: 'imessage' });
 				if (token !== it.imessageToken) return;
-				it.lastIMessage = result;
-				_setOutputState(it, 'imessage', 'built', { size: _imMaxSize(result) });
-				if (r.imSize300) r.imSize300.textContent = kb(result.s300.length);
-				if (r.imSize408) r.imSize408.textContent = kb(result.s408.length);
-				if (r.imSize618) r.imSize618.textContent = kb(result.s618.length);
-				const over = result.s300.length > 500 * 1024 || result.s408.length > 500 * 1024 || result.s618.length > 500 * 1024;
-				if (r.imWarn) r.imWarn.classList.toggle("on", over);
+				it.lastIMessage = data;
+				_setOutputState(it, 'imessage', 'built', { size: data.length });
+				r.imSize.textContent = kb(data.length);
+				r.imWarn.classList.toggle("on", data.length > 500 * 1024);
 			} catch (e) {
 				if (token !== it.imessageToken) return;
 				it.lastIMessage = null;
-				if (r.imSize300) r.imSize300.textContent = String(e.message || e).toUpperCase().slice(0, 40);
+				r.imSize.textContent = String(e.message || e).toUpperCase().slice(0, 40);
 				_setOutputState(it, 'imessage', 'error', { message: String(e.message || e) });
 			}
 			})();
@@ -4656,13 +4651,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			download(data, it.base + "_line.apng", "image/apng");
 		}));
 		r.expImessage.addEventListener("click", () => busy(r.expImessage, async () => {
-			_setOutputState(it, 'imessage', it.lastIMessage ? 'built' : 'processing', it.lastIMessage ? { size: _imMaxSize(it.lastIMessage) } : null);
+			_setOutputState(it, 'imessage', it.lastIMessage ? 'built' : 'processing', it.lastIMessage ? { size: it.lastIMessage.length } : null);
 			const data = it.lastIMessage || await buildImessage(it);
 			it.lastIMessage = data;
-			_setOutputState(it, 'imessage', 'built', { size: _imMaxSize(data) });
-			download(data.s300, it.base + "_300.apng", "image/apng");
-			download(data.s408, it.base + "_408.apng", "image/apng");
-			download(data.s618, it.base + "_618.apng", "image/apng");
+			_setOutputState(it, 'imessage', 'built', { size: data.length });
+			download(data, it.base + "_imessage.apng", "image/apng");
 		}));
 		r.expFrame.addEventListener("click", () => busy(r.expFrame, async () => {
 			_setOutputState(it, 'frame', 'processing');
@@ -4747,6 +4740,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		r.webpQNum.addEventListener("change", () => { s.webpQuality = clamp(Math.round(+r.webpQNum.value) || 90, 1, 100); upd(); });
 		r.webpLoopsNum.addEventListener("change", () => { s.webpLoops = clamp(Math.round(+r.webpLoopsNum.value) || 0, 0, 99); upd(); });
 		r.imLoopsNum.addEventListener("change", () => { s.imessageLoops = clamp(Math.round(+r.imLoopsNum.value) || 0, 0, 99); upd(); });
+		r.imSizeSeg.addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) { s.imessageSize = +b.dataset.v; upd(); } });
 		if (r.webpScaleSeg) r.webpScaleSeg.addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) { s.scaleMode = b.dataset.v; upd(); } });
 		if (r.webpScaleNum) r.webpScaleNum.addEventListener("change", () => { s.manualScale = clamp(Math.round(+r.webpScaleNum.value) || 12, 1, 64); upd(); });
 
@@ -4864,7 +4858,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					dcScaleMode: G.dcScaleMode, dcManual: G.dcManual,
 					lineScaleMode: G.lineScaleMode, lineManual: G.lineManual,
 					webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops, webpAutoFit: G.webpAutoFit,
-					imessageLoops: G.imessageLoops,
+					imessageLoops: G.imessageLoops, imessageSize: G.imessageSize,
 					opt: {
 						rectMerge: true, sameColorMerge: true, removeEmpty: true,
 						removeDup: true, floatPrecision: true, removeDefaults: true,
@@ -4925,7 +4919,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				if (G.cells.apng) drawFrame(it, it.refs.apngCv, frames[idx].rgba);
 				if (G.cells.discord) drawFrame(it, it.refs.dcCv, frames[idx].rgba, { scale: dcScale(it), bbox: DC_BOX });
 				if (G.cells.line) drawFrame(it, it.refs.lineCv, frames[idx].rgba, { scale: lineScale(it), bbox: LINE_BOX });
-				if (G.cells.imessage) drawFrame(it, it.refs.imCv, frames[idx].rgba, { scale: C.maxFitScale(it.gif.width, it.gif.height, 408) });
+				if (G.cells.imessage) drawFrame(it, it.refs.imCv, frames[idx].rgba, { scale: C.maxFitScale(it.gif.width, it.gif.height, it.settings.imessageSize) });
 				if (G.cells.webp) drawFrame(it, it.refs.webpCv, frames[idx].rgba);
 				if (G.cells.tgs) drawFrame(it, it.refs.tgsCv, frames[idx].rgba, {
 					offset: it.settings.offsetEnabled ? it.settings.offsetPx * (CS / it.refs.tgsCv.clientWidth || 1) : null,
@@ -4998,6 +4992,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		webpQ: document.getElementById("gWebpQ"),
 		webpLoops: document.getElementById("gWebpLoops"),
 		imessageLoops: document.getElementById("gImessageLoops"),
+		imessageSizeSeg: document.getElementById("gImessageSizeSeg"),
 		jobPanelSeg: document.getElementById("gJobPanelSeg"),
 		reset: document.getElementById("gReset"),
 	};
@@ -5020,6 +5015,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		g.webpQ.disabled = G.webpLossless;
 		g.webpLoops.value = G.webpLoops;
 		if (g.imessageLoops) g.imessageLoops.value = G.imessageLoops;
+		if (g.imessageSizeSeg) g.imessageSizeSeg.querySelectorAll(".bf-seg-btn").forEach(b => b.classList.toggle("bf-on", +b.dataset.v === G.imessageSize));
 		if (g.jobPanelSeg) g.jobPanelSeg.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('bf-on', b.dataset.v === (G.jobPanelsExpanded ? 'expanded' : 'collapsed')));
 	}
 	function applyGlobal(patch) {
@@ -5098,6 +5094,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	g.webpQ.addEventListener("change", () => applyGlobal({ webpQuality: clamp(Math.round(+g.webpQ.value) || 90, 1, 100) }));
 	g.webpLoops.addEventListener("change", () => applyGlobal({ webpLoops: clamp(Math.round(+g.webpLoops.value) || 0, 0, 99) }));
 	if (g.imessageLoops) g.imessageLoops.addEventListener("change", () => applyGlobal({ imessageLoops: clamp(Math.round(+g.imessageLoops.value) || 0, 0, 99) }));
+	if (g.imessageSizeSeg) g.imessageSizeSeg.addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) applyGlobal({ imessageSize: +b.dataset.v }); });
 
 	/* restore every global + per-panel setting to factory defaults */
 	g.reset.addEventListener("click", () => {
@@ -5492,7 +5489,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, apngAutoFit: G.apngAutoFit,
 				dcAutoFit: G.dcAutoFit,
 				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops, webpAutoFit: G.webpAutoFit,
-				imessageLoops: G.imessageLoops,
+				imessageLoops: G.imessageLoops, imessageSize: G.imessageSize,
 					fit3s: G.fit3s, frameTag: G.frameTag, frameTagPos: G.frameTagPos, jobPanelsExpanded: G.jobPanelsExpanded,
 				folderMode: G.folderMode,
 				folderNames: Object.assign({}, G.folderNames),
@@ -5508,7 +5505,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			if (!raw) return;
 			const s = JSON.parse(raw);
 			const props = ['scaleMode','manualScale','fpsMode','fps','offsetEnabled','offsetPx',
-				'apngLoops','apngMaxColors','apngAutoFit','dcAutoFit','webpLossless','webpQuality','webpLoops','webpAutoFit','imessageLoops',
+				'apngLoops','apngMaxColors','apngAutoFit','dcAutoFit','webpLossless','webpQuality','webpLoops','webpAutoFit','imessageLoops','imessageSize',
 				'fit3s','frameTag','frameTagPos','jobPanelsExpanded','folderMode'];
 			for (const k of props) if (k in s) G[k] = s[k];
 			if (s.folderNames) Object.assign(G.folderNames, s.folderNames);
@@ -5558,7 +5555,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					apngLoops: 0, apngMaxColors: 256, fit3s: false, apngAutoFit: true,
 					dcAutoFit: true,
 					webpLossless: true, webpQuality: 90, webpLoops: 0, webpAutoFit: true,
-					imessageLoops: 0,
+					imessageLoops: 0, imessageSize: 408,
 					frameTag: false, frameTagPos: 'suffix', jobPanelsExpanded: false, folderMode: 'platform',
 				});
 				Object.keys(G.cells).forEach(k => { G.cells[k] = k !== 'lottie' && k !== 'frame' && k !== 'pad' && k !== 'line' && k !== 'imessage'; });
@@ -5575,7 +5572,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						dcScaleMode: 'manual', dcManual: 7,
 						lineScaleMode: 'manual', lineManual: 6,
 						webpLossless: true, webpQuality: 90, webpLoops: 0, webpAutoFit: true,
-						imessageLoops: 0,
+						imessageLoops: 0, imessageSize: 408,
 						folders: Object.assign({}, FOLDER_PRESETS.platform),
 					});
 					for (const k of FOLDER_KEYS) {
@@ -5606,7 +5603,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					Object.assign(G.tgsSettings.pad, { mode: 'first' });
 					Object.assign(G.tgsSettings.line, { loops: 1, autoFit: true, fps: null, maxColors: 256 });
 					Object.assign(G.tgsSettings.lottie, { folder: 'LOTTIE' });
-					Object.assign(G.tgsSettings.imessage, { loops: 0 });
+					Object.assign(G.tgsSettings.imessage, { loops: 0, size: 408 });
 					applyTgsFolderPreset(G.folderMode);
 					if (typeof syncTgsSettingsUI === 'function') syncTgsSettingsUI();
 					if (typeof updateTgsSettingsSections === 'function') updateTgsSettingsSections();
@@ -5633,6 +5630,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							lineFps: T.line.fps,
 							lineMaxColors: T.line.maxColors,
 							imessageLoops: T.imessage.loops,
+							imessageSize: T.imessage.size,
 						});
 						// A2: refresh the panel inputs so they show the reset values, not the user's old typed ones
 						if (it.refs) {
@@ -5644,6 +5642,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							if (r.webpSeg) r.webpSeg.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('bf-on', b.dataset.v === (s.webpLossless ? 'lossless' : 'lossy')));
 							if (r.lineLoopsNum) r.lineLoopsNum.value = s.lineLoops;
 							if (r.imLoopsNum) r.imLoopsNum.value = s.imessageLoops;
+							if (r.imSizeSeg) r.imSizeSeg.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('bf-on', +b.dataset.v === s.imessageSize));
 							['apng', 'discord', 'webp', 'line'].forEach(key => {
 								if (r[key + 'AutoFit']) r[key + 'AutoFit'].checked = !!s[TGS_AUTOFIT_KEY[key]];
 								if (r[key + 'FpsNum']) r[key + 'FpsNum'].value = s[TGS_FPS_KEY[key]] == null ? native : s[TGS_FPS_KEY[key]];
@@ -5651,8 +5650,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 								_syncTgsAutoFitReadout(it, key, null);
 							});
 						}
-						['apng', 'discord', 'webp', 'frame', 'pad', 'line', 'lottie'].forEach(k => { if (G.tgsCells[k] && typeof scheduleTgsBuild === 'function') scheduleTgsBuild(it, k); });
-						if (G.tgsCells.imessage) scheduleTgsImessage(it);
+						['apng', 'discord', 'webp', 'frame', 'pad', 'line', 'lottie', 'imessage'].forEach(k => { if (G.tgsCells[k] && typeof scheduleTgsBuild === 'function') scheduleTgsBuild(it, k); });
 					});
 				}
 				saveSettings();
@@ -5680,7 +5678,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				fpsMode: G.fpsMode, fps: G.fps, offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
 				apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, apngAutoFit: G.apngAutoFit, dcAutoFit: G.dcAutoFit,
 				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops, webpAutoFit: G.webpAutoFit,
-				imessageLoops: G.imessageLoops,
+				imessageLoops: G.imessageLoops, imessageSize: G.imessageSize,
 				fit3s: G.fit3s, frameTag: G.frameTag, frameTagPos: G.frameTagPos,
 				folderMode: G.folderMode, folderNames: Object.assign({}, G.folderNames),
 				cells: Object.assign({}, G.cells),
@@ -5697,7 +5695,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				try {
 					const s = JSON.parse(await file.text());
 					const props = ['scaleMode','manualScale','fpsMode','fps','offsetEnabled','offsetPx',
-						'apngLoops','apngMaxColors','apngAutoFit','dcAutoFit','webpLossless','webpQuality','webpLoops','webpAutoFit','imessageLoops',
+						'apngLoops','apngMaxColors','apngAutoFit','dcAutoFit','webpLossless','webpQuality','webpLoops','webpAutoFit','imessageLoops','imessageSize',
 						'fit3s','frameTag','frameTagPos','folderMode'];
 					for (const k of props) if (k in s) G[k] = s[k];
 					if (s.folderNames) Object.assign(G.folderNames, s.folderNames);
@@ -6057,8 +6055,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (tiny) _drawTgsPreview(it.refs.dcCv, tiny.rgba, size, true);
 		const lineTiny = _resizeTgsFrames([f], 270)[0];
 		if (lineTiny) _drawTgsPreview(it.refs.lineCv, lineTiny.rgba, 270, true);
-		const imTiny = _resizeTgsFrames([f], 408)[0];
-		if (imTiny && it.refs.imCv) _drawTgsPreview(it.refs.imCv, imTiny.rgba, 408, true);
+		const imSize = clamp(Math.round(+it.settings.imessageSize) || 408, 300, 618);
+		const imTiny = _resizeTgsFrames([f], imSize)[0];
+		if (imTiny && it.refs.imCv) _drawTgsPreview(it.refs.imCv, imTiny.rgba, imSize, true);
 		_refreshTgsPngPreviews(it);
 	}
 
@@ -6187,13 +6186,18 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			<div class="cell-b">
 				<canvas class="pv" width="${CS}" height="${CS}" data-r="imCv"></canvas>
 				<div class="kv"><span>TARGET</span><span class="v">≤ 500 KB / FILE</span></div>
-				<div class="kv"><span>SMALL 300×300</span><span class="v" data-r="imSize300">BUILDING…</span></div>
-				<div class="kv"><span>REGULAR 408×408</span><span class="v" data-r="imSize408">BUILDING…</span></div>
-				<div class="kv"><span>LARGE 618×618</span><span class="v" data-r="imSize618">BUILDING…</span></div>
+				<div class="row"><span>SIZE</span><div class="row-b">
+					<span class="bf-seg" data-r="imSizeSeg">
+						<button type="button" class="bf-seg-btn" data-v="300">Small</button>
+						<button type="button" class="bf-seg-btn" data-v="408">Regular</button>
+						<button type="button" class="bf-seg-btn" data-v="618">Large</button>
+					</span>
+					</div></div>
+				<div class="kv"><span>OUTPUT SIZE</span><span class="v" data-r="imSize">BUILDING…</span></div>
 				<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="imLoopsNum" value="${G.tgsSettings.imessage.loops}" /></div>
 				<div class="warn" data-r="imWarn">OVER 500 KB — XCODE MAY REJECT</div>
 				<div class="spacer"></div>
-				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expImessage">Export All 3 Sizes</button>
+				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expImessage">Export APNG</button>
 			</div>
 		</div>
 		<div class="cell"><div class="cell-h"><span>SETTING</span><span class="no">10</span></div>
@@ -6254,7 +6258,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		it.refs.apngLoopsNum.addEventListener('change', () => { it.settings.apngLoops = clamp(Math.round(+it.refs.apngLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'apng'); });
 		it.refs.dcLoopsNum.addEventListener('change', () => { it.settings.dcLoops = clamp(Math.round(+it.refs.dcLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'discord'); });
 		it.refs.lineLoopsNum.addEventListener('change', () => { it.settings.lineLoops = clamp(Math.round(+it.refs.lineLoopsNum.value) || 1, 1, 4); scheduleTgsBuild(it, 'line'); });
-		it.refs.imLoopsNum.addEventListener('change', () => { it.settings.imessageLoops = clamp(Math.round(+it.refs.imLoopsNum.value) || 0, 0, 99); scheduleTgsImessage(it); });
+		it.refs.imLoopsNum.addEventListener('change', () => { it.settings.imessageLoops = clamp(Math.round(+it.refs.imLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'imessage'); });
+		it.refs.imSizeSeg.querySelectorAll('[data-v]').forEach(btn => {
+			btn.classList.toggle('bf-on', +btn.dataset.v === it.settings.imessageSize);
+		});
+		it.refs.imSizeSeg.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { it.settings.imessageSize = +b.dataset.v; it.refs.imSizeSeg.querySelectorAll('.bf-seg-btn').forEach(x => x.classList.toggle('bf-on', x === b)); _refreshTgsFramePreviews(it); scheduleTgsBuild(it, 'imessage'); } });
 		it.refs.webpLoopsNum.addEventListener('change', () => { it.settings.webpLoops = clamp(Math.round(+it.refs.webpLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'webp'); });
 		it.refs.webpQNum.addEventListener('change', () => { it.settings.webpQuality = clamp(Math.round(+it.refs.webpQNum.value) || 90, 1, 100); scheduleTgsBuild(it, 'webp'); });
 		it.refs.webpSeg.querySelectorAll('[data-v]').forEach(btn => {
@@ -6302,12 +6310,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			if (entries[0]) download(entries[0].data, `${it.base}_line.apng`, 'image/apng');
 		}));
 		it.refs.expImessage.addEventListener('click', () => busy(it.refs.expImessage, async () => {
-			const data = it.lastIMessage || await _buildTgsImessage(it);
-			it.lastIMessage = data;
-			_setOutputState(it, 'imessage', 'built', { size: _imMaxSize(data) });
-			download(data.s300, `${it.base}_300.apng`, 'image/apng');
-			download(data.s408, `${it.base}_408.apng`, 'image/apng');
-			download(data.s618, `${it.base}_618.apng`, 'image/apng');
+			const entries = await _collectTgsEntries(it, ['imessage']);
+			if (entries[0]) download(entries[0].data, `${it.base}_imessage.apng`, 'image/apng');
 		}));
 		it.refs.expLottie.addEventListener('click', () => busy(it.refs.expLottie, async () => {
 			const entries = await _collectTgsEntries(it, ['lottie']);
@@ -6327,7 +6331,6 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		}));
 		it.refs.expAll.addEventListener('click', () => busy(it.refs.expAll, async () => {
 			const entries = await _collectTgsEntries(it);
-			entries.push(...await _collectTgsImessageEntries(it));
 			if (entries.length) download(makeZip(entries), `${it.base}_tgs_pack.zip`, 'application/zip');
 		}));
 		if (!opts || !opts.deferPrime) _primeTgsStats(it);
@@ -6338,10 +6341,10 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	const TGS_AUTOFIT_KEY = { apng: 'apngAutoFit', discord: 'dcAutoFit', webp: 'webpAutoFit', line: 'lineAutoFit' };
 	const TGS_FPS_KEY = { apng: 'apngFps', discord: 'dcFps', webp: 'webpFps', line: 'lineFps' };
 	const TGS_COLORS_KEY = { apng: 'apngMaxColors', discord: 'dcMaxColors', webp: 'webpMaxColors', line: 'lineMaxColors' };
-	const TGS_CACHE_KEY = { apng: 'lastApng', discord: 'lastDc', webp: 'lastWebp', frame: 'lastFramePng', pad: 'lastPadPng', line: 'lastLine', lottie: 'lastLottieJson' };
-	const TGS_SIZE_REF = { apng: 'apngSize', discord: 'dcSize', webp: 'webpSize', frame: 'frameSize', pad: 'padSize', line: 'lineSize', lottie: 'lottieSize' };
-	const TGS_WARN_REF = { apng: 'apngWarn', discord: 'dcWarn', webp: 'webpWarn', line: 'lineWarn' };
-	const TGS_ALL_KEYS = ['lottie', 'frame', 'pad', 'apng', 'discord', 'line', 'webp'];
+	const TGS_CACHE_KEY = { apng: 'lastApng', discord: 'lastDc', webp: 'lastWebp', frame: 'lastFramePng', pad: 'lastPadPng', line: 'lastLine', lottie: 'lastLottieJson', imessage: 'lastIMessage' };
+	const TGS_SIZE_REF = { apng: 'apngSize', discord: 'dcSize', webp: 'webpSize', frame: 'frameSize', pad: 'padSize', line: 'lineSize', lottie: 'lottieSize', imessage: 'imSize' };
+	const TGS_WARN_REF = { apng: 'apngWarn', discord: 'dcWarn', webp: 'webpWarn', line: 'lineWarn', imessage: 'imWarn' };
+	const TGS_ALL_KEYS = ['lottie', 'frame', 'pad', 'apng', 'discord', 'line', 'webp', 'imessage'];
 	const TGS_FPS_LADDER = [60, 30, 20, 10];
 	const TGS_COLOR_LADDER = [128, 64];
 	const TGS_QUALITY_LADDER = [75, 60];
@@ -6395,58 +6398,6 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	}
 
 	/** Build one output. Writes nothing but the live rung readout; caching is the caller's job. */
-	/* iMessage on the TGS side is bespoke, not routed through the generic
-	   scheduleTgsBuild/_buildTgsOutput/_applyTgsBuild pipeline: that pipeline assumes a
-	   single `data` byte array per format (res.data.length everywhere), but iMessage's
-	   result is 3 independent files. TGS frames are already rendered at a native 512
-	   canvas by lottie-web, so unlike GIF's pixel-art source (small, needs integer
-	   upscaling via scaleAndCenter) they need a real smoothed downscale for the two
-	   smaller sizes — the same _resizeTgsFrames() the Discord output already uses, which
-	   needs a real <canvas> and so cannot run in the encode worker pool. */
-	async function _buildTgsImessage(it) {
-		const frames = it.frames512.frames;
-		const loops = it.settings.imessageLoops;
-		const out = {};
-		for (const size of IMESSAGE_SIZES) {
-			const resized = _resizeTgsFrames(frames, size);
-			out['s' + size] = await C.encodeApng(resized, size, size, loops);
-		}
-		return out;
-	}
-	function scheduleTgsImessage(it) {
-		const r = it.refs || {};
-		it.lastIMessage = null;
-		_setOutputState(it, 'imessage', 'queued');
-		if (r.imSize300) r.imSize300.textContent = '…';
-		if (r.imSize408) r.imSize408.textContent = '…';
-		if (r.imSize618) r.imSize618.textContent = '…';
-		if (it.imessagePending) return;
-		it.imessagePending = true;
-		(async () => {
-			let token;
-			try {
-				const result = await _encGate(() => {
-					it.imessagePending = false;
-					token = ++it.imessageToken;
-					_setOutputState(it, 'imessage', 'processing');
-					return _buildTgsImessage(it);
-				}, { scope: 'tgs', it, key: 'imessage' });
-				if (token !== it.imessageToken) return;
-				it.lastIMessage = result;
-				_setOutputState(it, 'imessage', 'built', { size: _imMaxSize(result) });
-				if (r.imSize300) r.imSize300.textContent = _fmtSz(result.s300.length);
-				if (r.imSize408) r.imSize408.textContent = _fmtSz(result.s408.length);
-				if (r.imSize618) r.imSize618.textContent = _fmtSz(result.s618.length);
-				const over = result.s300.length > 500 * 1024 || result.s408.length > 500 * 1024 || result.s618.length > 500 * 1024;
-				if (r.imWarn) r.imWarn.classList.toggle('on', over);
-			} catch (e) {
-				if (token !== it.imessageToken) return;
-				it.lastIMessage = null;
-				if (r.imSize300) r.imSize300.textContent = String(e.message || e).toUpperCase().slice(0, 40);
-				_setOutputState(it, 'imessage', 'error', { message: String(e.message || e) });
-			}
-			})();
-	}
 	async function _buildTgsOutput(it, key) {
 		const srcFps = it.fps || 30;
 		const budget = _tgsBudget(key);
@@ -6517,6 +6468,17 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				res = { data, fps, colors, underBudget: !budget || data.length <= budget };
 			}
 			return res;
+		}
+
+		if (key === 'imessage') {
+			// TGS frames are already rendered at the native 512 canvas by lottie-web, so
+			// unlike GIF's pixel-art source (needs integer upscaling via scaleAndCenter)
+			// this needs a real smoothed downscale — the same _resizeTgsFrames() Discord uses.
+			const loops = it.settings.imessageLoops;
+			const size = clamp(Math.round(+it.settings.imessageSize) || 408, 300, 618);
+			const resized = _resizeTgsFrames(frames, size);
+			const data = await C.encodeApng(resized, size, size, loops);
+			return { data, fps: srcFps, colors: 256, underBudget: !budget || data.length <= budget };
 		}
 
 		// webp
@@ -6617,22 +6579,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (key === 'frame') return `${_tgsFolder('frame')}${it.base}_frame${n}.png`;
 		if (key === 'line') return `${_tgsFolder('line')}${it.base}_line.apng`;
 		if (key === 'lottie') return `${_tgsFolder('lottie')}${it.base}.json`;
+		if (key === 'imessage') return `${_tgsFolder('imessage')}${it.base}_imessage.apng`;
 		return `${_tgsFolder('pad')}${it.base}_frame${n}_nopadding.png`;
-	}
-
-	/** iMessage's 3-file result bypasses _collectTgsEntries (single-file assumption) —
-	 *  used by both the per-file "Export All · ZIP" and the top-level "Export All TGS · ZIP". */
-	async function _collectTgsImessageEntries(it) {
-		if (!G.tgsCells.imessage) return [];
-		const data = it.lastIMessage || await _buildTgsImessage(it);
-		it.lastIMessage = data;
-		_setOutputState(it, 'imessage', 'built', { size: _imMaxSize(data) });
-		const folder = _tgsFolder('imessage');
-		return [
-			{ name: `${folder}${it.base}_300.apng`, data: data.s300 },
-			{ name: `${folder}${it.base}_408.apng`, data: data.s408 },
-			{ name: `${folder}${it.base}_618.apng`, data: data.s618 },
-		];
 	}
 
 	/** Immediate enqueue + monotonic token, mirroring the GIF side's scheduleApng. The cache is
@@ -6682,7 +6630,6 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		   render and only performs its own resize / palette / container encode. */
 		if (G.tgsCells.lottie) _applyTgsBuild(it, 'lottie', _tgsLottieResult(it));
 		for (const key of TGS_ALL_KEYS.filter(k => k !== 'lottie' && G.tgsCells[k])) scheduleTgsBuild(it, key);
-		if (G.tgsCells.imessage) scheduleTgsImessage(it);
 		updateStats();
 	}
 
@@ -6743,6 +6690,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						lineFps: G.tgsSettings.line.fps,
 						lineMaxColors: G.tgsSettings.line.maxColors,
 						imessageLoops: G.tgsSettings.imessage.loops,
+						imessageSize: G.tgsSettings.imessage.size,
 					},
 					refs: {},
 					animStart: performance.now(),
@@ -6754,10 +6702,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					lastPadPng: null,
 					lastLine: null,
 					lastLottieJson: null,
-					imessageToken: 0,
 					lastIMessage: null,
 					timers: {},
-					tokens: { apng: 0, discord: 0, webp: 0, frame: 0, pad: 0, line: 0, lottie: 0 },
+					tokens: { apng: 0, discord: 0, webp: 0, frame: 0, pad: 0, line: 0, lottie: 0, imessage: 0 },
 					stats: {},
 				};
 				tgsItems.push(it);
@@ -7081,7 +7028,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (key === 'frame') return it.lastFramePng?.length || null;
 		if (key === 'pad') return it.lastPadPng?.length || null;
 		if (key === 'line') return it.lastLine?.length || null;
-		if (key === 'imessage') return _imMaxSize(it.lastIMessage);
+		if (key === 'imessage') return it.lastIMessage?.length || null;
 		return null;
 	}
 
@@ -7291,15 +7238,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				return [{ name: `${fd('line')}${it.base}_line.apng`, data }];
 			}
 			if (key === 'imessage') {
-				_setOutputState(it, key, it.lastIMessage ? 'built' : 'processing', it.lastIMessage ? { size: _imMaxSize(it.lastIMessage) } : null);
+				_setOutputState(it, key, it.lastIMessage ? 'built' : 'processing', it.lastIMessage ? { size: it.lastIMessage.length } : null);
 				const data = it.lastIMessage || await buildImessage(it);
 				it.lastIMessage = data;
-				_setOutputState(it, key, 'built', { size: _imMaxSize(data) });
-				return [
-					{ name: `${fd('imessage')}${it.base}_300.apng`, data: data.s300 },
-					{ name: `${fd('imessage')}${it.base}_408.apng`, data: data.s408 },
-					{ name: `${fd('imessage')}${it.base}_618.apng`, data: data.s618 },
-				];
+				_setOutputState(it, key, 'built', { size: data.length });
+				return [{ name: `${fd('imessage')}${it.base}_imessage.apng`, data }];
 			}
 			if (key === 'webp') {
 				_setOutputState(it, key, it.lastWebp ? 'built' : 'processing', it.lastWebp ? { size: it.lastWebp.length } : null);
@@ -7351,7 +7294,6 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const entries = [];
 		for (const it of source) {
 			const next = scope === 'gif' ? await _collectGifFormatEntries(it, key)
-				: key === 'imessage' ? await _collectTgsImessageEntries(it)
 				: await _collectTgsEntries(it, [key]);
 			entries.push(...next);
 		}
@@ -7529,6 +7471,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		set('gtLineLoops', S.line.loops);
 		set('gtFdLine', S.line.folder);
 		set('gtFdLottie', S.lottie.folder);
+		seg('gtImessageSizeSeg', String(S.imessage.size));
 		set('gtImessageLoops', S.imessage.loops);
 		set('gtFdImessage', S.imessage.folder);
 	}
@@ -7551,8 +7494,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				updateTgsSettingsSections();
 				if (cb.checked) tgsItems.forEach(it => {
 					if (!it.frames512) return;
-					if (key === 'imessage') scheduleTgsImessage(it);
-					else scheduleTgsBuild(it, key);
+					scheduleTgsBuild(it, key);
 				});
 				updateStats();
 				saveSettings();
@@ -7600,6 +7542,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			});
 		};
 		onSeg('gtWebpSeg', v => { G.tgsSettings.webp.lossless = v === 'lossless'; });
+		onSeg('gtImessageSizeSeg', v => { G.tgsSettings.imessage.size = +v; });
 		onSeg('gtFrameSeg', v => { G.tgsSettings.frame.mode = v; tgsItems.forEach(it => _onTgsFrameModeChanged(it)); });
 		onSeg('gtPadSeg', v => { G.tgsSettings.pad.mode = v; tgsItems.forEach(it => _onTgsFrameModeChanged(it)); });
 		const clearOld = document.getElementById('clearAllTgs');
@@ -7622,7 +7565,6 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				const entries = [];
 				for (const it of tgsItems) {
 					entries.push(...await _collectTgsEntries(it));
-					entries.push(...await _collectTgsImessageEntries(it));
 				}
 				if (entries.length) download(makeZip(entries), 'tgs_export.zip', 'application/zip');
 			}));
@@ -7652,8 +7594,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const lineTiny = _resizeTgsFrames([f], 270)[0];
 			_drawTgsPreview(it.refs.lineCv, lineTiny.rgba, 270, true);
 			if (it.refs.imCv) {
-				const imTiny = _resizeTgsFrames([f], 408)[0];
-				_drawTgsPreview(it.refs.imCv, imTiny.rgba, 408, true);
+				const imSize = clamp(Math.round(+it.settings.imessageSize) || 408, 300, 618);
+				const imTiny = _resizeTgsFrames([f], imSize)[0];
+				_drawTgsPreview(it.refs.imCv, imTiny.rgba, imSize, true);
 			}
 		}
 		requestAnimationFrame(_tickStableTgs);

@@ -229,11 +229,12 @@ lossy webp 的 ladder 只走 quality、`colors` 恆 256 → `quantizeFrames` no-
 - 規格表列的「≤320×270」正確，但**無專屬編碼路徑** —— 註記寫「USES GIF → APNG」，退回通用 APNG。若使用者拿 Discord 的 **320×320** 輸出來充當，會**違反 270 高度上限**、也不強制幀數/loop/1MB。
 - **缺口**：需 `320×270 · LINE` 專屬 preset —— max(w,h)=320 且 min(w,h)≥270 的畫布夾制、5–20 幀 resample、1–4 loop 欄位（驗證 ≤4s）、1MB gate。
 
-**iMessage**（一手 canvas：[Xcode Asset Catalog 參考](https://developer.apple.com/library/archive/documentation/Xcode/Reference/xcode_ref-Asset_Catalog_Format/StickerPack.html)；size 二手：[Apple 論壇 50394](https://developer.apple.com/forums/thread/50394) Apple 員工回覆）—— **✅ 已修（GIF/TGS 兩條管線皆有專屬 `IMESSAGE・APNG` cell，預設關閉）**
-- 官方：不是「300–618 連續範圍」，而是**三個固定 preset**：small 300×300 / regular 408×408 / large 618×618（@3x），三個尺寸**一次一起出**（Xcode sticker pack 的三組圖，不是三選一）。
-- **≤500KB/檔**（per-file，非 per-frame，論壇 Apple 員工確認，Xcode build 與 runtime 皆檢查）——已依「每個尺寸各自」判斷 over-budget（用 3 個尺寸裡最大的那個，不是總和）。
-- 格式列（PNG/APNG/GIF/JPEG）—— HIG 頁 JS 渲染取不到本文，僅 WebSearch 摘要佐證，標**二手**；工具固定輸出 APNG。
-- 實作細節見 `CLAUDE.md`「iMessage is the one output that isn't a single data byte array」一節——GIF 側走既有 APNG worker pool（整數最近鄰放大），TGS 側因來源已是 512 原生畫布、兩個較小尺寸需要真縮小，改用 `_resizeTgsFrames`（平滑 canvas，跟 Discord 輸出同一套），留在主執行緒。
+**iMessage**（`MSStickerSize`：[Apple Developer 文件](https://developer.apple.com/documentation/messages/msstickersize)）—— **✅ 已修（GIF/TGS 兩條管線皆有專屬 `IMESSAGE・APNG` cell，預設關閉）**
+- 官方：**三選一**（small 300 / regular 408 / large 618，@3x），不是三個一起出——選定其中一個尺寸出圖，系統會在 runtime 自動 downscale 產生 @2x/@1x。實測確認：既有的 512×512 APNG（跟 Signal 輸出同一份）已實際送審並通過 App Store iMessage 貼圖審核，等同印證這個自動 downscale 行為涵蓋了更小的尺寸需求。
+- 工具因此採**單一輸出 + Small/Regular/Large 三段選擇器**（`it.settings.imessageSize`，預設 408），跟其他格式一樣走通用管線——不再是獨立的多檔案特例。
+- **≤500KB/檔**（per-file，非 per-frame，Apple 員工論壇回覆確認，Xcode build 與 runtime 皆檢查）。
+- 格式列（PNG/APNG/GIF/JPEG）—— 工具固定輸出 APNG。
+- 實作細節見 `CLAUDE.md`「iMessage's MSStickerSize is a 3-way pick-one」一節——GIF 側走既有 APNG worker pool（整數最近鄰放大，依選定尺寸縮放），TGS 側因來源已是 512 原生畫布、非 512 的尺寸需要真縮小，改用 `_resizeTgsFrames`（平滑 canvas，跟 Discord 輸出同一套），留在主執行緒；已併入 `TGS_ALL_KEYS` 的通用 build/cache/export 管線。
 
 ### 5.2 完全未涵蓋，值得補（規格已一手驗證）
 
