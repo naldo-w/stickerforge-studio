@@ -616,6 +616,8 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 .modal-panel--toolbox { background:var(--paper); border:1px solid var(--line); border-radius:0; width:100%; max-width:960px; padding:0 0 24px; }
 .modal-panel--sm { max-width: 420px; }
 .modal-panel--sm .toolgrid { grid-template-columns: 1fr; padding: 0; gap: 0; }
+.modal-panel.drag-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
+.modal-panel.drag-over .tool-drop { background: var(--field); opacity: 1; }
 #toolboxModal .modal-h { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--line); margin-bottom:16px; }
 #toolboxModal .modal-title { font-weight:700; font-size:1.1em; letter-spacing:.04em; }
 #toolbox.toolgrid { padding:0 20px; }
@@ -4951,10 +4953,14 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	});
 
 	let dragDepth = 0;
-	window.addEventListener("dragenter", e => { e.preventDefault(); dragDepth++; el.dropzone.classList.add("on"); });
-	window.addEventListener("dragover", e => e.preventDefault());
-	window.addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth = 0; el.dropzone.classList.remove("on"); } });
+	/* A tool modal (e.g. JSON→TGS) owns its own drop area, so the fullscreen GIF/TGS
+	   dropzone overlay must not appear or hijack the drop while one is open. */
+	const _toolModalOpen = () => document.querySelector('.modal.on, #toolboxModal.on') != null;
+	window.addEventListener("dragenter", e => { if (_toolModalOpen()) return; e.preventDefault(); dragDepth++; el.dropzone.classList.add("on"); });
+	window.addEventListener("dragover", e => { if (_toolModalOpen()) return; e.preventDefault(); });
+	window.addEventListener("dragleave", () => { if (_toolModalOpen()) return; if (--dragDepth <= 0) { dragDepth = 0; el.dropzone.classList.remove("on"); } });
 	window.addEventListener("drop", e => {
+		if (_toolModalOpen()) return;
 		e.preventDefault();
 		dragDepth = 0;
 		el.dropzone.classList.remove("on");
@@ -5325,6 +5331,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			run.disabled = !files.length;
 			if (files.length && cfg.instant) runNow();
 		};
+		div.__setFiles = setFiles; // let a host container (e.g. a dedicated modal) forward drops here
 		div.addEventListener("click", e => {
 			const b = e.target.closest('.bf-seg[data-t] .bf-seg-btn');
 			if (b) b.parentElement.querySelectorAll(".bf-seg-btn").forEach(x => x.classList.toggle("bf-on", x === b));
@@ -6912,6 +6919,22 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			return [{ name: f.name.replace(/\.json$/i, '.tgs'), data: await _compressTgs(await f.text()), type: 'application/octet-stream' }];
 		},
 	});
+	/* Make the whole modal panel a drop target (not just the small dashed box), and forward
+	   the dropped .json files to the tool card's setFiles so the file + status still show. */
+	(() => {
+		const panel = json2tgsModal.querySelector('.modal-panel');
+		const card = document.querySelector('#json2tgsHost .tool');
+		if (!panel || !card || !card.__setFiles) return;
+		const stop = e => { e.preventDefault(); e.stopPropagation(); };
+		panel.addEventListener('dragenter', e => { stop(e); panel.classList.add('drag-over'); });
+		panel.addEventListener('dragover', e => { stop(e); panel.classList.add('drag-over'); });
+		panel.addEventListener('dragleave', e => { if (e.target === panel) panel.classList.remove('drag-over'); });
+		panel.addEventListener('drop', e => {
+			stop(e);
+			panel.classList.remove('drag-over');
+			if (e.dataTransfer && e.dataTransfer.files.length) card.__setFiles(e.dataTransfer.files);
+		});
+	})();
 	/* 17 · GIF → SPRITE SHEET */
 	toolCard({ key:'gif2sheet', no:'17', title:'GIF → SPRITE SHEET', accept:'.gif,image/gif', match:/\.gif$/i,
 		hint:'DROP GIF · CLICK TO BROWSE', button:'Export PNG Sheet',
