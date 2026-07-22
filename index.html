@@ -46,6 +46,11 @@
 	--ok: #24a148;
 	--warn: #b28600;
 	--err: #da1e28;
+	/* auxiliary colours: distinct from --warn/--err, used for in-progress build failures
+	   and destructive actions. --fail stays constant across themes like --accent (it only
+	   ever sits inside a fill/text pairing, never as a background needing per-theme contrast). */
+	--fail: #ff9800;
+	--danger: #c0392b;
 
 	/* type */
 	--font-display: "Faculty Glyphic", Georgia, "Times New Roman", serif;
@@ -87,6 +92,7 @@
 	--ok: #42be65;
 	--warn: #f1c21b;
 	--err: #fa4d56;
+	--danger: #e74c3c;
 }
 .theme-dark .dropzone { color: #17191A; }
 
@@ -330,7 +336,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		linear-gradient(90deg, var(--accent) 0 var(--progress), var(--accent-track) var(--progress) 100%);
 }
 .cell-h.has-progress.failed {
-	background: linear-gradient(90deg, #ff9800 0 var(--progress), var(--accent-track) var(--progress) 100%);
+	background: linear-gradient(90deg, var(--fail) 0 var(--progress), var(--accent-track) var(--progress) 100%);
 }
 .cell-h.has-progress.built {
 	color: var(--accent-ink);
@@ -374,7 +380,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	background: repeating-linear-gradient(90deg, var(--accent) 0 8px, #fff 8px 12px);
 	animation: statsProgressMove .6s linear infinite;
 }
-.cell-progress.failed .cell-progress-fill { background: #ff9800; }
+.cell-progress.failed .cell-progress-fill { background: var(--fail); }
 .cell-b { padding: 0; display: flex; flex-direction: column; gap: 0; flex: 1; }
 
 .pv {
@@ -608,6 +614,8 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 #toolboxModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:200; align-items:flex-start; justify-content:center; overflow-y:auto; padding:40px 16px; }
 #toolboxModal.on { display:flex; }
 .modal-panel--toolbox { background:var(--paper); border:1px solid var(--line); border-radius:0; width:100%; max-width:960px; padding:0 0 24px; }
+.modal-panel--sm { max-width: 420px; }
+.modal-panel--sm .toolgrid { grid-template-columns: 1fr; padding: 0; gap: 0; }
 #toolboxModal .modal-h { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--line); margin-bottom:16px; }
 #toolboxModal .modal-title { font-weight:700; font-size:1.1em; letter-spacing:.04em; }
 #toolbox.toolgrid { padding:0 20px; }
@@ -625,8 +633,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 /* v9 — settings sections, section divider, danger button */
 .gb-section.off { opacity: .66; }
 .gb-subsection.off { display: none; }
-.bf-btn--danger { border-color: #c0392b !important; color: #c0392b !important; }
-[data-theme="dark"] .bf-btn--danger { border-color: #e74c3c !important; color: #e74c3c !important; }
+.bf-btn--danger { border-color: var(--danger) !important; color: var(--danger) !important; }
 .section-divider { padding: 20px 20px 14px; border-top: 1px solid var(--line); margin-top: 8px; }
 
 /* ── output stats cards ── */
@@ -689,7 +696,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 		linear-gradient(90deg, var(--accent) 0 var(--progress), var(--accent-track) var(--progress) 100%);
 }
 .stats-row--progress.failed {
-	background: linear-gradient(90deg, #ff9800 0 var(--progress), var(--accent-track) var(--progress) 100%);
+	background: linear-gradient(90deg, var(--fail) 0 var(--progress), var(--accent-track) var(--progress) 100%);
 }
 .stats-row--progress.built {
 	color: var(--accent-ink);
@@ -704,7 +711,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 .stats-row:first-of-type { border-top: 1px solid var(--line); }
 .stats-label { color: var(--ink-2); white-space: nowrap; }
 .stats-value { color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
-.stats-value.warn { color: #ff9800; font-weight: 700; }
+.stats-value.warn { color: var(--fail); font-weight: 700; }
 .stats-over-list { white-space: normal; line-height: 1.45; text-align: right; }
 .stats-over-link {
 	font: inherit; letter-spacing: inherit; color: inherit;
@@ -724,7 +731,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 }
 .stats-progress-value { display: flex; justify-content: flex-end; min-width: 0; }
 .stats-progress-meta { color: var(--ink); font-size: var(--text-note); letter-spacing: var(--label-track-sm); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
-.stats-progress-meta.warn { color: #ff9800; font-weight: 700; }
+.stats-progress-meta.warn { color: var(--fail); font-weight: 700; }
 .stats-progress {
 	display: none;
 }
@@ -736,7 +743,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	background: repeating-linear-gradient(90deg, var(--accent) 0 8px, #fff 8px 12px);
 	animation: statsProgressMove .6s linear infinite;
 }
-.stats-progress-fill.failed { background: #ff9800; }
+.stats-progress-fill.failed { background: var(--fail); }
 @keyframes statsProgressMove {
 	from { background-position: 0 0; }
 	to { background-position: 20px 0; }
@@ -895,6 +902,8 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 #outToggles [data-section="tgs"] { order: 70; }
 #outToggles [data-section="webp"],
 #tgsOutToggles [data-tgssection="webp"] { order: 80; }
+#outToggles [data-section="imessage"],
+#tgsOutToggles [data-tgssection="imessage"] { order: 90; }
 .s-card-h {
 	min-height: 38px; padding: 0 10px; border-bottom: 1px solid var(--line);
 	background: var(--field); display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -1024,7 +1033,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
    background IS --accent, so an --accent indicator would vanish against it. */
 .ws-tab.on { outline: 2px solid var(--accent-ink); outline-offset: -2px; color: var(--accent-ink); }
 .ws-tab.on .s { color: var(--accent-ink); border-color: var(--accent-ink); }
-.ws-tab[data-state="failed"] .s { color: #b00020; border-color: #b00020; }
+.ws-tab[data-state="failed"] .s { color: var(--danger); border-color: var(--danger); }
 /* split: center preview column + right inspector column */
 .ws .ws-act > .cell-b.ws-split { display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: stretch; padding: 0; flex: 1 1 auto; min-height: 0; }
 .panel.ws > .cell.ws-act.ws-clps > .cell-b.ws-split { grid-template-columns: minmax(0, 1fr) 40px; }
@@ -1567,6 +1576,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 								<div class="s-item"><span class="s-item-lbl">STATIC・512PNG</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdFrame" /></span></div>
 								<div class="s-item"><span class="s-item-lbl">STATIC・NO PADDING</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdPad" /></span></div>
 								<div class="s-item"><span class="s-item-lbl">TELEGRAM・LOTTIE JSON</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdLottie" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">IMESSAGE・APNG</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdImessage" /></span></div>
 							</div>
 						</div>
 					</div>
@@ -1659,6 +1669,16 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							<div class="s-item"><span class="s-item-lbl">QUALITY</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="100" step="1" value="90" id="gWebpQ" /></span></div>
 							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gWebpLoops" /></span></div>						</div>
 					</div>
+					<div class="s-acc gb-section" data-section="imessage">
+						<div class="s-acc-h">
+							<span class="s-acc-title">IMESSAGE・APNG</span>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="imessage" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
+						</div>
+						<div class="s-acc-b">
+							<div class="s-item"><span class="s-item-lbl">SIZE</span><span class="s-item-ctl"><span class="bf-seg" id="gImessageSizeSeg"><button type="button" class="bf-seg-btn" data-v="300">Small</button><button type="button" class="bf-seg-btn bf-on" data-v="408">Regular</button><button type="button" class="bf-seg-btn" data-v="618">Large</button></span></span></div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gImessageLoops" /></span></div>
+						</div>
+					</div>
 				</div>
 			</section>
 
@@ -1723,6 +1743,16 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							<div class="s-item"><span class="s-item-lbl">MODE</span><span class="s-item-ctl"><span class="bf-seg" id="gtWebpSeg"><button type="button" class="bf-seg-btn bf-on" data-v="lossless">Lossless</button><button type="button" class="bf-seg-btn" data-v="lossy">Lossy</button></span></span></div>
 							<div class="s-item"><span class="s-item-lbl">QUALITY</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="100" step="1" value="90" id="gtWebpQ" /></span></div>
 							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtWebpLoops" /></span></div>						</div>
+					</div>
+					<div class="s-acc gb-section" data-tgssection="imessage">
+						<div class="s-acc-h">
+							<span class="s-acc-title">IMESSAGE・APNG</span>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="imessage" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
+						</div>
+						<div class="s-acc-b">
+							<div class="s-item"><span class="s-item-lbl">SIZE</span><span class="s-item-ctl"><span class="bf-seg" id="gtImessageSizeSeg"><button type="button" class="bf-seg-btn" data-v="300">Small</button><button type="button" class="bf-seg-btn bf-on" data-v="408">Regular</button><button type="button" class="bf-seg-btn" data-v="618">Large</button></span></span></div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtImessageLoops" /></span></div>
+						</div>
 					</div>
 				</div>
 			</section>
@@ -1848,7 +1878,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				<div class="license-byline-text">
 					<span class="license-app-name">StickerForge Studio<span class="dot">.</span></span>
 					<span class="license-byline-credit handles">
-						BY NALDO WONG · <a href="https://www.instagram.com/n_do.w" target="_blank" rel="noopener">@n_do.w</a> · <a href="https://www.instagram.com/naldo.design" target="_blank" rel="noopener">@naldo.design</a>
+						BY NALDO WONG · <a href="https://www.instagram.com/naldo.design" target="_blank" rel="noopener">@naldo.design</a>
 					</span>
 				</div>
 			</div>
@@ -1882,6 +1912,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		</div>
 		<div class="mast-actions">
 			<button type="button" class="bf-btn bf-btn--sm" id="toolboxBtn">Tool Box</button>
+			<button type="button" class="bf-btn bf-btn--sm" id="json2tgsBtn">JSON → TGS</button>
 			<div class="bf-seg" id="themeSeg" role="group" aria-label="theme">
 				<button type="button" class="bf-seg-btn bf-on" data-theme="light">Light</button>
 				<button type="button" class="bf-seg-btn" data-theme="dark">Dark</button>
@@ -1954,8 +1985,19 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	</div>
 </div>
 
+<!-- JSON (Lottie) → TGS converter -->
+<div class="modal" id="json2tgsModal" role="dialog" aria-modal="true" aria-label="json to tgs converter">
+	<div class="modal-panel modal-panel--sm">
+		<div class="modal-h">
+			<span class="modal-title">JSON → TGS<span class="dot">.</span></span>
+			<button type="button" class="bf-btn bf-btn--sm" id="json2tgsClose">Close</button>
+		</div>
+		<div id="json2tgsHost" class="toolgrid"></div>
+	</div>
+</div>
+
 	<footer class="footer">
-		<span>© 2026 NALDO WONG · <span class="handles"><a href="https://www.instagram.com/n_do.w" target="_blank" rel="noopener">@n_do.w</a> · <a href="https://www.instagram.com/naldo.design" target="_blank" rel="noopener">@naldo.design</a> · <a href="#" id="footLicense">GPL-3.0</a></span></span>
+		<span>© 2026 NALDO WONG · <span class="handles"><a href="https://www.instagram.com/naldo.design" target="_blank" rel="noopener">@naldo.design</a> · <a href="#" id="footLicense">GPL-3.0</a></span></span>
 		<span>TOOLS ·
 			<a href="https://github.com/sliva0/pixelart2tgs" target="_blank" rel="noopener">PIXELART2TGS</a> ·
 			<a href="https://github.com/apngasm/apngasm" target="_blank" rel="noopener">APNGASM</a> ·
@@ -1967,7 +2009,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	</footer>
 </div>
 
-<script>
+<script id="pixelcore-src">
 /* StickerForge Studio — core pipeline (browser + node)
    GIF decode (LZW + disposal compositing) → full frames →
    integer nearest-neighbor scale → center on 512 canvas →
@@ -2646,6 +2688,54 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		return { json, jsonSize: jsonBytes.length, tgs: gz, tgsSize: gz.length };
 	}
 
+	/* nearest-color quantization down to a max palette size (transparent always kept) */
+	function quantizeFrames(frames, maxColors) {
+		if (!maxColors || maxColors >= 256) return frames;
+		const count = new Map();
+		for (const f of frames) {
+			const a = f.rgba;
+			for (let i = 0; i < a.length; i += 4) {
+				if (a[i + 3] === 0) continue;
+				const k = (a[i] << 24 | a[i + 1] << 16 | a[i + 2] << 8 | a[i + 3]) >>> 0;
+				count.set(k, (count.get(k) || 0) + 1);
+			}
+		}
+		if (count.size <= maxColors) return frames;
+		const kept = [...count.entries()].sort((x, y) => y[1] - x[1]).slice(0, maxColors).map(e => e[0]);
+		const comps = kept.map(k => [(k >>> 24) & 255, (k >>> 16) & 255, (k >>> 8) & 255, k & 255]);
+		const memo = new Map(kept.map(k => [k, k]));
+		const near = k => {
+			let v = memo.get(k);
+			if (v !== undefined) return v;
+			const r = (k >>> 24) & 255, g = (k >>> 16) & 255, b = (k >>> 8) & 255, al = k & 255;
+			let best = 0, bd = Infinity;
+			for (let i = 0; i < comps.length; i++) {
+				const c = comps[i];
+				const d = (r - c[0]) ** 2 + (g - c[1]) ** 2 + (b - c[2]) ** 2 + 3 * (al - c[3]) ** 2;
+				if (d < bd) { bd = d; best = i; }
+			}
+			v = kept[best];
+			memo.set(k, v);
+			return v;
+		};
+		return frames.map(f => {
+			const a = f.rgba, out = new Uint8ClampedArray(a.length);
+			for (let i = 0; i < a.length; i += 4) {
+				if (a[i + 3] === 0) continue;
+				const v = near((a[i] << 24 | a[i + 1] << 16 | a[i + 2] << 8 | a[i + 3]) >>> 0);
+				out[i] = (v >>> 24) & 255; out[i + 1] = (v >>> 16) & 255; out[i + 2] = (v >>> 8) & 255; out[i + 3] = v & 255;
+			}
+			return { rgba: out, delayMs: f.delayMs };
+		});
+	}
+	/* signal caps animations at 3 s — speed the whole clip up to fit */
+	function fit3sDelays(frames) {
+		const total = frames.reduce((a, f) => a + f.delayMs, 0);
+		if (total <= 3000) return frames;
+		const k = 3000 / total;
+		return frames.map(f => ({ rgba: f.rgba, delayMs: Math.max(10, Math.round(f.delayMs * k)) }));
+	}
+
 	const PixelCore = {
 		CANVAS_SIZE,
 		decodeGif,
@@ -2663,6 +2753,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		buildLottie,
 		encodeTgs,
 		compress,
+		quantizeFrames,
+		fit3sDelays,
 	};
 
 	if (typeof module !== "undefined" && module.exports) module.exports = PixelCore;
@@ -2677,6 +2769,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	const C = window.PixelCore;
 	const CS = C.CANVAS_SIZE; // 512
 	const LIMIT = 64 * 1024;
+	const quantizeFrames = C.quantizeFrames;
+	const fit3sDelays = C.fit3sDelays;
 
 	const el = {
 		items: document.getElementById("items"),
@@ -2694,20 +2788,20 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 
 	/* ── global defaults (per-panel settings can override) ── */
 	const G = {
-		filePrefix: '', fileSuffix: '',
 		scaleMode: "manual", manualScale: 12,
 		fpsMode: "auto", fps: 30,
 		offsetEnabled: true, offsetPx: 0.4,
-		apngLoops: 0, apngMaxColors: 256, fit3s: false,
-		dcLoops: 0, dcMaxColors: 256,
+		apngLoops: 0, apngMaxColors: 256, fit3s: false, apngAutoFit: true,
+		dcLoops: 0, dcMaxColors: 256, dcAutoFit: true,
 			/* per-output scale defaults derived from 512APNG's 12× by canvas ratio, floored:
 			   320APNG floor(12·320/512)=7, LINE floor(12·270/512)=6; each capped to maxFitScale. */
 		dcScaleMode: "manual", dcManual: 7,
 		lineScaleMode: "manual", lineManual: 6,
 		webpLossless: true, webpQuality: 90, webpLoops: 0, webpAutoFit: true,
+		imessageLoops: 0, imessageSize: 408,
 		frameTag: false, frameTagPos: "suffix", jobPanelsExpanded: false,
-		cells: { apng: true, discord: true, frame: false, pad: false, tgs: true, lottie: false, webp: true, line: false },
-		tgsCells: { apng: true, discord: true, webp: true, frame: true, pad: true, line: false, lottie: true },
+		cells: { apng: true, discord: true, frame: false, pad: false, tgs: true, lottie: false, webp: true, line: false, imessage: false },
+		tgsCells: { apng: true, discord: true, webp: true, frame: true, pad: true, line: false, lottie: true, imessage: false },
 		/* autoFit: shrink until under the format's byte budget (fps ladder, then colours).
 		   fps: null = the lottie's native rate. Both are per-file overridable in the panel. */
 		tgsSettings: {
@@ -2718,6 +2812,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			pad: { mode: 'first', folder: '512PNGNOPADDING' },
 			line: { loops: 1, folder: 'LINE', autoFit: true, fps: null, maxColors: 256 },
 			lottie: { folder: 'LOTTIE' },
+			imessage: { loops: 0, size: 408, folder: 'IMESSAGE' },
 		},
 	};
 	let viewMode = "convert";
@@ -2830,12 +2925,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 
 	/* zip folder presets — unified in Settings, editable per cell */
 	const FOLDER_PRESETS = {
-		platform: { apng: "SIGNAL", discord: "DISCORD", frame: "512PNG", pad: "512PNGNOPADDING", tgs: "TELEGRAM", lottie: "LOTTIE", webp: "WEBP", line: "LINE" },
-		format: { apng: "512APNG", discord: "320APNG", frame: "512PNG", pad: "512PNGNOPADDING", tgs: "TGS", lottie: "LOTTIE", webp: "WEBP", line: "LINE" },
+		platform: { apng: "SIGNAL", discord: "DISCORD", frame: "512PNG", pad: "512PNGNOPADDING", tgs: "TELEGRAM", lottie: "LOTTIE", webp: "WEBP", line: "LINE", imessage: "IMESSAGE" },
+		format: { apng: "512APNG", discord: "320APNG", frame: "512PNG", pad: "512PNGNOPADDING", tgs: "TGS", lottie: "LOTTIE", webp: "WEBP", line: "LINE", imessage: "IMESSAGE" },
 	};
-	const FOLDER_KEYS = ["apng", "discord", "frame", "pad", "tgs", "lottie", "webp", "line"];
+	const FOLDER_KEYS = ["apng", "discord", "frame", "pad", "tgs", "lottie", "webp", "line", "imessage"];
 	/* one custom folder name per platform/format now drives both converters — GIF's own key names differ slightly from G.tgsSettings' */
-	const FOLDER_KEY_TO_TGS = { apng: "apng512", discord: "discord", frame: "frame", pad: "pad", lottie: "lottie", webp: "webp", line: "line" };
+	const FOLDER_KEY_TO_TGS = { apng: "apng512", discord: "discord", frame: "frame", pad: "pad", lottie: "lottie", webp: "webp", line: "line", imessage: "imessage" };
 	G.folderMode = "platform";
 	G.folderNames = { ...FOLDER_PRESETS.platform };
 
@@ -2849,6 +2944,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		G.tgsSettings.pad.folder = preset.pad;
 		G.tgsSettings.line.folder = preset.line;
 		G.tgsSettings.lottie.folder = preset.lottie;
+		G.tgsSettings.imessage.folder = preset.imessage;
 		if (typeof syncTgsSettingsUI === "function") syncTgsSettingsUI();
 	}
 	function folderOf(it, key) {
@@ -2865,7 +2961,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	const DC_BOX = { x: (CS - 320) / 2, y: (CS - 320) / 2, w: 320, h: 320 };
 	/* LINE・APNG 270 canvas outline, in 512-preview coordinates */
 	const LINE_BOX = { x: (CS - 270) / 2, y: (CS - 270) / 2, w: 270, h: 270 };
-	const HEADER_PROGRESS_KEYS = ['apng', 'discord', 'line', 'webp', 'frame', 'pad', 'tgs', 'lottie'];
+	const HEADER_PROGRESS_KEYS = ['apng', 'discord', 'line', 'webp', 'frame', 'pad', 'tgs', 'lottie', 'imessage'];
 
 	function cacheKey(it) {
 		const s = it.settings;
@@ -3095,12 +3191,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const srcCell = cells[0];
 			srcCell.classList.add('ws-src');
 			const rest = cells.slice(1);
-			const WS_ORDER = ['apng', 'discord', 'line', 'tgs', 'lottie', 'webp', 'frame', 'pad'];
+			const WS_ORDER = ['apng', 'discord', 'line', 'imessage', 'tgs', 'lottie', 'webp', 'frame', 'pad'];
 			const fmtCells = rest.filter(c => c.hasAttribute('data-cell')).sort((a, b) => WS_ORDER.indexOf(a.dataset.cell) - WS_ORDER.indexOf(b.dataset.cell));
 			const plainCells = rest.filter(c => !c.hasAttribute('data-cell'));
 			const titleOf = cell => { const sp = cell.querySelector('.cell-h span'); return (sp ? sp.textContent : '').trim(); };
-			const SHORT = { discord: 'DISCORD', line: 'LINE', apng: 'SIGNAL', tgs: 'TELEGRAM', lottie: 'TELEGRAM', webp: 'WHATSAPP', frame: 'STATIC 512', pad: 'NO PADDING' };
-			const FMTGRP = { discord: 'APNG', line: 'APNG', apng: 'APNG', tgs: 'LOTTIE / TGS', lottie: 'LOTTIE / TGS', webp: 'WEBP', frame: 'PNG', pad: 'PNG / CROP' };
+			const SHORT = { discord: 'DISCORD', line: 'LINE', apng: 'SIGNAL', imessage: 'IMESSAGE', tgs: 'TELEGRAM', lottie: 'TELEGRAM', webp: 'WHATSAPP', frame: 'STATIC 512', pad: 'NO PADDING' };
+			const FMTGRP = { discord: 'APNG', line: 'APNG', apng: 'APNG', imessage: 'APNG', tgs: 'LOTTIE / TGS', lottie: 'LOTTIE / TGS', webp: 'WEBP', frame: 'PNG', pad: 'PNG / CROP' };
 			const mkGrp = label => { const g = document.createElement('div'); g.className = 'grp'; g.textContent = label; return g; };
 			const mkKv = (label, value) => {
 				const kv = document.createElement('div'); kv.className = 'kv';
@@ -3388,13 +3484,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				s.title = made.title;
 				s.grp = null;
 			}
-			const WSANIM = ['discord', 'line', 'apng', 'tgs', 'lottie', 'webp'];
-			const WSPLAT = { discord: /DISCORD/i, line: /\bLINE\b/i, apng: /SIGNAL/i, tgs: /TELEGRAM|TGS|LOTTIE/i, lottie: /TELEGRAM|TGS|LOTTIE/i, webp: /WHATSAPP|WEBP/i, frame: /PNG/i, pad: /CROP|PAD/i };
-			const WSANYPLAT = /DISCORD|LINE|SIGNAL|TELEGRAM|WHATSAPP|WEBP|TGS|LOTTIE/i;
+			const WSANIM = ['discord', 'line', 'apng', 'imessage', 'tgs', 'lottie', 'webp'];
+			const WSPLAT = { discord: /DISCORD/i, line: /\bLINE\b/i, apng: /SIGNAL/i, imessage: /IMESSAGE/i, tgs: /TELEGRAM|TGS|LOTTIE/i, lottie: /TELEGRAM|TGS|LOTTIE/i, webp: /WHATSAPP|WEBP/i, frame: /PNG/i, pad: /CROP|PAD/i };
+			const WSANYPLAT = /DISCORD|LINE|SIGNAL|IMESSAGE|TELEGRAM|WHATSAPP|WEBP|TGS|LOTTIE/i;
 			function routeShared(key) {
 				for (const s of SECDOM) {
 					let ks = null;
-					if (/^APNG/.test(s.label)) ks = ['discord', 'line', 'apng'];
+					if (/^APNG/.test(s.label)) ks = ['discord', 'line', 'apng', 'imessage'];
 					else if (/^PNG FRAME/.test(s.label)) ks = ['frame', 'pad'];
 					else if (/^WEBP/.test(s.label)) ks = ['webp'];
 					else if (/^(TGS|LOTTIE)/.test(s.label)) ks = ['tgs', 'lottie'];
@@ -3551,6 +3647,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			</div>
 			<div class="kv"><span>TARGET</span><span class="v">DISCORD · ≤ 512 KB</span></div>
 			<div class="kv"><span>APNG SIZE</span><span class="v" data-r="dcSize">…</span></div>
+			${switchRow("AUTO FIT ≤ 512 KB", "dcAutoFit")}
 			<div class="warn" data-r="dcWarn">OVER 512 KB — DISCORD MAY REJECT · REDUCE SCALE · REDUCE FRAME · SKIP FRAME</div>
 			<div class="spacer"></div>
 			<div class="row"><span>FOLDER · ZIP</span><input class="bf-field fd" type="text" data-r="fdDiscord" aria-label="zip folder for discord apng" /></div>
@@ -3599,6 +3696,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			</div>
 			<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="apngLoopsNum" aria-label="apng loop count" /></div>
 			<div class="row"><span>MAX COLORS</span><input class="bf-field" type="number" min="2" max="256" step="1" data-r="apngColorsNum" aria-label="apng max colors" /></div>
+			${switchRow("AUTO FIT ≤ 300 KB", "apngAutoFit")}
 			${switchRow("FIT 3S · SIGNAL", "fit3s")}
 			<div class="warn" data-r="apngWarn">OVER 300 KB — SIGNAL MAY REJECT · REDUCE SCALE · REDUCE FRAME · SKIP FRAME</div>
 			<div class="spacer"></div>
@@ -3696,7 +3794,27 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		</div>
 	</div>
 
-	<div class="cell"><div class="cell-h"><span>SETTING</span><span class="no">09</span></div>
+	<div class="cell" data-cell="imessage"><div class="cell-h"><span>IMESSAGE・APNG</span><span class="no">09</span></div>
+		<div class="cell-b">
+			<canvas class="pv" width="${CS}" height="${CS}" data-r="imCv"></canvas>
+			<div class="kv"><span>TARGET</span><span class="v">≤ 500 KB / FILE</span></div>
+			<div class="row"><span>SIZE</span><div class="row-b">
+				<span class="bf-seg" data-r="imSizeSeg">
+					<button type="button" class="bf-seg-btn" data-v="300">Small</button>
+					<button type="button" class="bf-seg-btn" data-v="408">Regular</button>
+					<button type="button" class="bf-seg-btn" data-v="618">Large</button>
+				</span>
+				</div></div>
+			<div class="kv"><span>OUTPUT SIZE</span><span class="v" data-r="imSize">…</span></div>
+			<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="imLoopsNum" aria-label="imessage loop count" /></div>
+			<div class="warn" data-r="imWarn">OVER 500 KB — XCODE MAY REJECT · REDUCE FRAME · SKIP FRAME</div>
+			<div class="spacer"></div>
+			<div class="row"><span>FOLDER · ZIP</span><input class="bf-field fd" type="text" data-r="fdImessage" aria-label="zip folder for imessage apng" /></div>
+			<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expImessage">Export APNG</button>
+		</div>
+	</div>
+
+	<div class="cell"><div class="cell-h"><span>SETTING</span><span class="no">10</span></div>
 		<div class="cell-b">
 			<div class="grp">FRAME</div>
 			<div class="row"><span>FPS</span><div class="row-b">
@@ -3714,7 +3832,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					<input class="bf-field" type="number" min="1" step="1" data-r="rangeEnd" aria-label="range end" />
 				</span>
 			</div>
-			<div class="row"><span>SKIP FRAME</span><input class="bf-field" type="number" min="0" max="30" step="1" data-r="skipNum" aria-label="skip frames" /></div>
+			<div class="row"><span>SKIP FRAME</span><input class="bf-field" type="number" min="0" max="60" step="1" data-r="skipNum" aria-label="skip frames" /></div>
 			${switchRow("LOOP PREVIEW", "loop")}
 			<details class="bf-details" data-r="tgsOptDetails">
 				<summary>TGS OPTIMIZATION</summary>
@@ -3787,6 +3905,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		r.webpQNum.disabled = false;
 		if (r.webpQualityRow) r.webpQualityRow.classList.toggle("off", s.webpLossless);
 		r.webpLoopsNum.value = s.webpLoops;
+		r.imLoopsNum.value = s.imessageLoops;
+		r.imSizeSeg.querySelectorAll(".bf-seg-btn").forEach(b => b.classList.toggle("bf-on", +b.dataset.v === s.imessageSize));
 
 		/* fps / range / skip */
 		r.fpsSeg.querySelectorAll(".bf-seg-btn").forEach(b => b.classList.toggle("bf-on", b.dataset.v === s.fpsMode));
@@ -3826,6 +3946,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		scheduleApng(it);
 		scheduleDc(it);
 		if (G.cells.line) scheduleLine(it);
+		if (G.cells.imessage) scheduleImessage(it);
 	}
 
 	function refreshFrameCells(it) {
@@ -3921,53 +4042,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	}
 
 	/* ── APNG builders + live sizes (512 · SIGNAL / 320 · DISCORD) ── */
-	/* nearest-color quantization down to a max palette size (transparent always kept) */
-	function quantizeFrames(frames, maxColors) {
-		if (!maxColors || maxColors >= 256) return frames;
-		const count = new Map();
-		for (const f of frames) {
-			const a = f.rgba;
-			for (let i = 0; i < a.length; i += 4) {
-				if (a[i + 3] === 0) continue;
-				const k = (a[i] << 24 | a[i + 1] << 16 | a[i + 2] << 8 | a[i + 3]) >>> 0;
-				count.set(k, (count.get(k) || 0) + 1);
-			}
-		}
-		if (count.size <= maxColors) return frames;
-		const kept = [...count.entries()].sort((x, y) => y[1] - x[1]).slice(0, maxColors).map(e => e[0]);
-		const comps = kept.map(k => [(k >>> 24) & 255, (k >>> 16) & 255, (k >>> 8) & 255, k & 255]);
-		const memo = new Map(kept.map(k => [k, k]));
-		const near = k => {
-			let v = memo.get(k);
-			if (v !== undefined) return v;
-			const r = (k >>> 24) & 255, g = (k >>> 16) & 255, b = (k >>> 8) & 255, al = k & 255;
-			let best = 0, bd = Infinity;
-			for (let i = 0; i < comps.length; i++) {
-				const c = comps[i];
-				const d = (r - c[0]) ** 2 + (g - c[1]) ** 2 + (b - c[2]) ** 2 + 3 * (al - c[3]) ** 2;
-				if (d < bd) { bd = d; best = i; }
-			}
-			v = kept[best];
-			memo.set(k, v);
-			return v;
-		};
-		return frames.map(f => {
-			const a = f.rgba, out = new Uint8ClampedArray(a.length);
-			for (let i = 0; i < a.length; i += 4) {
-				if (a[i + 3] === 0) continue;
-				const v = near((a[i] << 24 | a[i + 1] << 16 | a[i + 2] << 8 | a[i + 3]) >>> 0);
-				out[i] = (v >>> 24) & 255; out[i + 1] = (v >>> 16) & 255; out[i + 2] = (v >>> 8) & 255; out[i + 3] = v & 255;
-			}
-			return { rgba: out, delayMs: f.delayMs };
-		});
-	}
-	/* signal caps animations at 3 s — speed the whole clip up to fit */
-	function fit3sDelays(frames) {
-		const total = frames.reduce((a, f) => a + f.delayMs, 0);
-		if (total <= 3000) return frames;
-		const k = 3000 / total;
-		return frames.map(f => ({ rgba: f.rgba, delayMs: Math.max(10, Math.round(f.delayMs * k)) }));
-	}
+	/* quantizeFrames/fit3sDelays now live in PixelCore (see const C = window.PixelCore
+	   alias above) — moved there so a future encode worker can load PixelCore verbatim
+	   without also needing these pulled in separately. */
 	/* generalized duration cap — LINE caps total animation at 4 s, same shape as fit3sDelays */
 	function fitDurationDelays(frames, maxMs) {
 		const total = frames.reduce((a, f) => a + f.delayMs, 0);
@@ -4014,18 +4091,51 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		}
 		return out;
 	}
+	function _srcFpsOf(frames) {
+		const totalMs = frames.reduce((a, f) => a + f.delayMs, 0) || 1;
+		return clamp(Math.round(1000 * frames.length / totalMs), 1, 60);
+	}
+	async function _encodeApng512Frames(it, frames, colors) {
+		const s = it.settings;
+		return _apngEncodeInWorker(frames, {
+			width: it.gif.width, height: it.gif.height, scale: effScale(it), canvasSize: CS,
+			loops: s.apngLoops, colors, fit3s: s.fit3s,
+		});
+	}
 	async function buildApng512(it) {
-		const s = it.settings, sc = effScale(it);
-		let src = quantizeFrames(activeFrames(it), s.apngMaxColors);
-		if (s.fit3s) src = fit3sDelays(src);
-		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc), delayMs: f.delayMs }));
-		return C.encodeApng(frames, CS, CS, s.apngLoops, { onFrame: (done, total) => _setOutputState(it, 'apng', 'processing', { framesDone: done, framesTotal: total }) });
+		const s = it.settings;
+		const frames = activeFrames(it);
+		if (!s.apngAutoFit) return _encodeApng512Frames(it, frames, s.apngMaxColors);
+		const r = it.refs;
+		const res = await _encodeUnderBudget({
+			frames, srcFps: _srcFpsOf(frames), budget: 300 * 1024,
+			encode: (f, { colors }) => _encodeApng512Frames(it, f, colors),
+			baseColors: 256, baseQuality: null,
+			stage2: TGS_COLOR_LADDER.map(c => ({ colors: c })),
+			onRung: label => { if (r?.apngSize) r.apngSize.textContent = label; },
+		});
+		return res.data;
+	}
+	async function _encodeApng320Frames(it, frames, colors) {
+		const s = it.settings;
+		return _apngEncodeInWorker(frames, {
+			width: it.gif.width, height: it.gif.height, scale: dcScale(it), canvasSize: 320,
+			loops: s.dcLoops, colors, fit3s: false,
+		});
 	}
 	async function buildApng320(it) {
-		const s = it.settings, sc = dcScale(it);
-		const src = quantizeFrames(activeFrames(it), s.dcMaxColors);
-		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 320), delayMs: f.delayMs }));
-		return C.encodeApng(frames, 320, 320, s.dcLoops, { onFrame: (done, total) => _setOutputState(it, 'discord', 'processing', { framesDone: done, framesTotal: total }) });
+		const s = it.settings;
+		const frames = activeFrames(it);
+		if (!s.dcAutoFit) return _encodeApng320Frames(it, frames, s.dcMaxColors);
+		const r = it.refs;
+		const res = await _encodeUnderBudget({
+			frames, srcFps: _srcFpsOf(frames), budget: 512 * 1024,
+			encode: (f, { colors }) => _encodeApng320Frames(it, f, colors),
+			baseColors: 256, baseQuality: null,
+			stage2: TGS_COLOR_LADDER.map(c => ({ colors: c })),
+			onRung: label => { if (r?.dcSize) r.dcSize.textContent = label; },
+		});
+		return res.data;
 	}
 	async function buildApngLine(it) {
 		const s = it.settings, sc = lineScale(it);
@@ -4035,15 +4145,97 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 270), delayMs: f.delayMs }));
 		return C.encodeApng(frames, 270, 270, 1, { coalesce: false, onFrame: (done, total) => _setOutputState(it, 'line', 'processing', { framesDone: done, framesTotal: total }) }); // LINE requires finite loops and 5–20 APNG frames
 	}
+	/* iMessage's MSStickerSize is a 3-way choice (small 300 / regular 408 / large 618), not
+	   a bundle — you ship one @3x image for whichever size you picked, and the OS derives
+	   @2x/@1x by downscaling at runtime. So this is a single output like every other cell,
+	   just with a fixed 3-value size picker instead of a free manual scale. */
+	async function buildImessage(it) {
+		const s = it.settings;
+		const frames = activeFrames(it);
+		const size = clamp(Math.round(+s.imessageSize) || 408, 300, 618);
+		const sc = C.maxFitScale(it.gif.width, it.gif.height, size);
+		return _apngEncodeInWorker(frames, {
+			width: it.gif.width, height: it.gif.height, scale: sc, canvasSize: size,
+			loops: s.imessageLoops, colors: 256, fit3s: false,
+		});
+	}
 	/* Global encode queue — one heavy encode at a time, file-first.
 	   Jobs are sorted by file order, then by each converter's processing priority. */
 	const QUEUE_FORMAT_ORDER = {
-		gif: ['lottie', 'tgs', 'apng', 'discord', 'line', 'webp', 'frame', 'pad', 'settings'],
-		tgs: ['lottie', 'frame', 'pad', 'apng', 'discord', 'line', 'webp', 'settings'],
+		gif: ['lottie', 'tgs', 'apng', 'discord', 'line', 'imessage', 'webp', 'frame', 'pad', 'settings'],
+		tgs: ['lottie', 'frame', 'pad', 'apng', 'discord', 'line', 'imessage', 'webp', 'settings'],
 	};
 	let _encSeq = 0;
-	let _encActive = null;
+	let _encActive = [];
 	const _encQueue = [];
+	const ENC_POOL_SIZE = 2;
+
+	/* ── APNG encode worker pool ──
+	   The heaviest, most-repeated-per-file work (quantize → fit3s → scaleAndCenter →
+	   encodeApng, and its AUTO-FIT ladder retries) runs in a small pool of Workers instead
+	   of the main thread, so a big batch doesn't freeze scrolling/clicks while it encodes.
+	   Pool size is fixed at 2 rather than navigator.hardwareConcurrency — concurrency here
+	   is exactly what caused the crash _encGate itself was built to prevent (see comment
+	   below), so it stays a deliberately small, explicit number rather than scaling with
+	   the machine. WebP/Lottie/frame/pad stay on the main thread (WebP needs a real
+	   canvas.toBlob(); the rest are already cheap or a one-time cost per file). */
+	let _encWorkers = null;
+	let _encWorkerSeq = 0;
+	function _ensureEncWorkers() {
+		if (_encWorkers) return _encWorkers;
+		const coreSrc = document.getElementById('pixelcore-src').textContent;
+		const epilogue = `
+			self.onmessage = async (ev) => {
+				const { id, frames, params } = ev.data;
+				try {
+					let src = PixelCore.quantizeFrames(frames, params.colors);
+					if (params.fit3s) src = PixelCore.fit3sDelays(src);
+					const out = src.map(f => ({
+						rgba: PixelCore.scaleAndCenter(f.rgba, params.width, params.height, params.scale, params.canvasSize),
+						delayMs: f.delayMs,
+					}));
+					const data = await PixelCore.encodeApng(out, params.canvasSize, params.canvasSize, params.loops);
+					self.postMessage({ id, ok: true, data }, [data.buffer]);
+				} catch (e) {
+					self.postMessage({ id, ok: false, error: String((e && e.message) || e) });
+				}
+			};
+		`;
+		const blob = new Blob([coreSrc, epilogue], { type: 'text/javascript' });
+		const url = URL.createObjectURL(blob);
+		_encWorkers = Array.from({ length: ENC_POOL_SIZE }, () => {
+			const w = new Worker(url);
+			w._pending = new Map();
+			w.onmessage = (ev) => {
+				const { id, ok, data, error } = ev.data;
+				const p = w._pending.get(id);
+				if (!p) return;
+				w._pending.delete(id);
+				if (ok) p.resolve(data); else p.reject(new Error(error));
+			};
+			w.onerror = (ev) => {
+				for (const [, p] of w._pending) p.reject(new Error(ev.message || 'APNG encode worker error'));
+				w._pending.clear();
+			};
+			return w;
+		});
+		return _encWorkers;
+	}
+	/** Runs the quantize→fit3s→scaleAndCenter→encodeApng step in whichever pool worker
+	 *  has the fewest jobs in flight. `frames` is structured-cloned (not transferred) going
+	 *  in, since the same cached frame array can be read again concurrently by another
+	 *  format's build; the encoded output bytes are transferred back (freshly allocated
+	 *  per call, safe to move). */
+	function _apngEncodeInWorker(frames, params) {
+		const pool = _ensureEncWorkers();
+		let w = pool[0];
+		for (const cand of pool) if (cand._pending.size < w._pending.size) w = cand;
+		const id = ++_encWorkerSeq;
+		return new Promise((resolve, reject) => {
+			w._pending.set(id, { resolve, reject });
+			w.postMessage({ id, frames, params });
+		});
+	}
 	function _encScope(meta) {
 		if (meta?.scope) return meta.scope;
 		if (meta?.it && tgsItems.includes(meta.it)) return 'tgs';
@@ -4082,7 +4274,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			seen.add(id);
 			jobs.push(virtual ? { meta, seq: Number.MAX_SAFE_INTEGER } : job);
 		};
-		if (_encActive) _encActive.forEach(job => add(job));
+		_encActive.forEach(job => add(job));
 		for (const job of _encQueue.slice().sort(_encCompare)) add(job);
 		const collect = (source, scope, keys) => {
 			for (const it of source) {
@@ -4118,24 +4310,27 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		} catch (e) { /* never let progress rendering break the encode queue */ }
 	}
 	function _pumpEncQueue() {
-		if (_encActive || !_encQueue.length) return;
-		/* Strictly one job in flight at a time, across the whole app. Every real job is
-		   enqueued synchronously as soon as a file's shared intermediate is ready (see
-		   _primeTgsStats / activeFrames — the expensive render/decode step runs ONCE per
-		   file and every format reuses it, never recomputed), so sorting the actual queue
-		   is enough to guarantee: file N, each enabled format in order, then file N+1.
-		   This trades speed for safety — unbounded per-file/per-format concurrency is
-		   what spiked memory and crashed the app before this queue existed. */
-		_encQueue.sort(_encCompare);
-		const job = _encQueue.shift();
-		_encActive = [job];
-		_refreshQueuedProgress();
-		Promise.resolve().then(job.fn).then(job.resolve, job.reject)
-			.finally(() => {
-				_encActive = null;
-				_refreshQueuedProgress();
-				_pumpEncQueue();
-			});
+		/* Up to ENC_POOL_SIZE jobs in flight at once, across the whole app — bounded,
+		   explicit concurrency instead of the unbounded per-file/per-format concurrency
+		   that spiked memory and crashed the app before this queue existed (that risk is
+		   now bounded by ENC_POOL_SIZE regardless of how many files/formats are queued).
+		   Every real job is enqueued synchronously as soon as a file's shared intermediate
+		   is ready (see _primeTgsStats / activeFrames — the expensive render/decode step
+		   runs ONCE per file and every format reuses it, never recomputed), so sorting the
+		   actual queue is enough to guarantee: file N's formats before file N+1's. */
+		while (_encActive.length < ENC_POOL_SIZE && _encQueue.length) {
+			_encQueue.sort(_encCompare);
+			const job = _encQueue.shift();
+			_encActive.push(job);
+			_refreshQueuedProgress();
+			Promise.resolve().then(job.fn).then(job.resolve, job.reject)
+				.finally(() => {
+					const idx = _encActive.indexOf(job);
+					if (idx >= 0) _encActive.splice(idx, 1);
+					_refreshQueuedProgress();
+					_pumpEncQueue();
+				});
+		}
 	}
 	function _encGate(fn, meta) {
 		return new Promise((resolve, reject) => {
@@ -4231,11 +4426,39 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			}
 			})();
 	}
+	function scheduleImessage(it) {
+		const r = it.refs;
+		it.lastIMessage = null;
+		_setOutputState(it, 'imessage', 'queued');
+		r.imSize.textContent = "…";
+		if (it.imessagePending) return; // already queued — the job reads the latest settings when it runs
+		it.imessagePending = true;
+		(async () => {
+			let token;
+			try {
+				const data = await _encGate(() => {
+					it.imessagePending = false;
+					token = ++it.imessageToken;
+					_setOutputState(it, 'imessage', 'processing');
+					return buildImessage(it);
+				}, { scope: 'gif', it, key: 'imessage' });
+				if (token !== it.imessageToken) return;
+				it.lastIMessage = data;
+				_setOutputState(it, 'imessage', 'built', { size: data.length });
+				r.imSize.textContent = kb(data.length);
+				r.imWarn.classList.toggle("on", data.length > 500 * 1024);
+			} catch (e) {
+				if (token !== it.imessageToken) return;
+				it.lastIMessage = null;
+				r.imSize.textContent = String(e.message || e).toUpperCase().slice(0, 40);
+				_setOutputState(it, 'imessage', 'error', { message: String(e.message || e) });
+			}
+			})();
+	}
 
 	/* ── ANIMATED WEBP — browser-native per-frame lossless encode + RIFF/ANMF mux ── */
-	async function buildWebp(it) {
-		const lossless = it.settings.webpLossless !== false;
-		const frames = activeFrames(it);
+	async function _encodeWebpFrames(it, frames, { quality, colors }, lossless) {
+		const src = colors != null && colors < 256 ? quantizeFrames(frames, colors) : frames;
 		const sc = effScale(it);
 		const w = it.gif.width, h = it.gif.height;
 		const fw = w * sc, fh = h * sc;
@@ -4246,7 +4469,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const sub = document.createElement("canvas");
 		const encoded = [];
 		let prev = null, done = 0;
-		for (const f of frames) {
+		for (const f of src) {
 			it.off.getContext("2d").putImageData(new ImageData(f.rgba, w, h), 0, 0);
 			ctx.clearRect(0, 0, CS, CS);
 			ctx.imageSmoothingEnabled = false;
@@ -4260,13 +4483,32 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			if (box.y & 1) { box.y--; box.h++; }
 			sub.width = box.w; sub.height = box.h;
 			sub.getContext("2d").putImageData(ctx.getImageData(box.x, box.y, box.w, box.h), 0, 0);
-			const blob = await new Promise(res => sub.toBlob(res, "image/webp", lossless ? 1 : Math.min(99, it.settings.webpQuality) / 100)); // 1 → lossless VP8L in Chromium, < 1 → lossy VP8
+			const blob = await new Promise(res => sub.toBlob(res, "image/webp", lossless ? 1 : Math.min(99, quality) / 100)); // 1 → lossless VP8L in Chromium, < 1 → lossy VP8
 			if (!blob || blob.type !== "image/webp") throw new Error("WEBP ENCODE UNSUPPORTED IN THIS BROWSER");
 			encoded.push({ bytes: new Uint8Array(await blob.arrayBuffer()), delayMs: f.delayMs, x: box.x, y: box.y, w: box.w, h: box.h });
 			prev = cur;
 			_setOutputState(it, 'webp', 'processing', { framesDone: ++done, framesTotal: frames.length });
 		}
 		return C.muxAnimatedWebp(encoded, CS, CS, it.settings.webpLoops);
+	}
+	async function buildWebp(it) {
+		const lossless = it.settings.webpLossless !== false;
+		const frames = activeFrames(it);
+		const baseQuality = clamp(Math.round(+it.settings.webpQuality) || 90, 1, 100);
+		if (!it.settings.webpAutoFit) {
+			return _encodeWebpFrames(it, frames, { quality: baseQuality, colors: null }, lossless);
+		}
+		/* AUTO FIT ≤ 100 KB: same fps-then-(colors|quality) ladder as the TGS pipeline's
+		   _encodeUnderBudget — fps costs smoothness, not pixels, so it's tried first. */
+		const r = it.refs;
+		const res = await _encodeUnderBudget({
+			frames, srcFps: _srcFpsOf(frames), budget: 100 * 1024,
+			encode: (f, { quality, colors }) => _encodeWebpFrames(it, f, { quality, colors }, lossless),
+			baseColors: 256, baseQuality,
+			stage2: lossless ? TGS_COLOR_LADDER.map(c => ({ colors: c })) : TGS_QUALITY_LADDER.map(q => ({ quality: q })),
+			onRung: label => { if (r?.webpSize) r.webpSize.textContent = label; },
+		});
+		return res.data;
 	}
 
 	function scheduleWebp(it) {
@@ -4399,6 +4641,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			_setOutputState(it, 'line', 'built', { size: data.length });
 			download(data, it.base + "_line.apng", "image/apng");
 		}));
+		r.expImessage.addEventListener("click", () => busy(r.expImessage, async () => {
+			_setOutputState(it, 'imessage', it.lastIMessage ? 'built' : 'processing', it.lastIMessage ? { size: it.lastIMessage.length } : null);
+			const data = it.lastIMessage || await buildImessage(it);
+			it.lastIMessage = data;
+			_setOutputState(it, 'imessage', 'built', { size: data.length });
+			download(data, it.base + "_imessage.apng", "image/apng");
+		}));
 		r.expFrame.addEventListener("click", () => busy(r.expFrame, async () => {
 			_setOutputState(it, 'frame', 'processing');
 			const f = currentFrame(it);
@@ -4449,7 +4698,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	/* one gif's zip entries — only outputs toggled on in Settings, folder-prefixed */
 	async function collectEntries(it) {
 			const entries = [];
-			const keys = ['apng', 'discord', 'frame', 'pad', 'tgs', 'lottie', 'webp', 'line'];
+			const keys = ['apng', 'discord', 'frame', 'pad', 'tgs', 'lottie', 'webp', 'line', 'imessage'];
 			for (const key of keys) {
 				if (!G.cells[key]) continue;
 				entries.push(...await _collectGifFormatEntries(it, key));
@@ -4481,6 +4730,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		r.webpSeg.addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) { s.webpLossless = b.dataset.v === "lossless"; upd(); } });
 		r.webpQNum.addEventListener("change", () => { s.webpQuality = clamp(Math.round(+r.webpQNum.value) || 90, 1, 100); upd(); });
 		r.webpLoopsNum.addEventListener("change", () => { s.webpLoops = clamp(Math.round(+r.webpLoopsNum.value) || 0, 0, 99); upd(); });
+		r.imLoopsNum.addEventListener("change", () => { s.imessageLoops = clamp(Math.round(+r.imLoopsNum.value) || 0, 0, 99); upd(); });
+		r.imSizeSeg.addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) { s.imessageSize = +b.dataset.v; upd(); } });
 		if (r.webpScaleSeg) r.webpScaleSeg.addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) { s.scaleMode = b.dataset.v; upd(); } });
 		if (r.webpScaleNum) r.webpScaleNum.addEventListener("change", () => { s.manualScale = clamp(Math.round(+r.webpScaleNum.value) || 12, 1, 64); upd(); });
 
@@ -4503,7 +4754,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			s.rangeEnd = clamp(Math.round(+r.rangeEnd.value) - 1 || 0, s.rangeStart, it.gif.frames.length - 1);
 			it.animStart = performance.now(); upd();
 		});
-		r.skipNum.addEventListener("change", () => { s.skip = clamp(Math.round(+r.skipNum.value) || 0, 0, 30); it.animStart = performance.now(); upd(); });
+		r.skipNum.addEventListener("change", () => { s.skip = clamp(Math.round(+r.skipNum.value) || 0, 0, 60); it.animStart = performance.now(); upd(); });
 		r.frameSlider.addEventListener("input", () => { s.frameIndex = +r.frameSlider.value; refreshFrameCells(it); });
 		r.offsetSlider.addEventListener("input", () => {
 			s.offsetPx = Math.round(+r.offsetSlider.value * 10) / 10;
@@ -4518,6 +4769,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				else s[k] = cb.checked;
 				if (k === "loop") { it.animStart = performance.now(); return; }
 				if (k === "fit3s") { scheduleApng(it); return; }
+				if (k === "apngAutoFit") { scheduleApng(it); return; }
+				if (k === "dcAutoFit") { scheduleDc(it); return; }
+				if (k === "webpAutoFit") { scheduleWebp(it); return; }
 				if (k === "offsetEnabled") { r.offsetSlider.disabled = !s.offsetEnabled; it.lastAnimIdx = -1; }
 				scheduleTgs(it);
 			});
@@ -4590,11 +4844,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					loop: true, frameIndex: 0,
 					offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
 					folders: { ...G.folderNames },
-					apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, fit3s: G.fit3s,
-					dcLoops: G.dcLoops, dcMaxColors: G.dcMaxColors,
+					apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, fit3s: G.fit3s, apngAutoFit: G.apngAutoFit,
+					dcLoops: G.dcLoops, dcMaxColors: G.dcMaxColors, dcAutoFit: G.dcAutoFit,
 					dcScaleMode: G.dcScaleMode, dcManual: G.dcManual,
 					lineScaleMode: G.lineScaleMode, lineManual: G.lineManual,
 					webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops, webpAutoFit: G.webpAutoFit,
+					imessageLoops: G.imessageLoops, imessageSize: G.imessageSize,
 					opt: {
 						rectMerge: true, sameColorMerge: true, removeEmpty: true,
 						removeDup: true, floatPrecision: true, removeDefaults: true,
@@ -4610,6 +4865,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				dcToken: 0,
 				lineToken: 0,
 				lastLine: null,
+				imessageToken: 0,
+				lastIMessage: null,
 				lastLottieJson: null,
 				stats: {},
 			};
@@ -4654,6 +4911,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				if (G.cells.apng) drawFrame(it, it.refs.apngCv, frames[idx].rgba);
 				if (G.cells.discord) drawFrame(it, it.refs.dcCv, frames[idx].rgba, { scale: dcScale(it), bbox: DC_BOX });
 				if (G.cells.line) drawFrame(it, it.refs.lineCv, frames[idx].rgba, { scale: lineScale(it), bbox: LINE_BOX });
+				if (G.cells.imessage) drawFrame(it, it.refs.imCv, frames[idx].rgba, { scale: C.maxFitScale(it.gif.width, it.gif.height, it.settings.imessageSize) });
 				if (G.cells.webp) drawFrame(it, it.refs.webpCv, frames[idx].rgba);
 				if (G.cells.tgs) drawFrame(it, it.refs.tgsCv, frames[idx].rgba, {
 					offset: it.settings.offsetEnabled ? it.settings.offsetPx * (CS / it.refs.tgsCv.clientWidth || 1) : null,
@@ -4726,6 +4984,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		webpSeg: document.getElementById("gWebpSeg"),
 		webpQ: document.getElementById("gWebpQ"),
 		webpLoops: document.getElementById("gWebpLoops"),
+		imessageLoops: document.getElementById("gImessageLoops"),
+		imessageSizeSeg: document.getElementById("gImessageSizeSeg"),
 		jobPanelSeg: document.getElementById("gJobPanelSeg"),
 		reset: document.getElementById("gReset"),
 	};
@@ -4748,6 +5008,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		g.webpQ.value = G.webpQuality;
 		g.webpQ.disabled = G.webpLossless;
 		g.webpLoops.value = G.webpLoops;
+		if (g.imessageLoops) g.imessageLoops.value = G.imessageLoops;
+		if (g.imessageSizeSeg) g.imessageSizeSeg.querySelectorAll(".bf-seg-btn").forEach(b => b.classList.toggle("bf-on", +b.dataset.v === G.imessageSize));
 		if (g.jobPanelSeg) g.jobPanelSeg.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('bf-on', b.dataset.v === (G.jobPanelsExpanded ? 'expanded' : 'collapsed')));
 	}
 	function applyGlobal(patch) {
@@ -4827,6 +5089,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	g.webpSeg.addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) applyGlobal({ webpLossless: b.dataset.v === "lossless" }); });
 	g.webpQ.addEventListener("change", () => applyGlobal({ webpQuality: clamp(Math.round(+g.webpQ.value) || 90, 1, 100) }));
 	g.webpLoops.addEventListener("change", () => applyGlobal({ webpLoops: clamp(Math.round(+g.webpLoops.value) || 0, 0, 99) }));
+	if (g.imessageLoops) g.imessageLoops.addEventListener("change", () => applyGlobal({ imessageLoops: clamp(Math.round(+g.imessageLoops.value) || 0, 0, 99) }));
+	if (g.imessageSizeSeg) g.imessageSizeSeg.addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) applyGlobal({ imessageSize: +b.dataset.v }); });
 
 	/* restore every global + per-panel setting to factory defaults */
 	g.reset.addEventListener("click", () => {
@@ -5035,7 +5299,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			`<button type="button" class="bf-btn bf-btn--accent" data-t="run" disabled>${cfg.button}</button>`,
 			`</div>`,
 		].join("");
-		toolboxEl.appendChild(div);
+		(cfg.container || toolboxEl).appendChild(div);
 		const dropEl = div.querySelector(".tool-drop"), input = div.querySelector('input[type="file"]');
 		const list = div.querySelector('[data-t="list"]'), run = div.querySelector('[data-t="run"]');
 		let files = [];
@@ -5227,8 +5491,10 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				scaleMode: G.scaleMode, manualScale: G.manualScale,
 				fpsMode: G.fpsMode, fps: G.fps,
 				offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
-				apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors,
-				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops,
+				apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, apngAutoFit: G.apngAutoFit,
+				dcAutoFit: G.dcAutoFit,
+				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops, webpAutoFit: G.webpAutoFit,
+				imessageLoops: G.imessageLoops, imessageSize: G.imessageSize,
 					fit3s: G.fit3s, frameTag: G.frameTag, frameTagPos: G.frameTagPos, jobPanelsExpanded: G.jobPanelsExpanded,
 				folderMode: G.folderMode,
 				folderNames: Object.assign({}, G.folderNames),
@@ -5244,7 +5510,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			if (!raw) return;
 			const s = JSON.parse(raw);
 			const props = ['scaleMode','manualScale','fpsMode','fps','offsetEnabled','offsetPx',
-				'apngLoops','apngMaxColors','webpLossless','webpQuality','webpLoops',
+				'apngLoops','apngMaxColors','apngAutoFit','dcAutoFit','webpLossless','webpQuality','webpLoops','webpAutoFit','imessageLoops','imessageSize',
 				'fit3s','frameTag','frameTagPos','jobPanelsExpanded','folderMode'];
 			for (const k of props) if (k in s) G[k] = s[k];
 			if (s.folderNames) Object.assign(G.folderNames, s.folderNames);
@@ -5291,11 +5557,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				Object.assign(G, {
 					scaleMode: 'manual', manualScale: 12, fpsMode: 'auto', fps: 30,
 					offsetEnabled: true, offsetPx: 0.4,
-					apngLoops: 0, apngMaxColors: 256, fit3s: false,
-					webpLossless: true, webpQuality: 90, webpLoops: 0,
+					apngLoops: 0, apngMaxColors: 256, fit3s: false, apngAutoFit: true,
+					dcAutoFit: true,
+					webpLossless: true, webpQuality: 90, webpLoops: 0, webpAutoFit: true,
+					imessageLoops: 0, imessageSize: 408,
 					frameTag: false, frameTagPos: 'suffix', jobPanelsExpanded: false, folderMode: 'platform',
 				});
-				Object.keys(G.cells).forEach(k => { G.cells[k] = k !== 'lottie' && k !== 'frame' && k !== 'pad' && k !== 'line'; });
+				Object.keys(G.cells).forEach(k => { G.cells[k] = k !== 'lottie' && k !== 'frame' && k !== 'pad' && k !== 'line' && k !== 'imessage'; });
 				if (g.toggles) g.toggles.querySelectorAll('input[data-cell]').forEach(cb => { cb.checked = !!G.cells[cb.dataset.cell]; });
 				applyCellToggles();
 				syncFrameTagUI();
@@ -5304,11 +5572,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						scaleMode: G.scaleMode, manualScale: G.manualScale,
 						fpsMode: G.fpsMode, fps: G.fps,
 						offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
-						apngLoops: 0, apngMaxColors: 256, fit3s: false,
-						dcLoops: 0, dcMaxColors: 256,
+						apngLoops: 0, apngMaxColors: 256, fit3s: false, apngAutoFit: true,
+						dcLoops: 0, dcMaxColors: 256, dcAutoFit: true,
 						dcScaleMode: 'manual', dcManual: 7,
 						lineScaleMode: 'manual', lineManual: 6,
-						webpLossless: true, webpQuality: 90, webpLoops: 0,
+						webpLossless: true, webpQuality: 90, webpLoops: 0, webpAutoFit: true,
+						imessageLoops: 0, imessageSize: 408,
 						folders: Object.assign({}, FOLDER_PRESETS.platform),
 					});
 					for (const k of FOLDER_KEYS) {
@@ -5326,7 +5595,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				updateSettingsSections();
 				/* reset TGS settings */
 				if (typeof G.tgsCells !== 'undefined') {
-					Object.assign(G.tgsCells, { apng: true, discord: true, webp: true, frame: true, pad: true, line: false, lottie: true });
+					Object.assign(G.tgsCells, { apng: true, discord: true, webp: true, frame: true, pad: true, line: false, lottie: true, imessage: false });
 					const tog = document.getElementById('tgsOutToggles');
 					if (tog) tog.querySelectorAll('input[data-tgscell]').forEach(cb => { cb.checked = !!G.tgsCells[cb.dataset.tgscell]; });
 					tgsItems.forEach(it => { if (typeof _refreshTgsPanel === 'function') _refreshTgsPanel(it); });
@@ -5339,6 +5608,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					Object.assign(G.tgsSettings.pad, { mode: 'first' });
 					Object.assign(G.tgsSettings.line, { loops: 1, autoFit: true, fps: null, maxColors: 256 });
 					Object.assign(G.tgsSettings.lottie, { folder: 'LOTTIE' });
+					Object.assign(G.tgsSettings.imessage, { loops: 0, size: 408 });
 					applyTgsFolderPreset(G.folderMode);
 					if (typeof syncTgsSettingsUI === 'function') syncTgsSettingsUI();
 					if (typeof updateTgsSettingsSections === 'function') updateTgsSettingsSections();
@@ -5364,6 +5634,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							lineAutoFit: T.line.autoFit,
 							lineFps: T.line.fps,
 							lineMaxColors: T.line.maxColors,
+							imessageLoops: T.imessage.loops,
+							imessageSize: T.imessage.size,
 						});
 						// A2: refresh the panel inputs so they show the reset values, not the user's old typed ones
 						if (it.refs) {
@@ -5374,6 +5646,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 							if (r.webpQNum) r.webpQNum.value = s.webpQuality;
 							if (r.webpSeg) r.webpSeg.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('bf-on', b.dataset.v === (s.webpLossless ? 'lossless' : 'lossy')));
 							if (r.lineLoopsNum) r.lineLoopsNum.value = s.lineLoops;
+							if (r.imLoopsNum) r.imLoopsNum.value = s.imessageLoops;
+							if (r.imSizeSeg) r.imSizeSeg.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('bf-on', +b.dataset.v === s.imessageSize));
 							['apng', 'discord', 'webp', 'line'].forEach(key => {
 								if (r[key + 'AutoFit']) r[key + 'AutoFit'].checked = !!s[TGS_AUTOFIT_KEY[key]];
 								if (r[key + 'FpsNum']) r[key + 'FpsNum'].value = s[TGS_FPS_KEY[key]] == null ? native : s[TGS_FPS_KEY[key]];
@@ -5381,7 +5655,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 								_syncTgsAutoFitReadout(it, key, null);
 							});
 						}
-						['apng', 'discord', 'webp', 'frame', 'pad', 'line', 'lottie'].forEach(k => { if (G.tgsCells[k] && typeof scheduleTgsBuild === 'function') scheduleTgsBuild(it, k); });
+						['apng', 'discord', 'webp', 'frame', 'pad', 'line', 'lottie', 'imessage'].forEach(k => { if (G.tgsCells[k] && typeof scheduleTgsBuild === 'function') scheduleTgsBuild(it, k); });
 					});
 				}
 				saveSettings();
@@ -5407,11 +5681,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const data = JSON.stringify({
 				_v: 1, scaleMode: G.scaleMode, manualScale: G.manualScale,
 				fpsMode: G.fpsMode, fps: G.fps, offsetEnabled: G.offsetEnabled, offsetPx: G.offsetPx,
-				apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors,
-				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops,
+				apngLoops: G.apngLoops, apngMaxColors: G.apngMaxColors, apngAutoFit: G.apngAutoFit, dcAutoFit: G.dcAutoFit,
+				webpLossless: G.webpLossless, webpQuality: G.webpQuality, webpLoops: G.webpLoops, webpAutoFit: G.webpAutoFit,
+				imessageLoops: G.imessageLoops, imessageSize: G.imessageSize,
 				fit3s: G.fit3s, frameTag: G.frameTag, frameTagPos: G.frameTagPos,
 				folderMode: G.folderMode, folderNames: Object.assign({}, G.folderNames),
-				filePrefix: G.filePrefix || '', fileSuffix: G.fileSuffix || '',
 				cells: Object.assign({}, G.cells),
 				tgsSettings: JSON.parse(JSON.stringify(G.tgsSettings)), tgsCells: Object.assign({}, G.tgsCells),
 			}, null, 2);
@@ -5426,7 +5700,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				try {
 					const s = JSON.parse(await file.text());
 					const props = ['scaleMode','manualScale','fpsMode','fps','offsetEnabled','offsetPx',
-						'apngLoops','apngMaxColors','webpLossless','webpQuality','webpLoops',
+						'apngLoops','apngMaxColors','apngAutoFit','dcAutoFit','webpLossless','webpQuality','webpLoops','webpAutoFit','imessageLoops','imessageSize',
 						'fit3s','frameTag','frameTagPos','folderMode'];
 					for (const k of props) if (k in s) G[k] = s[k];
 					if (s.folderNames) Object.assign(G.folderNames, s.folderNames);
@@ -5650,7 +5924,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 
 
 	/* ── stable TGS controller: final override for main converter ── */
-	const STABLE_TGS_DIRS = { apng: '512APNG', discord: '320APNG', webp: 'WEBP', frame: '512PNG', pad: '512PNGNOPADDING', line: 'LINE', lottie: 'LOTTIE' };
+	const STABLE_TGS_DIRS = { apng: '512APNG', discord: '320APNG', webp: 'WEBP', frame: '512PNG', pad: '512PNGNOPADDING', line: 'LINE', lottie: 'LOTTIE', imessage: 'IMESSAGE' };
 
 	function _tgsFolder(key) {
 		const map = {
@@ -5661,6 +5935,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			pad: G.tgsSettings.pad.folder,
 			line: G.tgsSettings.line.folder,
 			lottie: G.tgsSettings.lottie.folder,
+			imessage: G.tgsSettings.imessage.folder,
 		};
 		const v = (map[key] || STABLE_TGS_DIRS[key] || '').trim();
 		return v ? v.replace(/^[/\\]+|[/\\]+$/g, '') + '/' : '';
@@ -5787,6 +6062,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (tiny) _drawTgsPreview(it.refs.dcCv, tiny.rgba, size, true);
 		const lineTiny = _resizeTgsFrames([f], 270)[0];
 		if (lineTiny) _drawTgsPreview(it.refs.lineCv, lineTiny.rgba, 270, true);
+		const imSize = clamp(Math.round(+it.settings.imessageSize) || 408, 300, 618);
+		const imTiny = _resizeTgsFrames([f], imSize)[0];
+		if (imTiny && it.refs.imCv) _drawTgsPreview(it.refs.imCv, imTiny.rgba, imSize, true);
 		_refreshTgsPngPreviews(it);
 	}
 
@@ -5911,7 +6189,25 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expPad">Export 512PNGNOPADDING</button>
 			</div>
 		</div>
-		<div class="cell"><div class="cell-h"><span>SETTING</span><span class="no">09</span></div>
+		<div class="cell" data-cell="imessage"><div class="cell-h"><span>IMESSAGE・APNG</span><span class="no">09</span></div>
+			<div class="cell-b">
+				<canvas class="pv" width="${CS}" height="${CS}" data-r="imCv"></canvas>
+				<div class="kv"><span>TARGET</span><span class="v">≤ 500 KB / FILE</span></div>
+				<div class="row"><span>SIZE</span><div class="row-b">
+					<span class="bf-seg" data-r="imSizeSeg">
+						<button type="button" class="bf-seg-btn" data-v="300">Small</button>
+						<button type="button" class="bf-seg-btn" data-v="408">Regular</button>
+						<button type="button" class="bf-seg-btn" data-v="618">Large</button>
+					</span>
+					</div></div>
+				<div class="kv"><span>OUTPUT SIZE</span><span class="v" data-r="imSize">BUILDING…</span></div>
+				<div class="row"><span>LOOP · 0 = ∞</span><input class="bf-field" type="number" min="0" max="99" step="1" data-r="imLoopsNum" value="${G.tgsSettings.imessage.loops}" /></div>
+				<div class="warn" data-r="imWarn">OVER 500 KB — XCODE MAY REJECT</div>
+				<div class="spacer"></div>
+				<button type="button" class="bf-btn bf-btn--accent bf-btn--block" data-r="expImessage">Export APNG</button>
+			</div>
+		</div>
+		<div class="cell"><div class="cell-h"><span>SETTING</span><span class="no">10</span></div>
 			<div class="cell-b">
 				<div class="grp">PNG FRAME</div>
 				<div class="row"><span>FRAME</span><input type="range" min="0" max="${Math.max(0, it.totalFrames - 1)}" value="0" step="1" data-r="frameSlider" /></div>
@@ -5924,6 +6220,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				<div class="kv"><span>WHATSAPP・WEBP</span><span class="v">WEBP/</span></div>
 				<div class="kv"><span>STATIC・512PNG</span><span class="v">512PNG/</span></div>
 				<div class="kv"><span>NO PADDING</span><span class="v">512PNGNOPADDING/</span></div>
+				<div class="kv"><span>IMESSAGE・APNG</span><span class="v">IMESSAGE/</span></div>
 				<div class="spacer"></div>
 			</div>
 		</div>
@@ -5968,6 +6265,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		it.refs.apngLoopsNum.addEventListener('change', () => { it.settings.apngLoops = clamp(Math.round(+it.refs.apngLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'apng'); });
 		it.refs.dcLoopsNum.addEventListener('change', () => { it.settings.dcLoops = clamp(Math.round(+it.refs.dcLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'discord'); });
 		it.refs.lineLoopsNum.addEventListener('change', () => { it.settings.lineLoops = clamp(Math.round(+it.refs.lineLoopsNum.value) || 1, 1, 4); scheduleTgsBuild(it, 'line'); });
+		it.refs.imLoopsNum.addEventListener('change', () => { it.settings.imessageLoops = clamp(Math.round(+it.refs.imLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'imessage'); });
+		it.refs.imSizeSeg.querySelectorAll('[data-v]').forEach(btn => {
+			btn.classList.toggle('bf-on', +btn.dataset.v === it.settings.imessageSize);
+		});
+		it.refs.imSizeSeg.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { it.settings.imessageSize = +b.dataset.v; it.refs.imSizeSeg.querySelectorAll('.bf-seg-btn').forEach(x => x.classList.toggle('bf-on', x === b)); _refreshTgsFramePreviews(it); scheduleTgsBuild(it, 'imessage'); } });
 		it.refs.webpLoopsNum.addEventListener('change', () => { it.settings.webpLoops = clamp(Math.round(+it.refs.webpLoopsNum.value) || 0, 0, 99); scheduleTgsBuild(it, 'webp'); });
 		it.refs.webpQNum.addEventListener('change', () => { it.settings.webpQuality = clamp(Math.round(+it.refs.webpQNum.value) || 90, 1, 100); scheduleTgsBuild(it, 'webp'); });
 		it.refs.webpSeg.querySelectorAll('[data-v]').forEach(btn => {
@@ -6014,6 +6316,10 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const entries = await _collectTgsEntries(it, ['line']);
 			if (entries[0]) download(entries[0].data, `${it.base}_line.apng`, 'image/apng');
 		}));
+		it.refs.expImessage.addEventListener('click', () => busy(it.refs.expImessage, async () => {
+			const entries = await _collectTgsEntries(it, ['imessage']);
+			if (entries[0]) download(entries[0].data, `${it.base}_imessage.apng`, 'image/apng');
+		}));
 		it.refs.expLottie.addEventListener('click', () => busy(it.refs.expLottie, async () => {
 			const entries = await _collectTgsEntries(it, ['lottie']);
 			if (entries[0]) download(entries[0].data, `${it.base}.json`, 'application/json');
@@ -6042,10 +6348,10 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	const TGS_AUTOFIT_KEY = { apng: 'apngAutoFit', discord: 'dcAutoFit', webp: 'webpAutoFit', line: 'lineAutoFit' };
 	const TGS_FPS_KEY = { apng: 'apngFps', discord: 'dcFps', webp: 'webpFps', line: 'lineFps' };
 	const TGS_COLORS_KEY = { apng: 'apngMaxColors', discord: 'dcMaxColors', webp: 'webpMaxColors', line: 'lineMaxColors' };
-	const TGS_CACHE_KEY = { apng: 'lastApng', discord: 'lastDc', webp: 'lastWebp', frame: 'lastFramePng', pad: 'lastPadPng', line: 'lastLine', lottie: 'lastLottieJson' };
-	const TGS_SIZE_REF = { apng: 'apngSize', discord: 'dcSize', webp: 'webpSize', frame: 'frameSize', pad: 'padSize', line: 'lineSize', lottie: 'lottieSize' };
-	const TGS_WARN_REF = { apng: 'apngWarn', discord: 'dcWarn', webp: 'webpWarn', line: 'lineWarn' };
-	const TGS_ALL_KEYS = ['lottie', 'frame', 'pad', 'apng', 'discord', 'line', 'webp'];
+	const TGS_CACHE_KEY = { apng: 'lastApng', discord: 'lastDc', webp: 'lastWebp', frame: 'lastFramePng', pad: 'lastPadPng', line: 'lastLine', lottie: 'lastLottieJson', imessage: 'lastIMessage' };
+	const TGS_SIZE_REF = { apng: 'apngSize', discord: 'dcSize', webp: 'webpSize', frame: 'frameSize', pad: 'padSize', line: 'lineSize', lottie: 'lottieSize', imessage: 'imSize' };
+	const TGS_WARN_REF = { apng: 'apngWarn', discord: 'dcWarn', webp: 'webpWarn', line: 'lineWarn', imessage: 'imWarn' };
+	const TGS_ALL_KEYS = ['lottie', 'frame', 'pad', 'apng', 'discord', 'line', 'webp', 'imessage'];
 	const TGS_FPS_LADDER = [60, 30, 20, 10];
 	const TGS_COLOR_LADDER = [128, 64];
 	const TGS_QUALITY_LADDER = [75, 60];
@@ -6128,14 +6434,15 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const size = key === 'apng' ? CS : _tgs320Size();
 			const resizedByFps = new Map();
 			const encode = async (f, { fps, colors }) => {
-				let src = f;
-				if (key === 'discord') {
-					// downscale BEFORE quantizing: smoothing reintroduces colours
-					let r = resizedByFps.get(fps);
-					if (!r) { r = _resizeTgsFrames(f, size); resizedByFps.set(fps, r); }
-					src = r;
-				}
-				return C.encodeApng(quantizeFrames(src, colors), size, size, loops, { onFrame: (done, total) => _setOutputState(it, key, 'processing', { framesDone: done, framesTotal: total }) });
+				/* apng needs no resize (frames are already rendered at the 512 canvas the
+				   Signal output uses) so it runs in the shared APNG encode worker pool.
+				   discord downscales first via a real <canvas> (smoothing reintroduces
+				   colours if quantized before resizing) — that step stays on the main
+				   thread until an OffscreenCanvas-based worker path exists for it. */
+				if (key === 'apng') return _apngEncodeInWorker(f, { width: CS, height: CS, scale: 1, canvasSize: CS, loops, colors, fit3s: false });
+				let r = resizedByFps.get(fps);
+				if (!r) { r = _resizeTgsFrames(f, size); resizedByFps.set(fps, r); }
+				return C.encodeApng(quantizeFrames(r, colors), size, size, loops, { onFrame: (done, total) => _setOutputState(it, key, 'processing', { framesDone: done, framesTotal: total }) });
 			};
 			let res;
 			if (autoFit) {
@@ -6168,6 +6475,17 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				res = { data, fps, colors, underBudget: !budget || data.length <= budget };
 			}
 			return res;
+		}
+
+		if (key === 'imessage') {
+			// TGS frames are already rendered at the native 512 canvas by lottie-web, so
+			// unlike GIF's pixel-art source (needs integer upscaling via scaleAndCenter)
+			// this needs a real smoothed downscale — the same _resizeTgsFrames() Discord uses.
+			const loops = it.settings.imessageLoops;
+			const size = clamp(Math.round(+it.settings.imessageSize) || 408, 300, 618);
+			const resized = _resizeTgsFrames(frames, size);
+			const data = await C.encodeApng(resized, size, size, loops);
+			return { data, fps: srcFps, colors: 256, underBudget: !budget || data.length <= budget };
 		}
 
 		// webp
@@ -6268,6 +6586,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (key === 'frame') return `${_tgsFolder('frame')}${it.base}_frame${n}.png`;
 		if (key === 'line') return `${_tgsFolder('line')}${it.base}_line.apng`;
 		if (key === 'lottie') return `${_tgsFolder('lottie')}${it.base}.json`;
+		if (key === 'imessage') return `${_tgsFolder('imessage')}${it.base}_imessage.apng`;
 		return `${_tgsFolder('pad')}${it.base}_frame${n}_nopadding.png`;
 	}
 
@@ -6282,15 +6601,23 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (sizeEl) sizeEl.textContent = '…';
 		if (it.pendingBuilds && it.pendingBuilds[key]) return; // already queued — the job reads the latest settings when it runs
 		(it.pendingBuilds = it.pendingBuilds || {})[key] = true;
+		const isCheap = key === 'frame' || key === 'pad';
 		(async () => {
 			let token;
 			try {
-				const res = await _encGate(() => {
+				const run = () => {
 					it.pendingBuilds[key] = false;
 					token = ++it.tokens[key];
 					_setOutputState(it, key, 'processing');
 					return _buildTgsOutput(it, key);
-				}, { scope: 'tgs', it, key });
+				};
+				/* frame/pad just re-encode a single already-rendered frame to PNG — cheap
+				   enough to run immediately rather than wait in the heavy multi-frame encode
+				   gate. _encGate is one shared FIFO across both pipelines, ordered by DOM
+				   position — since #items (GIF) precedes #tgsItems in the DOM, every GIF job
+				   runs before any TGS job, so routing frame/pad through it meant they sat
+				   behind the entire GIF backlog and never looked "pre-built" after upload. */
+				const res = isCheap ? await run() : await _encGate(run, { scope: 'tgs', it, key });
 				if (token !== it.tokens[key]) return;
 				_applyTgsBuild(it, key, res);
 			} catch (e) {
@@ -6369,6 +6696,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 						lineAutoFit: G.tgsSettings.line.autoFit,
 						lineFps: G.tgsSettings.line.fps,
 						lineMaxColors: G.tgsSettings.line.maxColors,
+						imessageLoops: G.tgsSettings.imessage.loops,
+						imessageSize: G.tgsSettings.imessage.size,
 					},
 					refs: {},
 					animStart: performance.now(),
@@ -6380,8 +6709,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					lastPadPng: null,
 					lastLine: null,
 					lastLottieJson: null,
+					lastIMessage: null,
 					timers: {},
-					tokens: { apng: 0, discord: 0, webp: 0, frame: 0, pad: 0, line: 0, lottie: 0 },
+					tokens: { apng: 0, discord: 0, webp: 0, frame: 0, pad: 0, line: 0, lottie: 0, imessage: 0 },
 					stats: {},
 				};
 				tgsItems.push(it);
@@ -6567,9 +6897,17 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			return [{ name: f.name.replace(/\.tgs$/i, '.json'), data: new TextEncoder().encode(JSON.stringify(json, null, 2)), type: 'application/json' }];
 		},
 	});
-	/* 16 · JSON → TGS */
-	toolCard({ key:'json2tgs', no:'16', title:'JSON (LOTTIE) → TGS', accept:'.json,application/json', match:/\.json$/i,
+	/* JSON (Lottie) → TGS — pulled out of the (hidden) Tool Box into its own small modal
+	   since it's the one converter useful on its own, independent of the sticker pipeline. */
+	const json2tgsModal = document.getElementById('json2tgsModal');
+	const json2tgsBtn = document.getElementById('json2tgsBtn');
+	if (json2tgsBtn) json2tgsBtn.addEventListener('click', () => { json2tgsModal.classList.add('on'); document.body.style.overflow = 'hidden'; });
+	document.getElementById('json2tgsClose').addEventListener('click', () => { json2tgsModal.classList.remove('on'); document.body.style.overflow = ''; });
+	json2tgsModal.addEventListener('click', e => { if (e.target === json2tgsModal) { json2tgsModal.classList.remove('on'); document.body.style.overflow = ''; } });
+	document.addEventListener('keydown', e => { if (e.key === 'Escape' && json2tgsModal.classList.contains('on')) { json2tgsModal.classList.remove('on'); document.body.style.overflow = ''; } });
+	toolCard({ key:'json2tgs', no:'', title:'JSON (LOTTIE) → TGS', accept:'.json,application/json', match:/\.json$/i,
 		hint:'DROP TELEGRAM・LOTTIE JSON · EXPORTS TGS', button:'Export TGS',
+		container: document.getElementById('json2tgsHost'),
 		process: async f => {
 			return [{ name: f.name.replace(/\.json$/i, '.tgs'), data: await _compressTgs(await f.text()), type: 'application/octet-stream' }];
 		},
@@ -6689,9 +7027,10 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		frame: { label: 'STATIC・512PNG', limit: 0 },
 		pad: { label: 'STATIC・NO PADDING', limit: 0 },
 		line: { label: 'LINE・APNG 270', limit: 1024 * 1024 },
+		imessage: { label: 'IMESSAGE・APNG', limit: 500 * 1024 },
 	};
-	const GIF_STATS_KEYS = ['discord', 'line', 'apng', 'tgs', 'lottie', 'webp', 'frame', 'pad'];
-	const TGS_STATS_KEYS = ['lottie', 'frame', 'pad', 'apng', 'discord', 'line', 'webp'];
+	const GIF_STATS_KEYS = ['discord', 'line', 'apng', 'imessage', 'tgs', 'lottie', 'webp', 'frame', 'pad'];
+	const TGS_STATS_KEYS = ['lottie', 'frame', 'pad', 'apng', 'discord', 'line', 'imessage', 'webp'];
 
 	function _cachedOutputSize(scope, key, it) {
 		const statSize = it.stats?.[key]?.size;
@@ -6705,6 +7044,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (key === 'frame') return it.lastFramePng?.length || null;
 		if (key === 'pad') return it.lastPadPng?.length || null;
 		if (key === 'line') return it.lastLine?.length || null;
+		if (key === 'imessage') return it.lastIMessage?.length || null;
 		return null;
 	}
 
@@ -6913,6 +7253,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				_setOutputState(it, key, 'built', { size: data.length });
 				return [{ name: `${fd('line')}${it.base}_line.apng`, data }];
 			}
+			if (key === 'imessage') {
+				_setOutputState(it, key, it.lastIMessage ? 'built' : 'processing', it.lastIMessage ? { size: it.lastIMessage.length } : null);
+				const data = it.lastIMessage || await buildImessage(it);
+				it.lastIMessage = data;
+				_setOutputState(it, key, 'built', { size: data.length });
+				return [{ name: `${fd('imessage')}${it.base}_imessage.apng`, data }];
+			}
 			if (key === 'webp') {
 				_setOutputState(it, key, it.lastWebp ? 'built' : 'processing', it.lastWebp ? { size: it.lastWebp.length } : null);
 				const data = it.lastWebp || await buildWebp(it);
@@ -6962,7 +7309,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (!source.length) return;
 		const entries = [];
 		for (const it of source) {
-			const next = scope === 'gif' ? await _collectGifFormatEntries(it, key) : await _collectTgsEntries(it, [key]);
+			const next = scope === 'gif' ? await _collectGifFormatEntries(it, key)
+				: await _collectTgsEntries(it, [key]);
 			entries.push(...next);
 		}
 		if (!entries.length) return;
@@ -7132,6 +7480,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		set('gtFrameNum', S.frame.num);
 		seg('gtPadSeg', S.pad.mode);
 		set('gtLineLoops', S.line.loops);
+		seg('gtImessageSizeSeg', String(S.imessage.size));
+		set('gtImessageLoops', S.imessage.loops);
 	}
 
 	function updateTgsSettingsSections() {
@@ -7150,7 +7500,10 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				G.tgsCells[key] = cb.checked;
 				tgsItems.forEach(_refreshTgsPanel);
 				updateTgsSettingsSections();
-				if (cb.checked) tgsItems.forEach(it => { if (it.frames512) scheduleTgsBuild(it, key); });
+				if (cb.checked) tgsItems.forEach(it => {
+					if (!it.frames512) return;
+					scheduleTgsBuild(it, key);
+				});
 				updateStats();
 				saveSettings();
 			});
@@ -7168,6 +7521,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			['gtWebpQ', v => { G.tgsSettings.webp.quality = clamp(Math.round(+v) || 90, 1, 100); }],
 			['gtWebpLoops', v => { G.tgsSettings.webp.loops = clamp(Math.round(+v) || 0, 0, 99); }],
 			['gtLineLoops', v => { G.tgsSettings.line.loops = clamp(Math.round(+v) || 1, 1, 4); }],
+			['gtImessageLoops', v => { G.tgsSettings.imessage.loops = clamp(Math.round(+v) || 0, 0, 99); }],
 			['gtFrameNum', v => {
 				G.tgsSettings.frame.num = Math.max(1, Math.round(+v) || 1);
 				tgsItems.forEach(it => _onTgsFrameModeChanged(it));
@@ -7188,6 +7542,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			});
 		};
 		onSeg('gtWebpSeg', v => { G.tgsSettings.webp.lossless = v === 'lossless'; });
+		onSeg('gtImessageSizeSeg', v => { G.tgsSettings.imessage.size = +v; });
 		onSeg('gtFrameSeg', v => { G.tgsSettings.frame.mode = v; tgsItems.forEach(it => _onTgsFrameModeChanged(it)); });
 		onSeg('gtPadSeg', v => { G.tgsSettings.pad.mode = v; tgsItems.forEach(it => _onTgsFrameModeChanged(it)); });
 		const clearOld = document.getElementById('clearAllTgs');
@@ -7208,7 +7563,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			exportOld.replaceWith(exportBtn);
 			exportBtn.addEventListener('click', () => busy(exportBtn, async () => {
 				const entries = [];
-				for (const it of tgsItems) entries.push(...await _collectTgsEntries(it));
+				for (const it of tgsItems) {
+					entries.push(...await _collectTgsEntries(it));
+				}
 				if (entries.length) download(makeZip(entries), 'tgs_export.zip', 'application/zip');
 			}));
 		}
@@ -7236,6 +7593,11 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			_drawTgsPreview(it.refs.dcCv, tiny.rgba, size, true);
 			const lineTiny = _resizeTgsFrames([f], 270)[0];
 			_drawTgsPreview(it.refs.lineCv, lineTiny.rgba, 270, true);
+			if (it.refs.imCv) {
+				const imSize = clamp(Math.round(+it.settings.imessageSize) || 408, 300, 618);
+				const imTiny = _resizeTgsFrames([f], imSize)[0];
+				_drawTgsPreview(it.refs.imCv, imTiny.rgba, imSize, true);
+			}
 		}
 		requestAnimationFrame(_tickStableTgs);
 	}

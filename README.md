@@ -112,7 +112,7 @@ possible.
 
 ## Author
 
-**Naldo Wong** — [@n_do.w](https://www.instagram.com/n_do.w) · [@naldo.design](https://www.instagram.com/naldo.design)
+**Naldo Wong** — [@naldo.design](https://www.instagram.com/naldo.design)
 
 ## License
 
