@@ -577,18 +577,23 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 .info-card-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 .info-card-body .steps { padding-left: 18px; }
 .info-card-body .spec-scroll { margin: 0 -16px; padding: 0 16px; }
-.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
-.info-grid .info-card { height: 100%; }
+.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
 @media (max-width: 720px) { .info-grid { grid-template-columns: 1fr; } }
+/* collapsible info-cards (About tab defaults closed — content runs long) */
+.info-card.is-collapsible > .info-card-h { cursor: pointer; user-select: none; justify-content: space-between; }
+.info-card.is-collapsible > .info-card-h::after { content: "+"; opacity: .6; font-size: 13px; }
+.info-card.is-collapsible.open > .info-card-h::after { content: "\2212"; }
+.info-card.is-collapsible:not(.open) > .info-card-body { display: none; }
 /* License tab byline: app icon (the one deliberately rounded mark in the system) + author links */
-.license-byline { flex-direction: row; align-items: center; gap: 16px; }
+.license-byline { flex-direction: row; align-items: center; gap: 20px; }
 .license-icon-link { flex-shrink: 0; display: block; line-height: 0; transition: opacity var(--dur-fast) ease; }
 .license-icon-link:hover { opacity: .8; }
-.license-icon { width: 72px; height: 72px; border-radius: 16px; display: block; border: 1px solid var(--line); }
-.license-byline-text { display: flex; flex-direction: column; gap: 4px; }
-.license-byline-name { font-size: var(--text-subhead); letter-spacing: var(--label-track); }
-.license-byline-handles { font-size: var(--text-note); letter-spacing: var(--label-track-sm); opacity: .8; }
-.license-byline-handles a { color: inherit; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+.license-icon { width: 96px; height: 96px; border-radius: 20px; display: block; border: 1px solid var(--line); }
+.license-byline-text { display: flex; flex-direction: column; gap: 6px; }
+.license-app-name { font-family: var(--font-display); text-transform: none; font-size: clamp(20px, 2.4vw, 26px); line-height: 1; letter-spacing: -.01em; }
+.license-app-name .dot { color: var(--accent); }
+.license-byline-credit { font-size: var(--text-note); letter-spacing: var(--label-track-sm); opacity: .8; }
+.license-byline-credit a { color: inherit; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
 .steps { margin: 0; padding-left: 20px; font-size: var(--text-body); letter-spacing: var(--label-track-sm); line-height: 1.9; }
 .steps li + li { margin-top: 4px; }
 .footer #footLicense { color: inherit; }
@@ -917,6 +922,7 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 	border-top: 1px solid var(--line);
 }
 .s-card-body .s-item:first-child { border-top: 0; }
+#gFolderCustomRows > .s-item:first-child { border-top: 1px solid var(--line); }
 .s-item-lbl, .s-tag { font-size: 10px; letter-spacing: .11em; color: var(--ink-2); white-space: nowrap; }
 .s-item-ctl { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0; min-height: var(--ctl-h); }
 .s-group { display: inline-flex; flex-direction: row; align-items: center; justify-content: flex-end; gap: 6px; min-width: min-content; }
@@ -1283,14 +1289,15 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	min-height: 48px;
 	margin: 0;
 	padding: 0;
-	gap: 1px;
-	border: 1px solid var(--line);
-	background: var(--line);
+	gap: 0;
+	border: 0;
+	border-bottom: 1px solid var(--line);
+	background: var(--paper);
 }
 .ws-tab {
 	min-width: 104px;
 	border: 0;
-	border-bottom: 1px solid transparent;
+	border-bottom: 2px solid transparent;
 	background-color: var(--paper);
 }
 .ws-tab.on { border-bottom: 2px solid var(--accent-ink); }
@@ -1482,20 +1489,27 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	background: var(--paper);
 	color: var(--ink);
 }
+/* modal page nav: flat Carbon product-tab — no per-tab boxes, one shared hairline + accent underline */
+.modal-h { border-bottom: 1px solid var(--line); }
 .modal-h .bf-seg { gap: 0; }
 .modal-h .bf-seg-btn {
 	border: 0;
-	border-right: 1px solid var(--line);
 	border-bottom: 2px solid transparent;
-	background: var(--paper);
+	background: transparent;
+	padding: 0 16px;
 }
-.modal-h .bf-seg-btn:first-child { border-left: 1px solid var(--line); }
-.modal-h .bf-seg .bf-seg-btn:not(:last-child) { border-right: 1px solid var(--line); }
 .modal-h .bf-seg-btn.bf-on {
 	border-bottom-color: var(--accent);
-	background: var(--paper);
+	background: transparent;
 	color: var(--ink);
+	font-weight: 700;
 }
+/* Close reads as a plain ghost action, distinct from the tab strip beside it */
+#infoClose, #toolboxClose {
+	border: 0; background: transparent; padding: 0 4px;
+}
+#infoClose:hover, #toolboxClose:hover { background: transparent; transform: none; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+.modal-h-actions { gap: 20px; }
 
 @media (max-width: 900px) {
 	.panel.ws { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; gap: 16px; }
@@ -1527,7 +1541,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			<span class="modal-h-actions">
 				<span class="bf-seg" id="modalTabs" role="tablist">
 					<button type="button" class="bf-seg-btn bf-on" data-tab="settings" role="tab">Settings</button>
-					<button type="button" class="bf-seg-btn" data-tab="about" role="tab">About</button>
+					<button type="button" class="bf-seg-btn" data-tab="about" role="tab">FAQ</button>
 					<button type="button" class="bf-seg-btn" data-tab="license" role="tab">License</button>
 				</span>
 				<button type="button" class="bf-btn bf-btn--sm" id="infoClose">Close</button>
@@ -1549,10 +1563,21 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			<section class="s-sec on" data-ssec="global">
 				<div class="s-sec-h">GLOBAL · EXPORT</div>
 				<div class="s-grid">
-					<div class="s-card">
+					<div class="s-card s-card--wide">
 						<div class="s-card-h"><span class="s-card-title">FOLDER</span></div>
 						<div class="s-card-body">
-							<div class="s-item"><span class="s-item-lbl">PRESET</span><span class="s-item-ctl"><span class="bf-seg" id="gFolderSeg"><button type="button" class="bf-seg-btn bf-on" data-v="platform">Platform</button><button type="button" class="bf-seg-btn" data-v="format">Format</button></span></span></div>
+							<div class="s-item"><span class="s-item-lbl">PRESET</span><span class="s-item-ctl"><span class="bf-seg" id="gFolderSeg"><button type="button" class="bf-seg-btn bf-on" data-v="platform">Platform</button><button type="button" class="bf-seg-btn" data-v="format">Format</button><button type="button" class="bf-seg-btn" data-v="custom">Custom</button></span></span></div>
+							<div id="gFolderCustomRows" hidden>
+								<div class="s-item"><span class="s-item-lbl">TELEGRAM・TGS</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdTgs" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">SIGNAL・512APNG</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdApng" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">DISCORD・320APNG</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdDiscord" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">LINE・APNG 270</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdLine" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">WHATSAPP・WEBP</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdWebp" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">STATIC・512PNG</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdFrame" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">STATIC・NO PADDING</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdPad" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">TELEGRAM・LOTTIE JSON</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdLottie" /></span></div>
+								<div class="s-item"><span class="s-item-lbl">IMESSAGE・APNG</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdImessage" /></span></div>
+							</div>
 						</div>
 					</div>
 					<div class="s-card">
@@ -1588,101 +1613,70 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					<div class="s-acc gb-section" data-section="discord">
 						<div class="s-acc-h">
 							<span class="s-acc-title">DISCORD・320APNG</span>
-							<span class="s-acc-meta">DISCORD</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="discord" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdDiscord" /></span></div>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="discord" checked /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="line">
 						<div class="s-acc-h">
 							<span class="s-acc-title">LINE・APNG 270</span>
-							<span class="s-acc-meta">LINE</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="line" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdLine" /></span></div>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="line" /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="apng">
 						<div class="s-acc-h">
 							<span class="s-acc-title">SIGNAL・512APNG</span>
-							<span class="s-acc-meta">SIGNAL</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="apng" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gApngLoops" /></span></div>
 							<div class="s-item"><span class="s-item-lbl">MAX COLORS</span><span class="s-item-ctl"><input class="bf-field" type="number" min="2" max="256" step="1" value="256" id="gApngColors" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FIT 3S</span><span class="s-item-ctl"><label class="bf-switch"><input type="checkbox" id="gFit3s" /><span class="track"></span></label></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdApng" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">FIT 3S</span><span class="s-item-ctl"><label class="bf-switch"><input type="checkbox" id="gFit3s" /><span class="track"></span></label></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="frame">
 						<div class="s-acc-h">
-							<span class="s-acc-title">512PNG</span>
-							<span class="s-acc-meta">STATIC</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="frame" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdFrame" /></span></div>
+							<span class="s-acc-title">STATIC・512PNG</span>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="frame" /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="pad">
 						<div class="s-acc-h">
-							<span class="s-acc-title">512PNGNOPADDING</span>
-							<span class="s-acc-meta">STATIC</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="pad" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdPad" /></span></div>
+							<span class="s-acc-title">STATIC・512PNGNOPADDING</span>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="pad" /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="lottie">
 						<div class="s-acc-h">
 							<span class="s-acc-title">TELEGRAM・LOTTIE JSON</span>
-							<span class="s-acc-meta">TELEGRAM</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="lottie" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item" id="gFdLottieRow"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdLottie" /></span></div>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="lottie" /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="tgs">
 						<div class="s-acc-h">
-							<span class="s-acc-title">TGS</span>
-							<span class="s-acc-meta">TELEGRAM</span>
+							<span class="s-acc-title">TELEGRAM・TGS</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="tgs" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">OFFSET</span><span class="s-item-ctl"><label class="bf-switch"><input type="checkbox" id="gOffsetOn" checked /><span class="track"></span></label></span></div>
-							<div class="s-item"><span class="s-item-lbl">OFFSET PX</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0.1" max="1" step="0.1" value="0.4" id="gOffsetNum" /></span></div>
-							<div class="s-item" id="gFdTgsRow"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdTgs" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">OFFSET PX</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0.1" max="1" step="0.1" value="0.4" id="gOffsetNum" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="webp">
 						<div class="s-acc-h">
-							<span class="s-acc-title">WEBP</span>
-							<span class="s-acc-meta">WHATSAPP</span>
+							<span class="s-acc-title">WHATSAPP・WEBP</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="webp" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">MODE</span><span class="s-item-ctl"><span class="bf-seg" id="gWebpSeg"><button type="button" class="bf-seg-btn bf-on" data-v="lossless">Lossless</button><button type="button" class="bf-seg-btn" data-v="lossy">Lossy</button></span></span></div>
 							<div class="s-item"><span class="s-item-lbl">QUALITY</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="100" step="1" value="90" id="gWebpQ" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gWebpLoops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdWebp" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gWebpLoops" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-section="imessage">
 						<div class="s-acc-h">
 							<span class="s-acc-title">IMESSAGE・APNG</span>
-							<span class="s-acc-meta">IMESSAGE</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-cell="imessage" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">SIZE</span><span class="s-item-ctl"><span class="bf-seg" id="gImessageSizeSeg"><button type="button" class="bf-seg-btn" data-v="300">Small</button><button type="button" class="bf-seg-btn bf-on" data-v="408">Regular</button><button type="button" class="bf-seg-btn" data-v="618">Large</button></span></span></div>
 							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gImessageLoops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gFdImessage" /></span></div>
 						</div>
 					</div>
 				</div>
@@ -1695,93 +1689,69 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					<div class="s-acc gb-section" data-tgssection="discord">
 						<div class="s-acc-h">
 							<span class="s-acc-title">DISCORD・320APNG</span>
-							<span class="s-acc-meta">DISCORD</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="discord" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">SIZE</span><span class="s-item-ctl"><input class="bf-field" type="number" min="64" max="512" step="8" value="320" id="gtApng320Size" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtApng320Loops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdApng320" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtApng320Loops" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="line">
 						<div class="s-acc-h">
 							<span class="s-acc-title">LINE・APNG 270</span>
-							<span class="s-acc-meta">LINE</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="line" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="4" step="1" value="1" id="gtLineLoops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdLine" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="4" step="1" value="1" id="gtLineLoops" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="apng">
 						<div class="s-acc-h">
 							<span class="s-acc-title">SIGNAL・512APNG</span>
-							<span class="s-acc-meta">SIGNAL</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="apng" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtApng512Loops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdApng512" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtApng512Loops" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="frame">
 						<div class="s-acc-h">
-							<span class="s-acc-title">512PNG</span>
-							<span class="s-acc-meta">STATIC</span>
+							<span class="s-acc-title">STATIC・512PNG</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="frame" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">DEFAULT FRAME</span><span class="s-item-ctl"><span class="bf-seg" id="gtFrameSeg"><button type="button" class="bf-seg-btn bf-on" data-v="first">First</button><button type="button" class="bf-seg-btn" data-v="mid">Middle</button><button type="button" class="bf-seg-btn" data-v="last">Last</button><button type="button" class="bf-seg-btn" data-v="no">No.</button></span></span></div>
-							<div class="s-item"><span class="s-item-lbl">FRAME NO.</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="999" step="1" value="1" id="gtFrameNum" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdFrame" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">FRAME NO.</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="999" step="1" value="1" id="gtFrameNum" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="pad">
 						<div class="s-acc-h">
-							<span class="s-acc-title">512PNGNOPADDING</span>
-							<span class="s-acc-meta">STATIC</span>
+							<span class="s-acc-title">STATIC・512PNGNOPADDING</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="pad" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">DEFAULT FRAME</span><span class="s-item-ctl"><span class="bf-seg" id="gtPadSeg"><button type="button" class="bf-seg-btn bf-on" data-v="first">First</button><button type="button" class="bf-seg-btn" data-v="mid">Middle</button><button type="button" class="bf-seg-btn" data-v="last">Last</button></span></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdPad" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">DEFAULT FRAME</span><span class="s-item-ctl"><span class="bf-seg" id="gtPadSeg"><button type="button" class="bf-seg-btn bf-on" data-v="first">First</button><button type="button" class="bf-seg-btn" data-v="mid">Middle</button><button type="button" class="bf-seg-btn" data-v="last">Last</button></span></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="lottie">
 						<div class="s-acc-h">
 							<span class="s-acc-title">TELEGRAM・LOTTIE JSON</span>
-							<span class="s-acc-meta">TELEGRAM</span>
-							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="lottie" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
-						</div>
-						<div class="s-acc-b">
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdLottie" /></span></div>
+							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="lottie" checked /><span class="track"></span></span></label></span>
 						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="webp">
 						<div class="s-acc-h">
-							<span class="s-acc-title">WEBP</span>
-							<span class="s-acc-meta">WHATSAPP</span>
+							<span class="s-acc-title">WHATSAPP・WEBP</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="webp" checked /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">MODE</span><span class="s-item-ctl"><span class="bf-seg" id="gtWebpSeg"><button type="button" class="bf-seg-btn bf-on" data-v="lossless">Lossless</button><button type="button" class="bf-seg-btn" data-v="lossy">Lossy</button></span></span></div>
 							<div class="s-item"><span class="s-item-lbl">QUALITY</span><span class="s-item-ctl"><input class="bf-field" type="number" min="1" max="100" step="1" value="90" id="gtWebpQ" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtWebpLoops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdWebp" /></span></div>
-						</div>
+							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtWebpLoops" /></span></div>						</div>
 					</div>
 					<div class="s-acc gb-section" data-tgssection="imessage">
 						<div class="s-acc-h">
 							<span class="s-acc-title">IMESSAGE・APNG</span>
-							<span class="s-acc-meta">IMESSAGE</span>
 							<span class="s-acc-actions"><label class="s-toggle"><span class="bf-switch"><input type="checkbox" data-tgscell="imessage" /><span class="track"></span></span></label><span class="s-acc-caret" aria-hidden="true">▾</span></span>
 						</div>
 						<div class="s-acc-b">
 							<div class="s-item"><span class="s-item-lbl">SIZE</span><span class="s-item-ctl"><span class="bf-seg" id="gtImessageSizeSeg"><button type="button" class="bf-seg-btn" data-v="300">Small</button><button type="button" class="bf-seg-btn bf-on" data-v="408">Regular</button><button type="button" class="bf-seg-btn" data-v="618">Large</button></span></span></div>
 							<div class="s-item"><span class="s-item-lbl">LOOP</span><span class="s-item-ctl"><input class="bf-field" type="number" min="0" max="99" step="1" value="0" id="gtImessageLoops" /></span></div>
-							<div class="s-item"><span class="s-item-lbl">FOLDER</span><span class="s-item-ctl"><input class="bf-field" type="text" id="gtFdImessage" /></span></div>
 						</div>
 					</div>
 				</div>
@@ -1810,13 +1780,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		<div class="tab-page" data-page="about">
 			<div class="info-grid">
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">WHY THIS TOOL</span></div>
+					<div class="info-card-h"><span class="sec-h">WHY DOESN'T MY MESSAGING APP JUST ACCEPT GIFS?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">PIXEL-ART ANIMATIONS ARE USUALLY DRAWN AS GIFS, BUT NO MAJOR MESSAGING PLATFORM ACCEPTS GIF STICKERS DIRECTLY — EACH DEMANDS ITS OWN FORMAT, CANVAS AND SIZE LIMIT. CONVERTING BY HAND MEANS JUGGLING SEVERAL COMMAND-LINE TOOLS AND LOSING CRISP PIXELS ALONG THE WAY.</p>
 					</div>
 				</div>
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">PURPOSE</span></div>
+					<div class="info-card-h"><span class="sec-h">WHAT DOES THIS TOOL DO?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">A ONE-STOP TOOL THAT CONVERTS PIXEL-ART GIFS INTO STICKER FORMATS AND TGS (TELEGRAM ANIMATED STICKERS) INTO RASTER FORMATS FOR CROSS-PLATFORM USE. PIXEL-PERFECT NEAREST-NEIGHBOR SCALING, NO GHOSTING, ORIGINAL TIMING PRESERVED. EACH FILE GETS ITS OWN INDEPENDENT PROCESSING PANEL. ALL CONVERSION RUNS LOCALLY IN THE BROWSER — YOUR FILES ARE NEVER UPLOADED. THE ONLY NETWORK REQUESTS ARE FONTS AND, FOR TGS INPUT, A ONE-TIME LOTTIE-WEB FETCH FROM A CDN.</p>
 					</div>
@@ -1824,7 +1794,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			</div>
 			<div class="info-grid">
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">HOW TO USE — GIF CONVERTER</span></div>
+					<div class="info-card-h"><span class="sec-h">HOW DO I CONVERT A GIF?</span></div>
 					<div class="info-card-body">
 						<ol class="steps">
 							<li>ADD — DROP GIFS ANYWHERE OR CLICK ADD GIF. ONE PANEL PER GIF.</li>
@@ -1835,7 +1805,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					</div>
 				</div>
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">HOW TO USE — TGS CONVERTER</span></div>
+					<div class="info-card-h"><span class="sec-h">HOW DO I CONVERT A TGS STICKER?</span></div>
 					<div class="info-card-body">
 						<ol class="steps">
 							<li>ADD — DROP TGS ANYWHERE OR CLICK ADD TGS. LOTTIE-WEB LOADS FROM CDN ON FIRST USE (NETWORK REQUIRED ONCE).</li>
@@ -1868,25 +1838,25 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			</div>
 			<div class="info-grid">
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">RASTER PIPELINE</span></div>
+					<div class="info-card-h"><span class="sec-h">WHAT HAPPENS TO MY PIXELS?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">APNG — FULL-FRAME RECONSTRUCTION (GIF DISPOSAL METHODS RESOLVED, NO GHOSTING), TIMING PRESERVED, TRANSPARENT CENTERED CANVAS, PALETTE · DELTA · ADAPTIVE-FILTER COMPRESSION. DISCORD — SAME PIPELINE ON A 320 CANVAS; EACH STICKER NEEDS AN EMOJI TAG ON UPLOAD. PNG — PALETTE + ADAPTIVE FILTER, TRANSPARENT BACKGROUND. TGS — PIXELS AS VECTOR RECTS, ONE PRECOMP REUSED × 2 LAYERS. WEBP — LOSSLESS VP8L DELTA FRAMES + DUPLICATE-FRAME DEDUP (LOSSY VP8 OPTIONAL).</p>
 					</div>
 				</div>
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">TGS CONVERTER PIPELINE</span></div>
+					<div class="info-card-h"><span class="sec-h">HOW DOES THE TGS CONVERTER WORK?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">LOTTIE-WEB RENDERS EACH FRAME TO AN OFF-SCREEN CANVAS AT TARGET SIZE. EVERY ENABLED OUTPUT IS BUILT AS SOON AS THE FILE LANDS, SO EXPORT IS A CACHE READ, AND EACH CELL SHOWS THE ENCODED SIZE — NOT THE SOURCE SIZE. FRAMES ARE ASSEMBLED INTO: APNG (DELTA + PALETTE), DISCORD・320APNG (CONFIGURABLE SIZE), WEBP (VP8/VP8L, LOSSY OR LOSSLESS), PNG (SINGLE FRAME — FIRST / LAST / MID / CUSTOM — WITH OR WITHOUT PADDING). SIGNAL・512APNG WARNS IF ANIMATION EXCEEDS 3 SECONDS.</p>
 					</div>
 				</div>
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">AUTO-FIT LADDER</span></div>
+					<div class="info-card-h"><span class="sec-h">WHAT HAPPENS IF MY OUTPUT IS TOO BIG?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">WHEN AN OUTPUT EXCEEDS ITS PLATFORM BYTE LIMIT, THE FRAME RATE IS STEPPED DOWN FIRST (60 → 30 → 20 → 10 FPS), WHICH COSTS SMOOTHNESS BUT NOT A SINGLE PIXEL. ONLY IF THAT STILL DOES NOT FIT DOES THE PALETTE DROP (256 → 128 → 64 COLORS; FOR LOSSY WEBP, QUALITY DROPS INSTEAD). THE FIRST CANDIDATE AT OR UNDER THE LIMIT WINS. IF NOTHING FITS, THE SMALLEST IS KEPT AND THE CELL WARNS. TURN AUTO-FIT OFF TO SET FPS AND MAX COLORS BY HAND, PER FILE.</p>
 					</div>
 				</div>
 				<div class="info-card">
-					<div class="info-card-h"><span class="sec-h">VECTOR OFFSET</span></div>
+					<div class="info-card-h"><span class="sec-h">WHY IS THERE A 0.4PX OFFSET ON TGS OUTPUT?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">ADJACENT VECTOR RECTANGLES CAN SHOW HAIRLINE SEAMS WHEN ANTI-ALIASED BY LOTTIE RENDERERS. THE TGS IS DRAWN AS TWO STACKED COPIES OF THE SAME PRECOMP — THE SECOND NUDGED BY 0.4 PX — SO THE OVERLAP FILLS THE GAPS.</p>
 					</div>
@@ -1903,12 +1873,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		<div class="tab-page" data-page="license">
 			<div class="sec license-byline">
 				<a class="license-icon-link" href="https://naldo-w.github.io/stickerforge-studio/" target="_blank" rel="noopener" aria-label="StickerForge Studio on GitHub Pages">
-					<img class="license-icon" src="StickerForge-Studio.png" alt="StickerForge Studio app icon" width="72" height="72" loading="lazy" />
+					<img class="license-icon" src="StickerForge-Studio.png" alt="StickerForge Studio app icon" width="96" height="96" loading="lazy" />
 				</a>
 				<div class="license-byline-text">
-					<span class="license-byline-name">NALDO WONG</span>
-					<span class="license-byline-handles handles">
-						<a href="https://www.instagram.com/n_do.w" target="_blank" rel="noopener">@n_do.w</a> · <a href="https://www.instagram.com/naldo.design" target="_blank" rel="noopener">@naldo.design</a>
+					<span class="license-app-name">StickerForge Studio<span class="dot">.</span></span>
+					<span class="license-byline-credit handles">
+						BY NALDO WONG · <a href="https://www.instagram.com/naldo.design" target="_blank" rel="noopener">@naldo.design</a>
 					</span>
 				</div>
 			</div>
@@ -2027,7 +1997,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 </div>
 
 	<footer class="footer">
-		<span>© 2026 NALDO WONG · <span class="handles"><a href="https://www.instagram.com/n_do.w" target="_blank" rel="noopener">@n_do.w</a> · <a href="https://www.instagram.com/naldo.design" target="_blank" rel="noopener">@naldo.design</a> · <a href="#" id="footLicense">GPL-3.0</a></span></span>
+		<span>© 2026 NALDO WONG · <span class="handles"><a href="https://www.instagram.com/naldo.design" target="_blank" rel="noopener">@naldo.design</a> · <a href="#" id="footLicense">GPL-3.0</a></span></span>
 		<span>TOOLS ·
 			<a href="https://github.com/sliva0/pixelart2tgs" target="_blank" rel="noopener">PIXELART2TGS</a> ·
 			<a href="https://github.com/apngasm/apngasm" target="_blank" rel="noopener">APNGASM</a> ·
@@ -2473,6 +2443,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			chunks.push(pngChunk("fcTL", fctl(seq++, box.w, box.h, box.x, box.y, coalesced[i].delayMs)));
 			if (i === 0) chunks.push(pngChunk("IDAT", compressed));
 			else chunks.push(pngChunk("fdAT", concatBytes([u32be(seq++), compressed])));
+			if (opts.onFrame) opts.onFrame(i + 1, coalesced.length);
 		}
 		chunks.push(pngChunk("IEND", new Uint8Array(0)));
 		return concatBytes(chunks);
@@ -2958,6 +2929,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		format: { apng: "512APNG", discord: "320APNG", frame: "512PNG", pad: "512PNGNOPADDING", tgs: "TGS", lottie: "LOTTIE", webp: "WEBP", line: "LINE", imessage: "IMESSAGE" },
 	};
 	const FOLDER_KEYS = ["apng", "discord", "frame", "pad", "tgs", "lottie", "webp", "line", "imessage"];
+	/* one custom folder name per platform/format now drives both converters — GIF's own key names differ slightly from G.tgsSettings' */
+	const FOLDER_KEY_TO_TGS = { apng: "apng512", discord: "discord", frame: "frame", pad: "pad", lottie: "lottie", webp: "webp", line: "line", imessage: "imessage" };
 	G.folderMode = "platform";
 	G.folderNames = { ...FOLDER_PRESETS.platform };
 
@@ -3051,10 +3024,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (state === 'built') return 'DONE';
 		if (state === 'error') return 'FAILED';
 		if (state === 'skipped') return 'SKIPPED';
+		const ft = it?.stats?.[key]?.framesTotal;
+		const frameSuffix = (state === 'processing' && ft > 0) ? ` ${it.stats[key].framesDone || 0}/${ft}` : '';
 		const ordinal = _encQueueOrdinal(it, key, state);
-		if (!ordinal) return _cellProgressText(state);
+		if (!ordinal) return _cellProgressText(state) + frameSuffix;
 		const active = !!_encActive && _encActive.some(job => job.meta?.it === it && (key === 'settings' || job.meta?.key === key));
-		return `${String(ordinal).padStart(3, '0')} ${active ? 'PROCESSING' : 'QUEUED'}`;
+		return `${String(ordinal).padStart(3, '0')} ${active ? 'PROCESSING' : 'QUEUED'}${frameSuffix}`;
 	}
 	function _progressSourceForItem(it) {
 		return tgsItems.includes(it) ? tgsItems : items;
@@ -3088,7 +3063,9 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const node = _ensureHeaderProgress(header);
 		const state = it.stats?.[key]?.state || ((key === 'frame' || key === 'pad') ? 'ready' : 'queued');
 		const handled = state === 'built' || state === 'skipped' || state === 'error';
-		const pct = handled ? 100 : (state === 'processing' ? 50 : 0);
+		const ft = it.stats?.[key]?.framesTotal;
+		const framePct = ft > 0 ? Math.round(((it.stats[key].framesDone || 0) / ft) * 100) : null;
+		const pct = handled ? 100 : (state === 'processing' ? (framePct != null ? framePct : 50) : 0);
 		header.classList.remove('has-progress', 'processing', 'built', 'queued', 'failed', 'ready', 'skipped');
 		header.classList.add('has-progress', state === 'error' ? 'failed' : state);
 		header.style.setProperty('--progress', `${pct}%`);
@@ -3145,7 +3122,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (!it) return;
 		it.stats = it.stats || {};
 		const prev = it.stats[key] || {};
-		it.stats[key] = Object.assign({}, prev, data || {}, { state, updatedAt: Date.now() });
+		const resetFrames = state === 'queued' ? { framesDone: 0, framesTotal: 0 } : null;
+		it.stats[key] = Object.assign({}, prev, resetFrames, data || {}, { state, updatedAt: Date.now() });
 		_refreshCellProgress(it, key);
 		_refreshItemProgress(it);
 		_queueStatsRefresh();
@@ -3292,7 +3270,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				main.appendChild(pvh);
 				/* route children: preview + controls stay center, output facts go right */
 				const sumRows = [], warns = [], ctrls = [], exports = [];
-				let pv = null, fdRow = null;
+				let pv = null; const fdRows = [];
 				for (const n of kids) {
 					if (n.matches('.pv')) { pv = n; continue; }
 					if (n.matches('.warn')) { warns.push(n); continue; }
@@ -3304,7 +3282,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					}
 					if (n.matches('.bf-btn--block')) { exports.push(n); continue; }
 					if (n.matches('.spacer')) { n.remove(); continue; }
-					if (n.matches('.row') && n.querySelector('.fd')) { fdRow = n; continue; }
+					if (n.matches('.row') && n.querySelector('.fd')) { fdRows.push(n); continue; }
 					ctrls.push(n);
 				}
 				if (pv) main.appendChild(pv);
@@ -3338,10 +3316,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				/* inspector: output facts, destination, warning, export */
 				if (sumRows.length) { insp.appendChild(sumGrp); insp.appendChild(sumWrap); }
 				warns.forEach(wn => insp.appendChild(wn));
-				if (fdRow) {
-					const fdLabel = fdRow.firstElementChild;
+				if (fdRows.length === 1) {
+					const fdLabel = fdRows[0].firstElementChild;
 					if (fdLabel) fdLabel.textContent = 'EXPORT FOLDER';
-					insp.appendChild(fdRow);
+					insp.appendChild(fdRows[0]);
+				}
+				else if (fdRows.length > 1) {
+					fdRows.forEach(r => insp.appendChild(r)); // keep each row's own label — more than one export folder here
 				}
 				else {
 					const outputFolders = { apng: '512APNG/', discord: '320APNG/', line: 'LINE/', tgs: 'TGS/', lottie: 'LOTTIE/', webp: 'WEBP/', frame: '512PNG/', pad: '512PNGNOPADDING/' };
@@ -3853,10 +3834,6 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			</div>
 			<div class="row"><span>SKIP FRAME</span><input class="bf-field" type="number" min="0" max="60" step="1" data-r="skipNum" aria-label="skip frames" /></div>
 			${switchRow("LOOP PREVIEW", "loop")}
-			<div class="grp">APNG</div>
-			<div class="row"><span>FULL FRAME RECONSTRUCTION</span><span class="ok-tag">ON</span></div>
-			<div class="row"><span>NO GHOSTING</span><span class="ok-tag">ON</span></div>
-			<div class="row"><span>PRESERVE TIMING</span><span class="ok-tag">ON</span></div>
 			<details class="bf-details" data-r="tgsOptDetails">
 				<summary>TGS OPTIMIZATION</summary>
 				<div class="dbody">
@@ -3869,7 +3846,6 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					${switchRow("PRECOMP REUSE", "precompReuse")}
 				</div>
 			</details>
-			<div class="spacer"></div>
 		</div>
 	</div>
 
@@ -4167,7 +4143,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		src = fitDurationDelays(src, 4000);
 		src = _normalizeLineFrameCount(src);
 		const frames = src.map(f => ({ rgba: C.scaleAndCenter(f.rgba, it.gif.width, it.gif.height, sc, 270), delayMs: f.delayMs }));
-		return C.encodeApng(frames, 270, 270, 1, { coalesce: false }); // LINE requires finite loops and 5–20 APNG frames
+		return C.encodeApng(frames, 270, 270, 1, { coalesce: false, onFrame: (done, total) => _setOutputState(it, 'line', 'processing', { framesDone: done, framesTotal: total }) }); // LINE requires finite loops and 5–20 APNG frames
 	}
 	/* iMessage's MSStickerSize is a 3-way choice (small 300 / regular 408 / large 618), not
 	   a bundle — you ship one @3x image for whichever size you picked, and the OS derives
@@ -4492,7 +4468,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const ctx = cv.getContext("2d", { willReadFrequently: true });
 		const sub = document.createElement("canvas");
 		const encoded = [];
-		let prev = null;
+		let prev = null, done = 0;
 		for (const f of src) {
 			it.off.getContext("2d").putImageData(new ImageData(f.rgba, w, h), 0, 0);
 			ctx.clearRect(0, 0, CS, CS);
@@ -4501,7 +4477,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const cur = ctx.getImageData(0, 0, CS, CS).data;
 			// delta: encode only the changed region (apngasm-style); ANMF x/y must be even
 			let box = prev ? C.diffBox(prev, cur, CS, CS) : { x: 0, y: 0, w: CS, h: CS };
-			if (!box) { encoded[encoded.length - 1].delayMs += f.delayMs; prev = cur; continue; } // identical frame → extend previous delay (libwebp-style dedup)
+			if (!box) { encoded[encoded.length - 1].delayMs += f.delayMs; prev = cur; _setOutputState(it, 'webp', 'processing', { framesDone: ++done, framesTotal: frames.length }); continue; } // identical frame → extend previous delay (libwebp-style dedup)
 			if (!lossless) box = { x: 0, y: 0, w: CS, h: CS }; // lossy VP8 → full frames (avoids seams at delta borders)
 			if (box.x & 1) { box.x--; box.w++; }
 			if (box.y & 1) { box.y--; box.h++; }
@@ -4511,6 +4487,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			if (!blob || blob.type !== "image/webp") throw new Error("WEBP ENCODE UNSUPPORTED IN THIS BROWSER");
 			encoded.push({ bytes: new Uint8Array(await blob.arrayBuffer()), delayMs: f.delayMs, x: box.x, y: box.y, w: box.w, h: box.h });
 			prev = cur;
+			_setOutputState(it, 'webp', 'processing', { framesDone: ++done, framesTotal: frames.length });
 		}
 		return C.muxAnimatedWebp(encoded, CS, CS, it.settings.webpLoops);
 	}
@@ -4907,6 +4884,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			bindExports(it);
 			refreshStatic(it, { skipSchedule: true });
 			justLoaded.push(it);
+			updateStats(); // show/update the stats block per file as it loads, not after the whole batch
 		}
 		applyCellToggles(); // sync cell visibility on newly added panels
 		updateStatus();
@@ -4999,6 +4977,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		offsetNum: document.getElementById("gOffsetNum"),
 		toggles: document.getElementById("outToggles"),
 		folderSeg: document.getElementById("gFolderSeg"),
+		folderCustomRows: document.getElementById("gFolderCustomRows"),
 		apngLoops: document.getElementById("gApngLoops"),
 		apngColors: document.getElementById("gApngColors"),
 		fit3s: document.getElementById("gFit3s"),
@@ -5021,6 +5000,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		g.offsetNum.value = G.offsetPx;
 		g.offsetNum.disabled = !G.offsetEnabled;
 		g.folderSeg.querySelectorAll(".bf-seg-btn").forEach(b => b.classList.toggle("bf-on", b.dataset.v === G.folderMode));
+		if (g.folderCustomRows) g.folderCustomRows.hidden = G.folderMode !== "custom";
 		g.apngLoops.value = G.apngLoops;
 		g.apngColors.value = G.apngMaxColors;
 		g.fit3s.checked = G.fit3s;
@@ -5077,8 +5057,10 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const b = e.target.closest("[data-v]");
 		if (!b) return;
 		G.folderMode = b.dataset.v;
-		G.folderNames = { ...FOLDER_PRESETS[G.folderMode] };
-		applyTgsFolderPreset(G.folderMode);
+		if (G.folderMode !== "custom") {
+			G.folderNames = { ...FOLDER_PRESETS[G.folderMode] };
+			applyTgsFolderPreset(G.folderMode);
+		}
 		syncFolderInputs();
 		refreshGlobalUI();
 		for (const it of items) {
@@ -5178,13 +5160,18 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	const infoModal = document.getElementById("infoModal");
 	const modalTabs = document.getElementById("modalTabs");
 	const modalTitle = document.getElementById("modalTitle");
-	const TAB_TITLES = { settings: "Settings", about: "About", license: "License" };
+	const TAB_TITLES = { settings: "Settings", about: "FAQ", license: "License" };
 	function showTab(tab) {
 		modalTabs.querySelectorAll(".bf-seg-btn").forEach(b => b.classList.toggle("bf-on", b.dataset.tab === tab));
 		infoModal.querySelectorAll(".tab-page").forEach(p => p.classList.toggle("on", p.dataset.page === tab));
 		modalTitle.innerHTML = `${TAB_TITLES[tab]}<span class="dot">.</span>`;
 	}
 	modalTabs.addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) showTab(b.dataset.tab); });
+	/* About runs long — every card starts collapsed, click the header to expand */
+	document.querySelectorAll('[data-page="about"] .info-card').forEach(card => {
+		card.classList.add('is-collapsible');
+		card.querySelector('.info-card-h').addEventListener('click', () => card.classList.toggle('open'));
+	});
 	function showSettingsConverterTab(tab) {
 		const next = tab === "tgs" ? "tgs" : "gif";
 		document.querySelectorAll('#settingsConverterTabs [data-settings-tab]').forEach(btn => {
@@ -5487,8 +5474,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		if (!inp) return;
 		inp.addEventListener('change', () => {
 			const v = inp.value.trim();
-			if (v) { G.folderNames[k] = v; saveSettings(); }
-			else inp.value = G.folderNames[k];
+			if (v) {
+				G.folderNames[k] = v;
+				const tk = FOLDER_KEY_TO_TGS[k]; // one custom name now drives both GIF and TGS output for the same platform/format
+				if (tk && G.tgsSettings?.[tk]) G.tgsSettings[tk].folder = v;
+				saveSettings();
+			} else inp.value = G.folderNames[k];
 		});
 	});
 
@@ -5899,18 +5890,19 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		});
 	}
 
-	async function _buildTgsWebp(frames, lossless, quality, loops) {
+	async function _buildTgsWebp(frames, lossless, quality, loops, onFrame) {
 		const cv = document.createElement('canvas');
 		cv.width = CS; cv.height = CS;
 		const ctx = cv.getContext('2d', { willReadFrequently: true });
 		const sub = document.createElement('canvas');
 		const encoded = []; let prev = null;
+		let done = 0;
 		for (const f of frames) {
 			const id = new ImageData(new Uint8ClampedArray(f.rgba), CS, CS);
 			ctx.clearRect(0, 0, CS, CS); ctx.putImageData(id, 0, 0);
 			const cur = ctx.getImageData(0, 0, CS, CS).data;
 			let box = prev ? C.diffBox(prev, cur, CS, CS) : { x: 0, y: 0, w: CS, h: CS };
-			if (!box) { if (encoded.length) encoded[encoded.length - 1].delayMs += f.delayMs; prev = cur; continue; }
+			if (!box) { if (encoded.length) encoded[encoded.length - 1].delayMs += f.delayMs; prev = cur; if (onFrame) onFrame(++done, frames.length); continue; }
 			if (!lossless) box = { x: 0, y: 0, w: CS, h: CS };
 			if (box.x & 1) { box.x--; box.w++; } if (box.y & 1) { box.y--; box.h++; }
 			sub.width = box.w; sub.height = box.h;
@@ -5919,6 +5911,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			if (!blob || blob.type !== 'image/webp') throw new Error('WEBP ENCODE UNSUPPORTED IN THIS BROWSER');
 			encoded.push({ bytes: new Uint8Array(await blob.arrayBuffer()), delayMs: f.delayMs, x: box.x, y: box.y, w: box.w, h: box.h });
 			prev = cur;
+			if (onFrame) onFrame(++done, frames.length);
 		}
 		return C.muxAnimatedWebp(encoded, CS, CS, loops);
 	}
@@ -6449,7 +6442,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				if (key === 'apng') return _apngEncodeInWorker(f, { width: CS, height: CS, scale: 1, canvasSize: CS, loops, colors, fit3s: false });
 				let r = resizedByFps.get(fps);
 				if (!r) { r = _resizeTgsFrames(f, size); resizedByFps.set(fps, r); }
-				return C.encodeApng(quantizeFrames(r, colors), size, size, loops);
+				return C.encodeApng(quantizeFrames(r, colors), size, size, loops, { onFrame: (done, total) => _setOutputState(it, key, 'processing', { framesDone: done, framesTotal: total }) });
 			};
 			let res;
 			if (autoFit) {
@@ -6470,7 +6463,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			const encode = async (f, { fps, colors }) => {
 				let r = resizedByFps.get(fps);
 				if (!r) { r = _normalizeLineFrameCount(fitDurationDelays(_resizeTgsFrames(f, size), 4000)); resizedByFps.set(fps, r); }
-				return C.encodeApng(quantizeFrames(r, colors), size, size, loops, { coalesce: false });
+				return C.encodeApng(quantizeFrames(r, colors), size, size, loops, { coalesce: false, onFrame: (done, total) => _setOutputState(it, 'line', 'processing', { framesDone: done, framesTotal: total }) });
 			};
 			let res;
 			if (autoFit) {
@@ -6500,7 +6493,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		const loops = it.settings.webpLoops;
 		const baseQuality = clamp(Math.round(+it.settings.webpQuality) || 90, 1, 100);
 		const encode = async (f, { colors, quality }) =>
-			_buildTgsWebp(quantizeFrames(f, colors), lossless, quality, loops);
+			_buildTgsWebp(quantizeFrames(f, colors), lossless, quality, loops, (done, total) => _setOutputState(it, 'webp', 'processing', { framesDone: done, framesTotal: total }));
 		if (autoFit) {
 			// palette reduction shrinks VP8L (fewer literals) but does nothing for lossy VP8
 			const stage2 = lossless ? TGS_COLOR_LADDER.map(c => ({ colors: c })) : TGS_QUALITY_LADDER.map(q => ({ quality: q }));
@@ -6724,6 +6717,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 				tgsItems.push(it);
 				_initTgsPanel(it, { deferPrime: true });
 				justLoaded.push(it);
+				updateStats(); // show/update the stats block per file as it loads, not after the whole batch
 			} catch (e) {
 				reportError("TGS_LOAD_ERROR", e, { file: file.name, size: file.size });
 				alert(`CANNOT LOAD TGS: ${file.name}. COPY ERROR REPORT AND SEND IT TO CODEX.`);
@@ -7477,25 +7471,17 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			s.querySelectorAll('.bf-seg-btn').forEach(b => b.classList.toggle('bf-on', b.dataset.v === v));
 		};
 		set('gtApng512Loops', S.apng512.loops);
-		set('gtFdApng512', S.apng512.folder);
 		set('gtApng320Size', S.discord.size);
 		set('gtApng320Loops', S.discord.loops);
-		set('gtFdApng320', S.discord.folder);
 		seg('gtWebpSeg', S.webp.lossless ? 'lossless' : 'lossy');
 		set('gtWebpQ', S.webp.quality);
 		set('gtWebpLoops', S.webp.loops);
-		set('gtFdWebp', S.webp.folder);
 		seg('gtFrameSeg', S.frame.mode);
 		set('gtFrameNum', S.frame.num);
-		set('gtFdFrame', S.frame.folder);
 		seg('gtPadSeg', S.pad.mode);
-		set('gtFdPad', S.pad.folder);
 		set('gtLineLoops', S.line.loops);
-		set('gtFdLine', S.line.folder);
-		set('gtFdLottie', S.lottie.folder);
 		seg('gtImessageSizeSeg', String(S.imessage.size));
 		set('gtImessageLoops', S.imessage.loops);
-		set('gtFdImessage', S.imessage.folder);
 	}
 
 	function updateTgsSettingsSections() {
@@ -7534,16 +7520,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			['gtApng320Loops', v => { G.tgsSettings.discord.loops = clamp(Math.round(+v) || 0, 0, 99); }],
 			['gtWebpQ', v => { G.tgsSettings.webp.quality = clamp(Math.round(+v) || 90, 1, 100); }],
 			['gtWebpLoops', v => { G.tgsSettings.webp.loops = clamp(Math.round(+v) || 0, 0, 99); }],
-			['gtFdApng512', v => { G.tgsSettings.apng512.folder = v.trim() || '512APNG'; }],
-			['gtFdApng320', v => { G.tgsSettings.discord.folder = v.trim() || '320APNG'; }],
-			['gtFdWebp', v => { G.tgsSettings.webp.folder = v.trim() || 'WEBP'; }],
-			['gtFdFrame', v => { G.tgsSettings.frame.folder = v.trim() || '512PNG'; }],
-			['gtFdPad', v => { G.tgsSettings.pad.folder = v.trim() || '512PNGNOPADDING'; }],
 			['gtLineLoops', v => { G.tgsSettings.line.loops = clamp(Math.round(+v) || 1, 1, 4); }],
-			['gtFdLine', v => { G.tgsSettings.line.folder = v.trim() || 'LINE'; }],
-			['gtFdLottie', v => { G.tgsSettings.lottie.folder = v.trim() || 'LOTTIE'; }],
 			['gtImessageLoops', v => { G.tgsSettings.imessage.loops = clamp(Math.round(+v) || 0, 0, 99); }],
-			['gtFdImessage', v => { G.tgsSettings.imessage.folder = v.trim() || 'IMESSAGE'; }],
 			['gtFrameNum', v => {
 				G.tgsSettings.frame.num = Math.max(1, Math.round(+v) || 1);
 				tgsItems.forEach(it => _onTgsFrameModeChanged(it));
