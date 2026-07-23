@@ -1851,8 +1851,8 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					<div class="info-card-body">
 						<ol class="steps">
 							<li>ADD — DROP TGS ANYWHERE OR CLICK ADD TGS. LOTTIE-WEB LOADS FROM CDN ON FIRST USE (NETWORK REQUIRED ONCE).</li>
-							<li>REVIEW — EACH FILE GETS A COLLAPSIBLE HEADER, THEN ANIMATED SOURCE PREVIEW + AUTO-BUILT OUTPUTS: SIGNAL・512APNG, DISCORD・320APNG, LINE・APNG 270, WEBP (WHATSAPP), PNG 512, PNG CROPPED.</li>
-							<li>TUNE — SETTINGS → TGS CONVERTER SETTINGS SETS THE DEFAULTS: LOOP COUNT, OUTPUT SIZE (DISCORD・320APNG), QUALITY (WEBP), FRAME SELECTION (PNG). EACH PANEL THEN OVERRIDES PER FILE — AUTO-FIT, FPS AND MAX COLORS ON SIGNAL・512APNG, DISCORD・320APNG AND WEBP.</li>
+							<li>REVIEW — EACH FILE GETS A COLLAPSIBLE HEADER, THEN ANIMATED SOURCE PREVIEW + AUTO-BUILT OUTPUTS: SIGNAL・512APNG, DISCORD・320APNG, LINE・APNG 270, IMESSAGE・APNG, WEBP (WHATSAPP), PNG 512, PNG CROPPED.</li>
+							<li>TUNE — SETTINGS → TGS CONVERTER SETTINGS SETS THE DEFAULTS: LOOP COUNT, OUTPUT SIZE (DISCORD・320APNG; IMESSAGE・APNG SMALL / REGULAR / LARGE), QUALITY (WEBP), FRAME SELECTION (PNG). EACH PANEL THEN OVERRIDES PER FILE — AUTO-FIT, FPS AND MAX COLORS ON SIGNAL・512APNG, DISCORD・320APNG AND WEBP.</li>
 							<li>EXPORT — PER FORMAT IN EACH CELL, PER PANEL ZIP, OR EXPORT ALL TGS · ZIP.</li>
 						</ol>
 					</div>
@@ -1872,7 +1872,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 								<tr><td><a href="https://support.discord.com/hc/en-us/articles/4402687377815-Tips-for-Sticker-Creators-FAQ" target="_blank" rel="noopener">DISCORD</a></td><td><span class="fmt">APNG</span></td><td>320 × 320</td><td>≤ 512 KB</td><td>EACH STICKER NEEDS AN EMOJI TAG. — USES “APNG 320 · DISCORD”.</td></tr>
 								<tr><td><a href="https://github.com/WhatsApp/stickers/wiki/Animation" target="_blank" rel="noopener">WHATSAPP</a></td><td><span class="fmt">ANIMATED WEBP</span></td><td>512 × 512</td><td>≈ ≤ 100 KB</td><td>TRANSPARENT BACKGROUND. — USES “GIF → WEBP” (LOSSLESS VP8L).</td></tr>
 								<tr><td><a href="https://creator.line.me/en/guideline/animationsticker/" target="_blank" rel="noopener">LINE</a></td><td><span class="fmt">APNG</span></td><td>≤ 320 × 270</td><td>≤ 1 MB</td><td>5–20 FRAMES, 1–4 LOOPS, ≤ 4 S TOTAL. — USES DEDICATED “LINE・APNG 270” OUTPUT (270 × 270 CANVAS, APNG).</td></tr>
-								<tr><td><a href="https://developer.apple.com/design/human-interface-guidelines/imessage-apps-and-stickers" target="_blank" rel="noopener">IMESSAGE</a></td><td><span class="fmt">APNG</span></td><td>300–618 PX (@3×)</td><td>≤ 500 KB</td><td>SHIPPED AS AN XCODE STICKER PACK. ALSO ACCEPTS PNG, GIF. — USES “GIF → APNG”.</td></tr>
+								<tr><td><a href="https://developer.apple.com/design/human-interface-guidelines/imessage-apps-and-stickers" target="_blank" rel="noopener">IMESSAGE</a></td><td><span class="fmt">APNG</span></td><td>300 / 408 / 618 (@3×)</td><td>≤ 500 KB</td><td>PICK ONE SIZE — SMALL 300 / REGULAR 408 / LARGE 618; THE SYSTEM DOWNSCALES IT FOR SMALLER DENSITIES. SHIPPED IN AN XCODE STICKER PACK; ALSO ACCEPTS PNG, GIF. — DEDICATED “IMESSAGE・APNG” OUTPUT.</td></tr>
 							</tbody>
 						</table>
 					</div>
@@ -1901,6 +1901,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 					<div class="info-card-h"><span class="sec-h">WHY IS THERE A 0.4PX OFFSET ON TGS OUTPUT?</span></div>
 					<div class="info-card-body">
 						<p class="intro-lead">ADJACENT VECTOR RECTANGLES CAN SHOW HAIRLINE SEAMS WHEN ANTI-ALIASED BY LOTTIE RENDERERS. THE TGS IS DRAWN AS TWO STACKED COPIES OF THE SAME PRECOMP — THE SECOND NUDGED BY 0.4 PX — SO THE OVERLAP FILLS THE GAPS.</p>
+					</div>
+				</div>
+				<div class="info-card">
+					<div class="info-card-h"><span class="sec-h">HOW DO I CONVERT A LOTTIE JSON TO TGS?</span></div>
+					<div class="info-card-body">
+						<p class="intro-lead">OPEN JSON → TGS FROM THE TOP BAR, THEN DRAG LOTTIE .JSON FILES ANYWHERE ONTO THE WINDOW (OR CLICK BROWSE). EACH FILE IS PACKAGED INTO A TELEGRAM .TGS AND LISTED WITH ITS INPUT → OUTPUT SIZE — DOWNLOAD ONE, REMOVE ONE, OR DOWNLOAD ALL AS A ZIP. THIS IS A PLAIN REPACKAGE (JSON → GZIP), NOT A RE-RENDER, SO IT RUNS INSTANTLY AND LOCALLY.</p>
 					</div>
 				</div>
 			</div>
