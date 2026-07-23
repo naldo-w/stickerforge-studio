@@ -614,10 +614,31 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 #toolboxModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:200; align-items:flex-start; justify-content:center; overflow-y:auto; padding:40px 16px; }
 #toolboxModal.on { display:flex; }
 .modal-panel--toolbox { background:var(--paper); border:1px solid var(--line); border-radius:0; width:100%; max-width:960px; padding:0 0 24px; }
-.modal-panel--sm { max-width: 420px; }
-.modal-panel--sm .toolgrid { grid-template-columns: 1fr; padding: 0; gap: 0; }
+/* JSON → TGS uploader + export panel */
+.modal-panel--j2t { max-width: 560px; }
 .modal-panel.drag-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
-.modal-panel.drag-over .tool-drop { background: var(--field); opacity: 1; }
+.j2t-drop {
+	border: 1px dashed var(--line-strong); padding: 28px 16px; text-align: center;
+	cursor: pointer; transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+.j2t-drop:hover, .modal-panel.drag-over .j2t-drop { background: var(--field); border-color: var(--accent); }
+.j2t-drop-title { font-family: var(--font-mono); font-size: var(--text-body); letter-spacing: .14em; text-transform: uppercase; }
+.j2t-drop-note { font-size: var(--text-note); letter-spacing: var(--label-track-sm); opacity: .6; margin-top: 6px; }
+.j2t-panel-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.j2t-panel-h > span:first-child { font-size: var(--text-note); letter-spacing: var(--label-track-sm); opacity: .7; }
+.j2t-panel-actions { display: inline-flex; gap: 8px; }
+.j2t-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; max-height: 46vh; overflow-y: auto; }
+.j2t-row { border: 1px solid var(--line); padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.j2t-row-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.j2t-name { font-size: var(--text-body); word-break: break-all; }
+.j2t-meta { font-family: var(--font-mono); font-size: var(--text-note); letter-spacing: .06em; white-space: nowrap; opacity: .8; }
+.j2t-row.is-error .j2t-meta { color: var(--fail, #c0392b); }
+.j2t-bar { height: 3px; background: var(--line); overflow: hidden; }
+.j2t-bar-fill { height: 100%; width: 40%; background: var(--accent); animation: j2t-indet 1s linear infinite; }
+.j2t-row.is-done .j2t-bar, .j2t-row.is-error .j2t-bar { display: none; }
+@keyframes j2t-indet { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
+.j2t-row-actions { display: inline-flex; gap: 6px; }
+.j2t-row.is-processing .j2t-dl { opacity: .4; pointer-events: none; }
 #toolboxModal .modal-h { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--line); margin-bottom:16px; }
 #toolboxModal .modal-title { font-weight:700; font-size:1.1em; letter-spacing:.04em; }
 #toolbox.toolgrid { padding:0 20px; }
@@ -1989,12 +2010,26 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 
 <!-- JSON (Lottie) → TGS converter -->
 <div class="modal" id="json2tgsModal" role="dialog" aria-modal="true" aria-label="json to tgs converter">
-	<div class="modal-panel modal-panel--sm">
+	<div class="modal-panel modal-panel--j2t">
 		<div class="modal-h">
 			<span class="modal-title">JSON → TGS<span class="dot">.</span></span>
 			<button type="button" class="bf-btn bf-btn--sm" id="json2tgsClose">Close</button>
 		</div>
-		<div id="json2tgsHost" class="toolgrid"></div>
+		<div id="json2tgsDrop" class="j2t-drop" tabindex="0" role="button" aria-label="drop or browse lottie json files">
+			<div class="j2t-drop-title">DROP LOTTIE JSON</div>
+			<div class="j2t-drop-note">CLICK TO BROWSE · EXPORTS TELEGRAM ·TGS</div>
+			<input type="file" id="json2tgsInput" accept=".json,application/json" multiple hidden />
+		</div>
+		<div class="j2t-panel">
+			<div class="j2t-panel-h">
+				<span id="json2tgsCount">NO FILES</span>
+				<span class="j2t-panel-actions">
+					<button type="button" class="bf-btn bf-btn--sm" id="json2tgsClear" disabled>Clear</button>
+					<button type="button" class="bf-btn bf-btn--sm bf-btn--accent" id="json2tgsAll" disabled>Download All · ZIP</button>
+				</span>
+			</div>
+			<div id="json2tgsList" class="j2t-list" aria-live="polite"></div>
+		</div>
 	</div>
 </div>
 
@@ -5331,7 +5366,6 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			run.disabled = !files.length;
 			if (files.length && cfg.instant) runNow();
 		};
-		div.__setFiles = setFiles; // let a host container (e.g. a dedicated modal) forward drops here
 		div.addEventListener("click", e => {
 			const b = e.target.closest('.bf-seg[data-t] .bf-seg-btn');
 			if (b) b.parentElement.querySelectorAll(".bf-seg-btn").forEach(x => x.classList.toggle("bf-on", x === b));
@@ -6904,36 +6938,110 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			return [{ name: f.name.replace(/\.tgs$/i, '.json'), data: new TextEncoder().encode(JSON.stringify(json, null, 2)), type: 'application/json' }];
 		},
 	});
-	/* JSON (Lottie) → TGS — pulled out of the (hidden) Tool Box into its own small modal
-	   since it's the one converter useful on its own, independent of the sticker pipeline. */
-	const json2tgsModal = document.getElementById('json2tgsModal');
-	const json2tgsBtn = document.getElementById('json2tgsBtn');
-	if (json2tgsBtn) json2tgsBtn.addEventListener('click', () => { json2tgsModal.classList.add('on'); document.body.style.overflow = 'hidden'; });
-	document.getElementById('json2tgsClose').addEventListener('click', () => { json2tgsModal.classList.remove('on'); document.body.style.overflow = ''; });
-	json2tgsModal.addEventListener('click', e => { if (e.target === json2tgsModal) { json2tgsModal.classList.remove('on'); document.body.style.overflow = ''; } });
-	document.addEventListener('keydown', e => { if (e.key === 'Escape' && json2tgsModal.classList.contains('on')) { json2tgsModal.classList.remove('on'); document.body.style.overflow = ''; } });
-	toolCard({ key:'json2tgs', no:'', title:'JSON (LOTTIE) → TGS', accept:'.json,application/json', match:/\.json$/i,
-		hint:'DROP TELEGRAM・LOTTIE JSON · EXPORTS TGS', button:'Export TGS',
-		container: document.getElementById('json2tgsHost'),
-		process: async f => {
-			return [{ name: f.name.replace(/\.json$/i, '.tgs'), data: await _compressTgs(await f.text()), type: 'application/octet-stream' }];
-		},
-	});
-	/* Make the whole modal panel a drop target (not just the small dashed box), and forward
-	   the dropped .json files to the tool card's setFiles so the file + status still show. */
-	(() => {
-		const panel = json2tgsModal.querySelector('.modal-panel');
-		const card = document.querySelector('#json2tgsHost .tool');
-		if (!panel || !card || !card.__setFiles) return;
+	/* ── JSON (Lottie) → TGS — standalone uploader + export panel ──
+	   Drag-drop area feeds an export list where each file shows its status, size
+	   (input → gzipped .tgs), a per-row download + remove, plus a bulk ZIP. */
+	(function initJson2Tgs() {
+		const modal = document.getElementById('json2tgsModal');
+		const btn = document.getElementById('json2tgsBtn');
+		const dropEl = document.getElementById('json2tgsDrop');
+		const input = document.getElementById('json2tgsInput');
+		const listEl = document.getElementById('json2tgsList');
+		const countEl = document.getElementById('json2tgsCount');
+		const clearBtn = document.getElementById('json2tgsClear');
+		const allBtn = document.getElementById('json2tgsAll');
+		const panel = modal.querySelector('.modal-panel');
+		if (!modal || !dropEl || !listEl) return;
+
+		const jobs = []; // { id, name, outName, inSize, outSize, status: 'processing'|'done'|'error', data, error }
+		let seq = 0;
+
+		const open = () => { modal.classList.add('on'); document.body.style.overflow = 'hidden'; };
+		const close = () => { modal.classList.remove('on'); document.body.style.overflow = ''; };
+		if (btn) btn.addEventListener('click', open);
+		document.getElementById('json2tgsClose').addEventListener('click', close);
+		modal.addEventListener('click', e => { if (e.target === modal) close(); });
+		document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('on')) close(); });
+
+		function render() {
+			const done = jobs.filter(j => j.status === 'done');
+			countEl.textContent = jobs.length ? `${jobs.length} FILE${jobs.length > 1 ? 'S' : ''}${done.length ? ` · ${done.length} READY` : ''}` : 'NO FILES';
+			clearBtn.disabled = !jobs.length;
+			allBtn.disabled = done.length < 1;
+			allBtn.textContent = done.length > 1 ? `Download All · ZIP (${done.length})` : 'Download All · ZIP';
+			listEl.innerHTML = jobs.map(j => {
+				const meta = j.status === 'processing' ? 'PROCESSING…'
+					: j.status === 'error' ? (j.error || 'FAILED').toUpperCase()
+					: `${_fmtSz(j.inSize)} → ${_fmtSz(j.outSize)}`;
+				return `<div class="j2t-row is-${j.status}" data-id="${j.id}">
+					<div class="j2t-row-top">
+						<span class="j2t-name">${esc(j.outName)}</span>
+						<span class="j2t-meta">${esc(meta)}</span>
+					</div>
+					<div class="j2t-bar"><div class="j2t-bar-fill"></div></div>
+					<div class="j2t-row-actions">
+						<button type="button" class="bf-btn bf-btn--sm bf-btn--accent j2t-dl" data-act="dl" ${j.status === 'done' ? '' : 'disabled'}>Download</button>
+						<button type="button" class="bf-btn bf-btn--sm j2t-rm" data-act="rm">Remove</button>
+					</div>
+				</div>`;
+			}).join('');
+		}
+
+		async function process(job, file) {
+			try {
+				const text = await file.text();
+				JSON.parse(text); // reject non-JSON early with a clear error
+				job.data = await _compressTgs(text);
+				job.outSize = job.data.length;
+				job.status = 'done';
+			} catch (e) {
+				job.status = 'error';
+				job.error = /JSON/.test(String(e)) ? 'NOT VALID JSON' : String(e.message || e);
+			}
+			render();
+		}
+
+		function add(fileList) {
+			const files = Array.from(fileList || []).filter(f => /\.json$/i.test(f.name) || f.type === 'application/json');
+			for (const f of files) {
+				const job = { id: ++seq, name: f.name, outName: f.name.replace(/\.json$/i, '') + '.tgs', inSize: f.size, outSize: null, status: 'processing', data: null, error: null };
+				jobs.push(job);
+				process(job, f); // async; render() fires on completion
+			}
+			if (files.length) render();
+		}
+
+		listEl.addEventListener('click', e => {
+			const b = e.target.closest('[data-act]');
+			if (!b) return;
+			const row = b.closest('.j2t-row');
+			const id = +row.dataset.id;
+			const idx = jobs.findIndex(j => j.id === id);
+			if (idx < 0) return;
+			if (b.dataset.act === 'rm') { jobs.splice(idx, 1); render(); }
+			else if (b.dataset.act === 'dl' && jobs[idx].status === 'done') download(jobs[idx].data, jobs[idx].outName, 'application/octet-stream');
+		});
+		clearBtn.addEventListener('click', () => { jobs.length = 0; render(); });
+		allBtn.addEventListener('click', () => {
+			const done = jobs.filter(j => j.status === 'done');
+			if (!done.length) return;
+			if (done.length === 1) return download(done[0].data, done[0].outName, 'application/octet-stream');
+			download(makeZip(done.map(j => ({ name: j.outName, data: j.data }))), 'lottie_tgs_pack.zip', 'application/zip');
+		});
+
+		// upload: click to browse + file input
+		dropEl.addEventListener('click', () => input.click());
+		dropEl.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+		input.addEventListener('change', () => { add(input.files); input.value = ''; });
+
+		// drag-drop anywhere on the panel (the global GIF/TGS overlay is suppressed while a modal is open)
 		const stop = e => { e.preventDefault(); e.stopPropagation(); };
 		panel.addEventListener('dragenter', e => { stop(e); panel.classList.add('drag-over'); });
 		panel.addEventListener('dragover', e => { stop(e); panel.classList.add('drag-over'); });
-		panel.addEventListener('dragleave', e => { if (e.target === panel) panel.classList.remove('drag-over'); });
-		panel.addEventListener('drop', e => {
-			stop(e);
-			panel.classList.remove('drag-over');
-			if (e.dataTransfer && e.dataTransfer.files.length) card.__setFiles(e.dataTransfer.files);
-		});
+		panel.addEventListener('dragleave', e => { if (e.target === panel || e.target === dropEl) panel.classList.remove('drag-over'); });
+		panel.addEventListener('drop', e => { stop(e); panel.classList.remove('drag-over'); if (e.dataTransfer && e.dataTransfer.files.length) add(e.dataTransfer.files); });
+
+		render();
 	})();
 	/* 17 · GIF → SPRITE SHEET */
 	toolCard({ key:'gif2sheet', no:'17', title:'GIF → SPRITE SHEET', accept:'.gif,image/gif', match:/\.gif$/i,
