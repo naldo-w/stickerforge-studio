@@ -614,8 +614,10 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 #toolboxModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:200; align-items:flex-start; justify-content:center; overflow-y:auto; padding:40px 16px; }
 #toolboxModal.on { display:flex; }
 .modal-panel--toolbox { background:var(--paper); border:1px solid var(--line); border-radius:0; width:100%; max-width:960px; padding:0 0 24px; }
-/* JSON → TGS uploader + export panel — mirrors the .stats-card language */
-.modal-panel--j2t { max-width: 560px; }
+/* JSON → TGS uploader + export panel — mirrors the toolbox modal's structure + .stats-card language */
+.modal-panel--j2t { max-width: 560px; padding: 0 0 20px; gap: 0; }
+#json2tgsModal .modal-h { padding: 16px 20px; border-bottom: 1px solid var(--line); margin-bottom: 16px; min-height: 0; }
+.j2t-body { padding: 0 20px; display: flex; flex-direction: column; gap: 14px; }
 .modal-panel.drag-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
 .j2t-drop {
 	border: 1px dashed var(--line-strong); padding: 22px 10px; text-align: center;
@@ -2024,12 +2026,12 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			<span class="modal-title">JSON → TGS<span class="dot">.</span></span>
 			<button type="button" class="bf-btn bf-btn--sm" id="json2tgsClose">Close</button>
 		</div>
-		<div id="json2tgsDrop" class="j2t-drop" tabindex="0" role="button" aria-label="drop or browse lottie json files">
-			<div class="j2t-drop-title">DROP LOTTIE JSON</div>
-			<div class="j2t-drop-note">CLICK TO BROWSE · EXPORTS TELEGRAM ·TGS</div>
-			<input type="file" id="json2tgsInput" accept=".json,application/json" multiple hidden />
-		</div>
-		<div class="j2t-panel">
+		<div class="j2t-body">
+			<div id="json2tgsDrop" class="j2t-drop" tabindex="0" role="button" aria-label="drop or browse lottie json files">
+				<div class="j2t-drop-title">DROP LOTTIE JSON</div>
+				<div class="j2t-drop-note">CLICK TO BROWSE · EXPORTS TELEGRAM ·TGS</div>
+				<input type="file" id="json2tgsInput" accept=".json,application/json" multiple hidden />
+			</div>
 			<div class="j2t-panel-h">
 				<span id="json2tgsCount">NO FILES</span>
 				<span class="j2t-panel-actions">
