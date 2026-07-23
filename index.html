@@ -618,14 +618,22 @@ input[type="range"] { width: 100%; height: 22px; accent-color: var(--accent); cu
 .modal-panel--j2t { max-width: 560px; padding: 0 0 20px; gap: 0; }
 #json2tgsModal .modal-h { padding: 16px 20px; border-bottom: 1px solid var(--line); margin-bottom: 16px; min-height: 0; }
 .j2t-body { padding: 0 20px; display: flex; flex-direction: column; gap: 14px; }
-.modal-panel.drag-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
-.j2t-drop {
-	border: 1px dashed var(--line-strong); padding: 22px 10px; text-align: center;
-	cursor: pointer; opacity: .85; transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease, opacity var(--dur-fast) ease;
+/* the whole modal is the drop target — a full-screen cue shows only while dragging (no permanent box) */
+.j2t-dropcue {
+	position: fixed; inset: 0; z-index: 70; display: none;
+	align-items: center; justify-content: center; text-align: center;
+	background: var(--scrim-strong); color: var(--accent);
+	font-family: var(--font-display); font-size: var(--display-md); line-height: .9;
+	backdrop-filter: blur(6px); pointer-events: none;
 }
-.j2t-drop:hover, .modal-panel.drag-over .j2t-drop { background: var(--field); border-color: var(--accent); opacity: 1; }
-.j2t-drop-title { font-size: var(--text-body); letter-spacing: var(--label-track); text-transform: uppercase; }
-.j2t-drop-note { font-size: var(--text-note); letter-spacing: var(--label-track-sm); color: var(--ink-2); opacity: .7; margin-top: 6px; }
+#json2tgsModal.drag-over .j2t-dropcue { display: flex; }
+/* empty-state prompt — plain centered text, no drawn box (the whole screen is the drop area) */
+.j2t-empty {
+	padding: 24px 12px; text-align: center; cursor: pointer; line-height: 1.9;
+	font-size: var(--text-note); letter-spacing: var(--label-track-sm); color: var(--ink-2); opacity: .6;
+	transition: opacity var(--dur-fast) ease;
+}
+.j2t-empty:hover { opacity: .9; }
 .j2t-panel-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .j2t-panel-h > span:first-child { font-size: var(--text-note); letter-spacing: var(--label-track-sm); color: var(--ink-2); }
 .j2t-panel-actions { display: inline-flex; gap: 8px; }
@@ -2027,20 +2035,18 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			<button type="button" class="bf-btn bf-btn--sm" id="json2tgsClose">Close</button>
 		</div>
 		<div class="j2t-body">
-			<div id="json2tgsDrop" class="j2t-drop" tabindex="0" role="button" aria-label="drop or browse lottie json files">
-				<div class="j2t-drop-title">DROP LOTTIE JSON</div>
-				<div class="j2t-drop-note">CLICK TO BROWSE · EXPORTS TELEGRAM ·TGS</div>
-				<input type="file" id="json2tgsInput" accept=".json,application/json" multiple hidden />
-			</div>
 			<div class="j2t-panel-h">
 				<span id="json2tgsCount">NO FILES</span>
 				<span class="j2t-panel-actions">
+					<button type="button" class="bf-btn bf-btn--sm" id="json2tgsBrowse">Browse</button>
 					<button type="button" class="bf-btn bf-btn--sm" id="json2tgsClear" disabled>Clear</button>
 					<button type="button" class="bf-btn bf-btn--sm bf-btn--accent" id="json2tgsAll" disabled>Download All · ZIP</button>
 				</span>
 			</div>
 			<div id="json2tgsList" class="j2t-list" aria-live="polite"></div>
+			<input type="file" id="json2tgsInput" accept=".json,application/json" multiple hidden />
 		</div>
+		<div class="j2t-dropcue" aria-hidden="true">DROP LOTTIE JSON</div>
 	</div>
 </div>
 
@@ -6955,14 +6961,13 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 	(function initJson2Tgs() {
 		const modal = document.getElementById('json2tgsModal');
 		const btn = document.getElementById('json2tgsBtn');
-		const dropEl = document.getElementById('json2tgsDrop');
+		const browseBtn = document.getElementById('json2tgsBrowse');
 		const input = document.getElementById('json2tgsInput');
 		const listEl = document.getElementById('json2tgsList');
 		const countEl = document.getElementById('json2tgsCount');
 		const clearBtn = document.getElementById('json2tgsClear');
 		const allBtn = document.getElementById('json2tgsAll');
-		const panel = modal.querySelector('.modal-panel');
-		if (!modal || !dropEl || !listEl) return;
+		if (!modal || !listEl) return;
 
 		const jobs = []; // { id, name, outName, inSize, outSize, status: 'processing'|'done'|'error', data, error }
 		let seq = 0;
@@ -6980,6 +6985,10 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			clearBtn.disabled = !jobs.length;
 			allBtn.disabled = done.length < 1;
 			allBtn.textContent = done.length > 1 ? `Download All · ZIP (${done.length})` : 'Download All · ZIP';
+			if (!jobs.length) {
+				listEl.innerHTML = `<div class="j2t-empty" data-act="browse">DRAG A LOTTIE JSON ONTO THE WINDOW TO CONVERT IT TO TGS</div>`;
+				return;
+			}
 			listEl.innerHTML = jobs.map(j => {
 				const meta = j.status === 'processing' ? 'PROCESSING…'
 					: j.status === 'error' ? (j.error || 'FAILED').toUpperCase()
@@ -7024,6 +7033,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 		listEl.addEventListener('click', e => {
 			const b = e.target.closest('[data-act]');
 			if (!b) return;
+			if (b.dataset.act === 'browse') { input.click(); return; }
 			const row = b.closest('.j2t-card');
 			const id = +row.dataset.id;
 			const idx = jobs.findIndex(j => j.id === id);
@@ -7039,17 +7049,18 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			download(makeZip(done.map(j => ({ name: j.outName, data: j.data }))), 'lottie_tgs_pack.zip', 'application/zip');
 		});
 
-		// upload: click to browse + file input
-		dropEl.addEventListener('click', () => input.click());
-		dropEl.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+		// upload: Browse button + file input
+		if (browseBtn) browseBtn.addEventListener('click', () => input.click());
 		input.addEventListener('change', () => { add(input.files); input.value = ''; });
 
-		// drag-drop anywhere on the panel (the global GIF/TGS overlay is suppressed while a modal is open)
+		// the whole modal (full screen, since .modal is fixed inset:0) is the drop target — no drawn box.
+		// The global GIF/TGS overlay is suppressed while a modal is open, so this can't collide with it.
 		const stop = e => { e.preventDefault(); e.stopPropagation(); };
-		panel.addEventListener('dragenter', e => { stop(e); panel.classList.add('drag-over'); });
-		panel.addEventListener('dragover', e => { stop(e); panel.classList.add('drag-over'); });
-		panel.addEventListener('dragleave', e => { if (e.target === panel || e.target === dropEl) panel.classList.remove('drag-over'); });
-		panel.addEventListener('drop', e => { stop(e); panel.classList.remove('drag-over'); if (e.dataTransfer && e.dataTransfer.files.length) add(e.dataTransfer.files); });
+		let dragN = 0;
+		modal.addEventListener('dragenter', e => { stop(e); dragN++; modal.classList.add('drag-over'); });
+		modal.addEventListener('dragover', e => { stop(e); modal.classList.add('drag-over'); });
+		modal.addEventListener('dragleave', e => { stop(e); if (--dragN <= 0) { dragN = 0; modal.classList.remove('drag-over'); } });
+		modal.addEventListener('drop', e => { stop(e); dragN = 0; modal.classList.remove('drag-over'); if (e.dataTransfer && e.dataTransfer.files.length) add(e.dataTransfer.files); });
 
 		render();
 	})();
