@@ -6986,7 +6986,7 @@ input[type="range"] { min-height: 48px; height: 48px; padding: 0 16px; }
 			allBtn.disabled = done.length < 1;
 			allBtn.textContent = done.length > 1 ? `Download All · ZIP (${done.length})` : 'Download All · ZIP';
 			if (!jobs.length) {
-				listEl.innerHTML = `<div class="j2t-empty" data-act="browse">DROP LOTTIE JSON ANYWHERE<br>· OR CLICK TO BROWSE ·</div>`;
+				listEl.innerHTML = `<div class="j2t-empty" data-act="browse">DRAG A LOTTIE JSON ONTO THE WINDOW TO CONVERT IT TO TGS</div>`;
 				return;
 			}
 			listEl.innerHTML = jobs.map(j => {
